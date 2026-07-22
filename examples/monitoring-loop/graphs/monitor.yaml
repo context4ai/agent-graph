@@ -1,0 +1,20 @@
+schema: agent-graph.graph.v1
+id: monitor
+description: Repeat polling while the action reports a partial outcome.
+entrypoints:
+  default: poll
+nodes:
+  - id: poll
+    kind: action
+    action: actions/poll.yaml
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: poll
+    to: poll
+    kind: repeat
+    outcomes: [partial]
+  - from: poll
+    to: done
+    outcomes: [completed]

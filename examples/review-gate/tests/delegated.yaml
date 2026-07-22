@@ -1,0 +1,11 @@
+schema: agent-graph.test.v1
+name: explicit session authority delegates the gate
+graph: review
+entry: default
+state:
+  outcomes:
+    review/prepare: completed
+  authorities: [review]
+expect:
+  statusCode: actionable
+  primaryNode: approve

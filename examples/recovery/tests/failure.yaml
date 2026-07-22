@@ -1,0 +1,10 @@
+schema: agent-graph.test.v1
+name: failed apply exposes recovery
+graph: recovery
+entry: default
+state:
+  outcomes:
+    recovery/apply: failed
+expect:
+  statusCode: actionable
+  primaryNode: recover

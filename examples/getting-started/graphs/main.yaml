@@ -1,0 +1,18 @@
+schema: agent-graph.graph.v1
+id: main
+entrypoints:
+  default: prepare
+nodes:
+  - id: prepare
+    kind: action
+    description: Prepare the requested result
+    action: actions/prepare.yaml
+    resources:
+      required: [resources/prepare.md]
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: prepare
+    to: done
+    outcomes: [completed]

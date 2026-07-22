@@ -1,0 +1,6 @@
+schema: agent-graph.action.v1
+id: materialize-current-context
+runner: script
+effect: read
+runtime: node
+entry: scripts/context.mjs

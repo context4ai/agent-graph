@@ -1,0 +1,10 @@
+schema: agent-graph.test.v1
+name: release approval requires the user by default
+graph: release
+entry: default
+state:
+  outcomes:
+    release/inspect: completed
+expect:
+  statusCode: waiting-user
+  primaryNode: approval

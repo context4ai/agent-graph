@@ -1,0 +1,5 @@
+schema: agent-graph.provider.v1
+id: "{{providerId}}"
+version: 0.1.0
+graphs:
+  - graphs/main.yaml

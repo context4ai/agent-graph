@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: inspect
+runner: command
+effect: read
+command: npm pack --dry-run

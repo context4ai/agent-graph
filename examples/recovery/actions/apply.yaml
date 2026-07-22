@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: apply
+runner: command
+effect: write
+command: apply-change

@@ -1,0 +1,10 @@
+schema: agent-graph.test.v1
+name: partial polling remains actionable
+graph: monitor
+entry: default
+state:
+  outcomes:
+    monitor/poll: partial
+expect:
+  statusCode: actionable
+  primaryNode: poll

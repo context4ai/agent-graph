@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/test-case.schema.json",
+  "title": "Agent Graph Test Case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "name", "graph", "entry", "expect"],
+  "properties": {
+    "schema": { "const": "agent-graph.test.v1" },
+    "name": { "type": "string", "minLength": 1 },
+    "graph": { "type": "string", "minLength": 1 },
+    "entry": { "type": "string", "minLength": 1 },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "facts": { "type": "object" },
+        "outcomes": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              { "$ref": "#/$defs/outcome" },
+              { "$ref": "#/$defs/outcomeRecord" }
+            ]
+          }
+        },
+        "authorities": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+      }
+    },
+    "expect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statusCode"],
+      "properties": {
+        "statusCode": { "enum": ["actionable", "waiting-user", "blocked", "complete", "error"] },
+        "primaryNode": { "type": "string" },
+        "outcome": { "$ref": "#/$defs/outcome" },
+        "diagnosticsInclude": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "outcome": { "enum": ["completed", "partial", "failed", "unverified", "skipped", "pending", "blocked", "waiting-user"] },
+    "outcomeRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "recordedAt"],
+      "properties": {
+        "outcome": { "$ref": "#/$defs/outcome" },
+        "recordedAt": { "type": "string", "format": "date-time" },
+        "detail": {}
+      }
+    }
+  }
+}

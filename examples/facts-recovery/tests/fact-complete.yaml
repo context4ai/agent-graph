@@ -1,0 +1,11 @@
+schema: agent-graph.test.v1
+name: observed artifact digest proves completion
+graph: build
+entry: default
+state:
+  facts:
+    artifact:
+      digest: sha256:observed
+expect:
+  statusCode: complete
+  outcome: completed

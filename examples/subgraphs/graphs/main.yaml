@@ -1,0 +1,22 @@
+schema: agent-graph.graph.v1
+id: main
+entrypoints:
+  default: prepare
+nodes:
+  - id: prepare
+    kind: action
+    action: actions/prepare.yaml
+  - id: quality
+    kind: subgraph
+    graph: quality
+    entry: default
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: prepare
+    to: quality
+    outcomes: [completed]
+  - from: quality
+    to: done
+    outcomes: [completed]

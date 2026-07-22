@@ -1,0 +1,28 @@
+schema: agent-graph.graph.v1
+id: build
+entrypoints:
+  default: package
+nodes:
+  - id: package
+    kind: action
+    action: actions/package.yaml
+    satisfiedBy:
+      - path: artifact.digest
+        exists: true
+  - id: verify-artifact
+    kind: action
+    action: actions/verify.yaml
+  - id: done
+    kind: terminal
+    join: any
+    terminalOutcome: completed
+edges:
+  - from: package
+    to: done
+    outcomes: [completed]
+  - from: package
+    to: verify-artifact
+    outcomes: [unverified]
+  - from: verify-artifact
+    to: done
+    outcomes: [completed]

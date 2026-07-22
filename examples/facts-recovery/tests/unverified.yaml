@@ -1,0 +1,10 @@
+schema: agent-graph.test.v1
+name: claimed completion without its fact routes to recovery
+graph: build
+entry: default
+state:
+  outcomes:
+    build/package: completed
+expect:
+  statusCode: actionable
+  primaryNode: verify-artifact

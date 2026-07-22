@@ -1,0 +1,6 @@
+schema: agent-graph.provider.v1
+id: example.subgraphs
+version: 0.1.0
+graphs:
+  - graphs/main.yaml
+  - graphs/quality.yaml

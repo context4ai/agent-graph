@@ -1,0 +1,19 @@
+schema: agent-graph.graph.v1
+id: diagnose
+entrypoints:
+  default: diagnose
+nodes:
+  - id: diagnose
+    kind: action
+    action: actions/diagnose.yaml
+    resources:
+      required:
+        - resources/current-context.yaml
+        - resources/procedure.md
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: diagnose
+    to: done
+    outcomes: [completed]

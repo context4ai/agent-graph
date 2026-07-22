@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: check
+runner: command
+effect: read
+command: check-result

@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: inspect route is available
+graph: main
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: inspect

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/bundle.schema.json",
+  "title": "Agent Graph Provider Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "provider", "providerManifest", "graphs", "actions", "resources", "schemas", "files", "graphDependencies", "digest"],
+  "properties": {
+    "schema": { "const": "agent-graph.bundle.v1" },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "providerManifest": { "$ref": "#/$defs/path" },
+    "graphs": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "actions": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "resources": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "schemas": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "files": { "type": "array", "items": { "$ref": "#/$defs/file" } },
+    "graphDependencies": {
+      "type": "object",
+      "additionalProperties": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+    },
+    "digest": { "$ref": "#/$defs/digest" }
+  },
+  "$defs": {
+    "path": { "type": "string", "minLength": 1, "not": { "pattern": "^(?:/|[A-Za-z]:|.*(?:^|/)\\.\\.(?:/|$))" } },
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "digest"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "path": { "$ref": "#/$defs/path" },
+        "digest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "digest"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "digest": { "$ref": "#/$defs/digest" }
+      }
+    }
+  }
+}

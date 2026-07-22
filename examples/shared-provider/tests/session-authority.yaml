@@ -1,0 +1,11 @@
+schema: agent-graph.test.v1
+name: explicit session authority makes the gate actionable
+graph: release
+entry: default
+state:
+  outcomes:
+    release/inspect: completed
+  authorities: [release.approve]
+expect:
+  statusCode: actionable
+  primaryNode: approval

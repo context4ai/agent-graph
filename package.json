@@ -1,0 +1,76 @@
+{
+  "name": "agent-graph",
+  "version": "0.1.0",
+  "description": "Graph Engineering for Agent Skills: a specification and toolchain for dynamically discovering context and building observable, testable, and recoverable agent workflows.",
+  "type": "module",
+  "sideEffects": false,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/context4ai/agent-graph.git"
+  },
+  "homepage": "https://github.com/context4ai/agent-graph#readme",
+  "bugs": {
+    "url": "https://github.com/context4ai/agent-graph/issues"
+  },
+  "keywords": [
+    "agent",
+    "agent-skills",
+    "workflow",
+    "graph",
+    "graph-engineering",
+    "cli"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schemas/*": "./schemas/*",
+    "./templates/*": "./templates/*"
+  },
+  "bin": {
+    "agent-graph": "dist/agent-graph.mjs"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "templates",
+    "examples",
+    "docs",
+    "README.md",
+    "README.zh-CN.md",
+    "DEVELOPMENT.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bun run scripts/build.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "bun test tests/unit tests/integration",
+    "test:unit": "bun test tests/unit",
+    "test:integration": "bun test tests/integration",
+    "verify": "bun run typecheck && bun run lint && bun run test && bun run build",
+    "prepack": "bun run verify"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/bun": "^1.3.9",
+    "@types/node": "^24.10.1",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "commander": "^14.0.2",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0",
+    "yaml": "^2.8.2"
+  }
+}

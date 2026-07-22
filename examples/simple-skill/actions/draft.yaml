@@ -1,0 +1,6 @@
+schema: agent-graph.action.v1
+id: draft
+description: Draft the requested artifact.
+runner: agent
+effect: write
+skill: skills/draft/SKILL.md

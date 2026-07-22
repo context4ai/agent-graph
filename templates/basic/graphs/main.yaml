@@ -1,0 +1,18 @@
+schema: agent-graph.graph.v1
+id: main
+entrypoints:
+  default: work
+nodes:
+  - id: work
+    kind: action
+    action: actions/work.yaml
+    resources:
+      required:
+        - resources/procedure.md
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: work
+    to: done
+    outcomes: [completed]

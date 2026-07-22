@@ -1,0 +1,17 @@
+schema: agent-graph.graph.v1
+id: main
+entrypoints:
+  default: inspect
+nodes:
+  - id: inspect
+    kind: action
+    action: actions/inspect.yaml
+    resources:
+      required: [resources/status.yaml]
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: inspect
+    to: done
+    outcomes: [completed]

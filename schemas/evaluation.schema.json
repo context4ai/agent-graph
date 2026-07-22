@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/evaluation.schema.json",
+  "title": "Agent Graph Evaluation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "provider", "graph", "entry", "revision", "statusCode", "alternativeRoutes", "diagnostics"],
+  "properties": {
+    "schema": { "const": "agent-graph.evaluation.v1" },
+    "provider": { "type": "string", "minLength": 1 },
+    "graph": { "type": "string", "minLength": 1 },
+    "entry": { "type": "string", "minLength": 1 },
+    "revision": { "$ref": "#/$defs/digest" },
+    "statusCode": { "$ref": "#/$defs/status" },
+    "outcome": { "$ref": "#/$defs/outcome" },
+    "primaryRoute": { "$ref": "#/$defs/routeSummary" },
+    "alternativeRoutes": { "type": "array", "items": { "$ref": "#/$defs/routeSummary" } },
+    "diagnostics": { "type": "array", "items": { "$ref": "#/$defs/diagnostic" } }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "status": { "enum": ["actionable", "waiting-user", "blocked", "complete", "error"] },
+    "outcome": { "enum": ["completed", "partial", "failed", "unverified", "skipped", "pending", "blocked", "waiting-user"] },
+    "availability": { "enum": ["immediate", "requires-user", "blocked"] },
+    "routeSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["routeId", "graph", "node", "statusCode", "availability", "label"],
+      "properties": {
+        "routeId": { "type": "string", "pattern": "^route:[a-f0-9]{20}$" },
+        "graph": { "type": "string", "minLength": 1 },
+        "node": { "type": "string", "minLength": 1 },
+        "statusCode": { "$ref": "#/$defs/status" },
+        "availability": { "$ref": "#/$defs/availability" },
+        "label": { "type": "string", "minLength": 1 }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["info", "warning", "error"] },
+        "message": { "type": "string" },
+        "path": { "type": "string" },
+        "detail": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: missing artifact requires packaging
+graph: build
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: package

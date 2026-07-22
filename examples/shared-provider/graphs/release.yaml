@@ -1,0 +1,35 @@
+schema: agent-graph.graph.v1
+id: release
+entrypoints:
+  default: inspect
+nodes:
+  - id: inspect
+    kind: action
+    action: actions/inspect.yaml
+    resources:
+      recommended: [resources/checklist.md]
+  - id: approval
+    kind: gate
+    gate:
+      id: release-approval
+      prompt: Approve publishing the inspected artifact?
+      authority: release.approve
+      delegatable: true
+  - id: publish
+    kind: action
+    action: actions/publish.yaml
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: inspect
+    to: approval
+    kind: requires
+    outcomes: [completed]
+  - from: approval
+    to: publish
+    kind: gatedBy
+    outcomes: [completed]
+  - from: publish
+    to: done
+    outcomes: [completed]

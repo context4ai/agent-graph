@@ -1,0 +1,25 @@
+schema: agent-graph.graph.v1
+id: review
+entrypoints:
+  default: prepare
+nodes:
+  - id: prepare
+    kind: action
+    action: actions/prepare.yaml
+  - id: approve
+    kind: gate
+    gate:
+      id: result-review
+      prompt: Review the prepared result.
+      authority: review
+      delegatable: true
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: prepare
+    to: approve
+    outcomes: [completed]
+  - from: approve
+    to: done
+    outcomes: [completed]

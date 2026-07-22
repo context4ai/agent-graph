@@ -1,0 +1,4 @@
+schema: agent-graph.provider.v1
+id: example.facts-recovery
+version: 0.1.0
+graphs: [graphs/build.yaml]

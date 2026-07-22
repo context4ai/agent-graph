@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="820" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">Agent Graph 上下文拓扑</title>
+  <desc id="desc">可观察事实、显式结果与当前会话授权进入确定性评估。评估产生一条主路线和少量备选路线。主路线只暴露必需流程、上下文视图与动作契约，执行后的证据和结果进入下一轮评估。</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#d5d5d5" opacity="0.42"/>
+    </pattern>
+    <filter id="lift" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="11" flood-color="#181818" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef6f2e"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#a3a3a3"/>
+    </marker>
+  </defs>
+
+  <rect width="1440" height="820" rx="20" fill="#f1f1f2"/>
+  <rect x="20" y="20" width="1400" height="780" rx="16" fill="url(#grid)" stroke="#e5e5e5"/>
+
+  <g font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <text x="52" y="62" fill="#181818" font-size="22" font-weight="500" letter-spacing="-0.45">上下文拓扑</text>
+    <text x="52" y="87" fill="#717171" font-size="12">外部事实从左侧进入，只有选定 Route 所需的内容会进入 Agent 视野。</text>
+    <g transform="translate(1128 46)">
+      <rect width="242" height="30" rx="15" fill="#f7f7f7" stroke="#d5d5d5"/>
+      <circle cx="18" cy="15" r="4" fill="#ef6f2e"/>
+      <text x="31" y="19" fill="#535353" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" letter-spacing="0.75">PROGRESSIVE DISCLOSURE</text>
+    </g>
+  </g>
+
+  <g font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="11" fill="#717171">
+    <text x="52" y="133">可观察输入</text>
+    <text x="430" y="188">确定性路由核心</text>
+    <text x="930" y="133">合法的下一步</text>
+  </g>
+
+  <g fill="none" stroke="#a3a3a3" stroke-width="1.7" marker-end="url(#arrow-muted)">
+    <path d="M 342 199 H 388 Q 410 199 430 259"/>
+    <path d="M 342 309 H 397 Q 413 309 430 319"/>
+    <path d="M 342 419 H 388 Q 410 419 430 379"/>
+  </g>
+
+  <g filter="url(#lift)" font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <g transform="translate(52 156)">
+      <rect width="290" height="86" rx="11" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <rect x="0.5" y="0.5" width="5" height="85" rx="2.5" fill="#ef6f2e"/>
+      <circle cx="38" cy="43" r="18" fill="#f7e4d8"/>
+      <path d="M 29 45 h 18 M 32 38 h 12 M 34 52 h 8" fill="none" stroke="#d95817" stroke-width="1.7" stroke-linecap="round"/>
+      <text x="69" y="37" fill="#181818" font-size="15" font-weight="500">可观察事实</text>
+      <text x="69" y="58" fill="#717171" font-size="11">由 Provider 或 Host 提供的外部状态</text>
+      <rect x="232" y="14" width="42" height="20" rx="10" fill="none" stroke="#d5d5d5"/>
+      <text x="253" y="27" text-anchor="middle" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="8">FACT</text>
+    </g>
+
+    <g transform="translate(52 266)">
+      <rect width="290" height="86" rx="11" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <circle cx="38" cy="43" r="18" fill="#f7f7f7" stroke="#e5e5e5"/>
+      <path d="M 29 34 h 18 v 19 h -18 z M 33 39 h 10 M 33 44 h 10 M 33 49 h 7" fill="none" stroke="#717171" stroke-width="1.5" stroke-linecap="round"/>
+      <text x="69" y="37" fill="#181818" font-size="15" font-weight="500">显式 Outcomes</text>
+      <text x="69" y="58" fill="#717171" font-size="11">每次尝试动作后明确记录的结果</text>
+      <rect x="217" y="14" width="57" height="20" rx="10" fill="none" stroke="#d5d5d5"/>
+      <text x="245.5" y="27" text-anchor="middle" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="8">OUTCOME</text>
+    </g>
+
+    <g transform="translate(52 376)">
+      <rect width="290" height="86" rx="11" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <circle cx="38" cy="43" r="18" fill="#f7f7f7" stroke="#e5e5e5"/>
+      <path d="M 31 42 a 7 7 0 1 1 14 0 v 10 h -14 z M 34 42 v -4 a 4 4 0 0 1 8 0 v 4" fill="none" stroke="#717171" stroke-width="1.5" stroke-linejoin="round"/>
+      <text x="69" y="37" fill="#181818" font-size="15" font-weight="500">当前会话 Authority</text>
+      <text x="69" y="58" fill="#717171" font-size="11">显式、有作用域且不会持久化</text>
+      <rect x="216" y="14" width="58" height="20" rx="10" fill="none" stroke="#d5d5d5"/>
+      <text x="245" y="27" text-anchor="middle" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="8">SESSION</text>
+    </g>
+  </g>
+
+  <g filter="url(#lift)" font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <rect x="446" y="220" width="380" height="220" rx="14" fill="#e9e9ea" stroke="#d5d5d5"/>
+    <rect x="438" y="212" width="380" height="220" rx="14" fill="#f7f7f7" stroke="#d5d5d5"/>
+    <rect x="430" y="204" width="380" height="220" rx="14" fill="#fdfdfd" stroke="#c5c5c5"/>
+    <rect x="430.5" y="204.5" width="379" height="6" rx="3" fill="#ef6f2e"/>
+    <circle cx="474" cy="257" r="22" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+    <path d="M 464 256 h 20 M 474 246 v 20 M 467 249 l 14 14 M 481 249 l -14 14" fill="none" stroke="#d95817" stroke-width="1.5" stroke-linecap="round"/>
+    <text x="510" y="253" fill="#181818" font-size="18" font-weight="500">确定性评估</text>
+    <text x="510" y="276" fill="#717171" font-size="11">相同 Provider Revision 与输入产生相同 Route</text>
+    <line x1="458" y1="304" x2="782" y2="304" stroke="#e5e5e5"/>
+    <g font-family="'SFMono-Regular', Consolas, monospace" font-size="9" letter-spacing="0.6">
+      <rect x="458" y="329" width="87" height="24" rx="12" fill="none" stroke="#d5d5d5"/>
+      <text x="501.5" y="344" text-anchor="middle" fill="#535353">REVISION</text>
+      <rect x="555" y="329" width="87" height="24" rx="12" fill="none" stroke="#d5d5d5"/>
+      <text x="598.5" y="344" text-anchor="middle" fill="#535353">FACT SET</text>
+      <rect x="652" y="329" width="101" height="24" rx="12" fill="none" stroke="#d5d5d5"/>
+      <text x="702.5" y="344" text-anchor="middle" fill="#535353">ENTRYPOINT</text>
+    </g>
+    <rect x="458" y="376" width="324" height="27" rx="6" fill="#f1f1f2" stroke="#e5e5e5"/>
+    <circle cx="474" cy="389.5" r="4" fill="#ef6f2e"/>
+    <text x="487" y="393" fill="#535353" font-family="'SFMono-Regular', Consolas, monospace" font-size="9">evaluation → ranked route summaries</text>
+  </g>
+
+  <path d="M 810 274 H 892 Q 912 274 930 244" fill="none" stroke="#ef6f2e" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 810 354 H 892 Q 912 354 930 392" fill="none" stroke="#a3a3a3" stroke-width="1.7" marker-end="url(#arrow-muted)"/>
+
+  <g filter="url(#lift)" font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <g transform="translate(930 164)">
+      <rect width="440" height="160" rx="13" fill="#fdfdfd" stroke="#ef6f2e" stroke-opacity="0.65"/>
+      <rect x="0.5" y="0.5" width="439" height="6" rx="3" fill="#ef6f2e"/>
+      <text x="24" y="42" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" letter-spacing="0.85">PRIMARY ROUTE</text>
+      <text x="24" y="76" fill="#181818" font-size="18" font-weight="500">一条选中的合法动作</text>
+      <text x="24" y="100" fill="#717171" font-size="11">绑定本次评估的 Revision，等待解析执行</text>
+      <line x1="24" y1="120" x2="416" y2="120" stroke="#e5e5e5"/>
+      <circle cx="35" cy="140" r="4" fill="#ef6f2e"/>
+      <text x="48" y="144" fill="#535353" font-family="'SFMono-Regular', Consolas, monospace" font-size="9">ACTIONABLE · REQUIRED CONTEXT BELOW</text>
+    </g>
+
+    <g transform="translate(930 348)">
+      <rect width="440" height="112" rx="13" fill="#f7f7f7" stroke="#d5d5d5"/>
+      <text x="24" y="35" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" letter-spacing="0.85">ALTERNATIVE ROUTES</text>
+      <text x="24" y="65" fill="#181818" font-size="15" font-weight="500">紧凑且确定性的备选排序</text>
+      <text x="24" y="88" fill="#717171" font-size="11">保留选择空间，但不向 Agent 灌入大量上下文</text>
+      <g transform="translate(372 27)">
+        <rect width="44" height="26" rx="13" fill="#fdfdfd" stroke="#d5d5d5"/>
+        <text x="22" y="17" text-anchor="middle" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="9">0–3</text>
+      </g>
+    </g>
+  </g>
+
+  <path d="M 1150 324 V 514" fill="none" stroke="#ef6f2e" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#lift)" font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <rect x="430" y="532" width="940" height="222" rx="15" fill="#f7f7f7" stroke="#d5d5d5"/>
+    <text x="458" y="567" fill="#535353" font-size="11">当前 ROUTE 的 AGENT 视野</text>
+    <rect x="1192" y="548" width="150" height="28" rx="14" fill="#fdfdfd" stroke="#d5d5d5"/>
+    <circle cx="1210" cy="562" r="4" fill="#ef6f2e"/>
+    <text x="1222" y="566" fill="#535353" font-family="'SFMono-Regular', Consolas, monospace" font-size="9">SELECTED ONLY</text>
+
+    <g transform="translate(458 591)">
+      <rect width="270" height="132" rx="11" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <rect x="18" y="19" width="34" height="34" rx="8" fill="#f1f1f2" stroke="#e5e5e5"/>
+      <path d="M 28 28 h 14 v 16 h -14 z M 31 33 h 8 M 31 37 h 8" fill="none" stroke="#717171" stroke-width="1.4" stroke-linecap="round"/>
+      <text x="66" y="33" fill="#181818" font-size="14" font-weight="500">必需 Procedure</text>
+      <text x="66" y="50" fill="#717171" font-size="10">规范性操作说明</text>
+      <line x1="18" y1="72" x2="252" y2="72" stroke="#e5e5e5"/>
+      <text x="18" y="97" fill="#535353" font-size="11">选中动作应当怎样处理</text>
+      <text x="18" y="115" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="9">RESOURCE · REQUIRED</text>
+    </g>
+
+    <g transform="translate(750 591)">
+      <rect width="270" height="132" rx="11" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <rect x="18" y="19" width="34" height="34" rx="8" fill="#f1f1f2" stroke="#e5e5e5"/>
+      <circle cx="35" cy="36" r="9" fill="none" stroke="#717171" stroke-width="1.4"/>
+      <path d="M 35 27 v 18 M 26 36 h 18" stroke="#717171" stroke-width="1.2"/>
+      <text x="66" y="33" fill="#181818" font-size="14" font-weight="500">Context View</text>
+      <text x="66" y="50" fill="#717171" font-size="10">静态文件或动态生成快照</text>
+      <line x1="18" y1="72" x2="252" y2="72" stroke="#e5e5e5"/>
+      <text x="18" y="97" fill="#535353" font-size="11">为当前 Route 选择的证据</text>
+      <text x="18" y="115" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="9">RESOURCE · DIGESTED</text>
+    </g>
+
+    <g transform="translate(1042 591)">
+      <rect width="300" height="132" rx="11" fill="#fdfdfd" stroke="#ef6f2e" stroke-opacity="0.55"/>
+      <rect x="18" y="19" width="34" height="34" rx="8" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.4"/>
+      <path d="M 28 28 l 16 8 l -16 8 z" fill="none" stroke="#d95817" stroke-width="1.5" stroke-linejoin="round"/>
+      <text x="66" y="33" fill="#181818" font-size="14" font-weight="500">Action Contract</text>
+      <text x="66" y="50" fill="#717171" font-size="10">Runner、Effect、输入与记录键</text>
+      <line x1="18" y1="72" x2="282" y2="72" stroke="#e5e5e5"/>
+      <text x="18" y="97" fill="#535353" font-size="11">Agent 执行，运行时不接管动作</text>
+      <text x="18" y="115" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="9">ACTION · EXPLICIT OUTCOME</text>
+    </g>
+  </g>
+
+  <path d="M 1192 723 V 778 H 30 V 309 H 43" fill="none" stroke="#ef6f2e" stroke-width="2" stroke-dasharray="5 7" marker-end="url(#arrow)"/>
+  <path d="M 30 199 H 43" fill="none" stroke="#ef6f2e" stroke-width="2" stroke-dasharray="5 7" marker-end="url(#arrow)"/>
+  <g font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="11">
+    <rect x="69" y="763" width="190" height="28" rx="14" fill="#fdfdfd" stroke="#d5d5d5"/>
+    <text x="164" y="781" text-anchor="middle" fill="#535353">证据与结果进入下一轮</text>
+  </g>
+</svg>

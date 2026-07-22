@@ -1,0 +1,11 @@
+schema: agent-graph.test.v1
+name: completing one chosen branch reaches the any-join terminal
+graph: choice
+entry: default
+state:
+  outcomes:
+    choice/discover: completed
+    choice/option-a: completed
+expect:
+  statusCode: complete
+  outcome: completed

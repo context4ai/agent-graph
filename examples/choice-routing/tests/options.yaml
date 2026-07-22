@@ -1,0 +1,10 @@
+schema: agent-graph.test.v1
+name: highest priority option is primary
+graph: choice
+entry: default
+state:
+  outcomes:
+    choice/discover: completed
+expect:
+  statusCode: actionable
+  primaryNode: option-a

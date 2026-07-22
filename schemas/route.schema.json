@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/route.schema.json",
+  "title": "Agent Graph Route",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "provider", "revision", "routeId", "graph", "node", "statusCode", "availability", "callPath", "commandPlan", "resources", "diagnostics", "afterAction"],
+  "properties": {
+    "schema": { "const": "agent-graph.route.v1" },
+    "provider": { "type": "string", "minLength": 1 },
+    "revision": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "routeId": { "type": "string", "pattern": "^route:[a-f0-9]{20}$" },
+    "graph": { "type": "string", "minLength": 1 },
+    "node": { "type": "string", "minLength": 1 },
+    "statusCode": { "enum": ["actionable", "waiting-user", "blocked", "complete", "error"] },
+    "availability": { "enum": ["immediate", "requires-user", "blocked"] },
+    "callPath": { "type": "array", "items": { "type": "string" } },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "runner", "effect"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "runner": { "enum": ["command", "script", "agent", "host"] },
+        "effect": { "enum": ["read", "write", "external"] }
+      }
+    },
+    "commandPlan": { "type": "array", "items": { "$ref": "#/$defs/command" } },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "recommended"],
+      "properties": {
+        "required": { "type": "array", "items": { "$ref": "#/$defs/resource" } },
+        "recommended": { "type": "array", "items": { "$ref": "#/$defs/resource" } }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "prompt", "resolution"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "prompt": { "type": "string", "minLength": 1 },
+        "authority": { "type": "string", "minLength": 1 },
+        "delegatable": { "type": "boolean" },
+        "resolution": { "enum": ["user", "session-authority"] }
+      }
+    },
+    "diagnostics": { "type": "array", "items": { "$ref": "#/$defs/diagnostic" } },
+    "afterAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evaluate"],
+      "properties": {
+        "evaluate": { "const": true },
+        "recordNode": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["effect", "cwd", "workingDirectory"],
+      "properties": {
+        "command": { "type": "string", "minLength": 1 },
+        "handler": { "type": "string", "minLength": 1 },
+        "effect": { "enum": ["read", "write", "external"] },
+        "cwd": { "enum": ["workspace", "provider"] },
+        "workingDirectory": { "type": "string", "minLength": 1 }
+      },
+      "oneOf": [
+        { "required": ["command"], "not": { "required": ["handler"] } },
+        { "required": ["handler"], "not": { "required": ["command"] } }
+      ]
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "id", "kind", "mediaType"],
+      "properties": {
+        "schema": { "const": "agent-graph.resource-location.v1" },
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"] },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "revision": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "filePath": { "type": "string", "minLength": 1 },
+        "materialize": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["resourcePath"],
+          "properties": { "resourcePath": { "type": "string", "minLength": 1 } }
+        }
+      },
+      "oneOf": [
+        { "required": ["filePath", "digest"], "not": { "required": ["materialize"] } },
+        { "required": ["materialize"], "not": { "required": ["filePath"] } }
+      ]
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["info", "warning", "error"] },
+        "message": { "type": "string" },
+        "path": { "type": "string" },
+        "detail": {}
+      }
+    }
+  }
+}

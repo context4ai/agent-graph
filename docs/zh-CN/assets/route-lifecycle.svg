@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="480" viewBox="0 0 1440 480" role="img" aria-labelledby="title desc">
+  <title id="title">Agent Graph 路由生命周期</title>
+  <desc id="desc">薄 Skill 发现工作图，Agent Graph 根据事实求值，解析一条路线，提供选中的上下文，让 Agent 执行动作，再记录结果进入下一轮求值。</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#d5d5d5" opacity="0.46"/>
+    </pattern>
+    <filter id="lift" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#181818" flood-opacity="0.075"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef6f2e"/>
+    </marker>
+  </defs>
+
+  <rect width="1440" height="480" rx="20" fill="#f1f1f2"/>
+  <rect x="20" y="20" width="1400" height="440" rx="16" fill="url(#grid)" stroke="#e5e5e5"/>
+
+  <g font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <text x="52" y="61" fill="#181818" font-size="20" font-weight="500" letter-spacing="-0.35">路由生命周期</text>
+    <text x="52" y="84" fill="#717171" font-size="12">一条合法动作 · 仅加载所需上下文 · 留下可观察结果</text>
+    <g transform="translate(1220 47)">
+      <rect width="151" height="28" rx="14" fill="#f7f7f7" stroke="#d5d5d5"/>
+      <circle cx="17" cy="14" r="4" fill="#ef6f2e"/>
+      <text x="29" y="18" fill="#535353" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" letter-spacing="0.8">OBSERVABLE LOOP</text>
+    </g>
+  </g>
+
+  <g fill="none" stroke="#ef6f2e" stroke-width="2" marker-end="url(#arrow)">
+    <path d="M 244 229 H 267"/>
+    <path d="M 464 229 H 487"/>
+    <path d="M 684 229 H 707"/>
+    <path d="M 904 229 H 927"/>
+    <path d="M 1124 229 H 1147"/>
+  </g>
+
+  <g filter="url(#lift)" font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <g transform="translate(48 112)">
+      <rect width="196" height="234" rx="12" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <rect x="1" y="1" width="194" height="5" rx="3" fill="#ef6f2e"/>
+      <circle cx="28" cy="35" r="13" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+      <text x="28" y="39" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" font-weight="600">01</text>
+      <text x="20" y="78" fill="#181818" font-size="16" font-weight="500">薄 Skill</text>
+      <text x="20" y="106" fill="#535353" font-size="12">
+        <tspan x="20" dy="0">发现 Provider、工作图</tspan>
+        <tspan x="20" dy="18">与默认入口。</tspan>
+      </text>
+      <line x1="20" y1="157" x2="176" y2="157" stroke="#e5e5e5"/>
+      <rect x="20" y="176" width="77" height="22" rx="11" fill="none" stroke="#d5d5d5"/>
+      <text x="58.5" y="190" text-anchor="middle" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="9" letter-spacing="0.65">DISCOVERY</text>
+      <path d="M 145 178 h 24 v 18 h -24 z M 151 174 h 12" fill="none" stroke="#a3a3a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <g transform="translate(268 112)">
+      <rect width="196" height="234" rx="12" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <circle cx="28" cy="35" r="13" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+      <text x="28" y="39" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" font-weight="600">02</text>
+      <text x="20" y="78" fill="#181818" font-size="16" font-weight="500">根据事实求值</text>
+      <text x="20" y="106" fill="#535353" font-size="12">
+        <tspan x="20" dy="0">合并 Facts、Outcomes</tspan>
+        <tspan x="20" dy="18">与当前会话 Authority。</tspan>
+      </text>
+      <line x1="20" y1="157" x2="176" y2="157" stroke="#e5e5e5"/>
+      <rect x="20" y="176" width="91" height="22" rx="11" fill="none" stroke="#d5d5d5"/>
+      <text x="65.5" y="190" text-anchor="middle" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="9" letter-spacing="0.65">DETERMINISTIC</text>
+      <g transform="translate(147 177)" fill="none" stroke="#a3a3a3" stroke-width="1.5">
+        <circle cx="9" cy="9" r="8"/><path d="M 9 4 v 5 l 4 2" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <g transform="translate(488 112)">
+      <rect width="196" height="234" rx="12" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <circle cx="28" cy="35" r="13" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+      <text x="28" y="39" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" font-weight="600">03</text>
+      <text x="20" y="78" fill="#181818" font-size="16" font-weight="500">解析一条路线</text>
+      <text x="20" y="106" fill="#535353" font-size="12">
+        <tspan x="20" dy="0">选中一条合法的下一步，</tspan>
+        <tspan x="20" dy="18">并绑定当前 Revision。</tspan>
+      </text>
+      <line x1="20" y1="157" x2="176" y2="157" stroke="#e5e5e5"/>
+      <rect x="20" y="176" width="69" height="22" rx="11" fill="none" stroke="#ef6f2e" stroke-opacity="0.55"/>
+      <text x="54.5" y="190" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="9" letter-spacing="0.65">PRIMARY</text>
+      <path d="M 146 195 l 10 -17 l 10 17 M 151 188 h 10" fill="none" stroke="#ef6f2e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <g transform="translate(708 112)">
+      <rect width="196" height="234" rx="12" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <circle cx="28" cy="35" r="13" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+      <text x="28" y="39" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" font-weight="600">04</text>
+      <text x="20" y="78" fill="#181818" font-size="16" font-weight="500">加载上下文</text>
+      <text x="20" y="106" fill="#535353" font-size="12">
+        <tspan x="20" dy="0">只打开当前 Route</tspan>
+        <tspan x="20" dy="18">明确选择的资源。</tspan>
+      </text>
+      <line x1="20" y1="157" x2="176" y2="157" stroke="#e5e5e5"/>
+      <rect x="20" y="176" width="99" height="22" rx="11" fill="none" stroke="#d5d5d5"/>
+      <text x="69.5" y="190" text-anchor="middle" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="9" letter-spacing="0.65">PROGRESSIVE</text>
+      <path d="M 146 178 h 20 v 18 h -20 z M 150 174 h 12 l 4 4" fill="none" stroke="#a3a3a3" stroke-width="1.5" stroke-linejoin="round"/>
+    </g>
+
+    <g transform="translate(928 112)">
+      <rect width="196" height="234" rx="12" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <circle cx="28" cy="35" r="13" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+      <text x="28" y="39" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" font-weight="600">05</text>
+      <text x="20" y="78" fill="#181818" font-size="16" font-weight="500">执行动作</text>
+      <text x="20" y="106" fill="#535353" font-size="12">
+        <tspan x="20" dy="0">Agent 或 Host 根据</tspan>
+        <tspan x="20" dy="18">动作契约完成工作。</tspan>
+      </text>
+      <line x1="20" y1="157" x2="176" y2="157" stroke="#e5e5e5"/>
+      <rect x="20" y="176" width="79" height="22" rx="11" fill="none" stroke="#d5d5d5"/>
+      <text x="59.5" y="190" text-anchor="middle" fill="#717171" font-family="'SFMono-Regular', Consolas, monospace" font-size="9" letter-spacing="0.65">EXPLICIT</text>
+      <path d="M 146 178 l 19 9 l -19 9 z" fill="none" stroke="#a3a3a3" stroke-width="1.5" stroke-linejoin="round"/>
+    </g>
+
+    <g transform="translate(1148 112)">
+      <rect width="244" height="234" rx="12" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <rect x="1" y="1" width="242" height="5" rx="3" fill="#ef6f2e"/>
+      <circle cx="28" cy="35" r="13" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+      <text x="28" y="39" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" font-weight="600">06</text>
+      <text x="20" y="78" fill="#181818" font-size="16" font-weight="500">记录结果</text>
+      <text x="20" y="106" fill="#535353" font-size="12">
+        <tspan x="20" dy="0">持久化 Outcome 与证据，</tspan>
+        <tspan x="20" dy="18">下一会话可以继续。</tspan>
+      </text>
+      <line x1="20" y1="157" x2="224" y2="157" stroke="#e5e5e5"/>
+      <rect x="20" y="176" width="93" height="22" rx="11" fill="none" stroke="#ef6f2e" stroke-opacity="0.55"/>
+      <text x="66.5" y="190" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="9" letter-spacing="0.65">RECOVERABLE</text>
+      <path d="M 193 178 h 20 v 18 h -20 z M 198 183 h 10 M 198 188 h 10 M 198 193 h 7" fill="none" stroke="#ef6f2e" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <path d="M 1270 346 V 402 H 366 V 360" fill="none" stroke="#ef6f2e" stroke-width="2" stroke-linecap="round" stroke-dasharray="5 7" marker-end="url(#arrow)"/>
+  <g font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="11">
+    <rect x="718" y="387" width="200" height="29" rx="14.5" fill="#f7f7f7" stroke="#d5d5d5"/>
+    <text x="818" y="405" text-anchor="middle" fill="#535353">结果成为下一轮输入</text>
+  </g>
+</svg>

@@ -1,0 +1,9 @@
+id: release-check
+steps:
+  - id: validate
+    command: npm test
+    effect: read
+  - id: package
+    command: npm pack
+    dependsOn: [validate]
+    effect: write

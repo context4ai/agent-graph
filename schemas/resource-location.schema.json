@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/resource-location.schema.json",
+  "title": "Agent Graph Resource Location",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "kind", "mediaType"],
+  "properties": {
+    "schema": { "const": "agent-graph.resource-location.v1" },
+    "id": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"] },
+    "mediaType": { "type": "string", "minLength": 1 },
+    "revision": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "filePath": { "type": "string", "minLength": 1 },
+    "materialize": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resourcePath"],
+      "properties": { "resourcePath": { "type": "string", "minLength": 1 } }
+    }
+  },
+  "oneOf": [
+    { "required": ["filePath", "digest"], "not": { "required": ["materialize"] } },
+    { "required": ["materialize"], "not": { "required": ["filePath"] } }
+  ]
+}

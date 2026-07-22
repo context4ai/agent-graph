@@ -1,0 +1,37 @@
+schema: agent-graph.graph.v1
+id: recovery
+entrypoints:
+  default: apply
+nodes:
+  - id: apply
+    kind: action
+    action: actions/apply.yaml
+  - id: verify
+    kind: action
+    action: actions/verify.yaml
+  - id: recover
+    kind: action
+    action: actions/recover.yaml
+    join: any
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+  - id: stopped
+    kind: terminal
+    terminalOutcome: partial
+edges:
+  - from: apply
+    to: verify
+    outcomes: [completed]
+  - from: apply
+    to: recover
+    outcomes: [failed]
+  - from: verify
+    to: done
+    outcomes: [completed]
+  - from: verify
+    to: recover
+    outcomes: [failed, unverified]
+  - from: recover
+    to: stopped
+    outcomes: [completed]

@@ -1,0 +1,6 @@
+schema: agent-graph.resource.v1
+id: context.current
+kind: context-view
+mediaType: application/json
+materializer: actions/materialize-context.yaml
+description: A compact host workspace view produced only when explicitly requested.

@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: initial route loads the drafting Skill
+graph: main
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: draft

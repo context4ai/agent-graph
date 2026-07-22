@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: parent graph exposes the child route
+graph: main
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: prepare

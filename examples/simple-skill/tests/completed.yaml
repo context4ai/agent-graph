@@ -1,0 +1,10 @@
+schema: agent-graph.test.v1
+name: recorded completion reaches terminal
+graph: main
+entry: default
+state:
+  outcomes:
+    main/draft: completed
+expect:
+  statusCode: complete
+  outcome: completed

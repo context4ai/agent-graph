@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: diagnosis route is actionable
+graph: diagnose
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: diagnose

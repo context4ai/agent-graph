@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: fresh graph starts with work
+graph: main
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: work

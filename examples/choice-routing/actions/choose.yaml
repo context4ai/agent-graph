@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: choose-option
+runner: agent
+effect: write
+skill: skills/chooser/SKILL.md

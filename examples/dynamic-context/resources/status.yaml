@@ -1,0 +1,5 @@
+schema: agent-graph.resource.v1
+id: context.workspace-status
+kind: context-view
+mediaType: text/markdown
+materializer: actions/read-status.yaml

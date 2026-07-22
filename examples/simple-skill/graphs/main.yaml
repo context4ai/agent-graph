@@ -1,0 +1,18 @@
+schema: agent-graph.graph.v1
+id: main
+description: Load one Skill only when its action becomes current.
+entrypoints:
+  default: draft
+nodes:
+  - id: draft
+    kind: action
+    action: actions/draft.yaml
+    resources:
+      required: [resources/drafting.md, resources/output-schema.yaml]
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: draft
+    to: done
+    outcomes: [completed]

@@ -1,0 +1,9 @@
+id: imported-release
+steps:
+  - id: verify
+    command: npm test
+    effect: read
+  - id: package
+    command: npm pack
+    dependsOn: [verify]
+    effect: write

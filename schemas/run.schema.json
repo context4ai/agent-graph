@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/run.schema.json",
+  "title": "Agent Graph Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "provider", "graph", "entry", "createdAt", "updatedAt", "facts", "outcomes", "authorities", "events"],
+  "properties": {
+    "schema": { "const": "agent-graph.run.v1" },
+    "id": { "type": "string", "minLength": 1 },
+    "provider": { "type": "string", "minLength": 1 },
+    "graph": { "type": "string", "minLength": 1 },
+    "entry": { "type": "string", "minLength": 1 },
+    "workspace": { "type": "string", "minLength": 1 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "facts": { "type": "object" },
+    "outcomes": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/outcomeRecord" }
+    },
+    "authorities": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "events": { "type": "array", "items": { "$ref": "#/$defs/event" } }
+  },
+  "$defs": {
+    "outcome": { "enum": ["completed", "partial", "failed", "unverified", "skipped", "pending", "blocked", "waiting-user"] },
+    "outcomeRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "recordedAt"],
+      "properties": {
+        "outcome": { "$ref": "#/$defs/outcome" },
+        "recordedAt": { "type": "string", "format": "date-time" },
+        "detail": {}
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sequence", "at", "type"],
+      "properties": {
+        "sequence": { "type": "integer", "minimum": 1 },
+        "at": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "minLength": 1 },
+        "node": { "type": "string" },
+        "outcome": { "$ref": "#/$defs/outcome" },
+        "detail": {}
+      }
+    }
+  }
+}

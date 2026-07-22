@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: prepare
+runner: command
+effect: write
+command: generate-result

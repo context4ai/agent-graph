@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/action.schema.json",
+  "title": "Agent Graph Action",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "runner", "effect"],
+  "properties": {
+    "schema": { "const": "agent-graph.action.v1" },
+    "id": { "$ref": "#/$defs/id" },
+    "description": { "type": "string", "maxLength": 1000 },
+    "runner": { "enum": ["command", "script", "agent", "host"] },
+    "effect": { "enum": ["read", "write", "external"] },
+    "command": { "type": "string", "minLength": 1 },
+    "entry": { "$ref": "#/$defs/relativePath" },
+    "runtime": { "enum": ["node", "bun", "python", "shell"] },
+    "handler": { "$ref": "#/$defs/id" },
+    "skill": { "$ref": "#/$defs/relativePath" },
+    "args": { "type": "array", "items": { "type": "string" } },
+    "files": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/relativePath" }
+    },
+    "cwd": { "enum": ["workspace", "provider"], "default": "workspace" },
+    "inputSchema": { "$ref": "#/$defs/relativePath" },
+    "outputSchema": { "$ref": "#/$defs/relativePath" }
+  },
+  "oneOf": [
+    {
+      "properties": { "runner": { "const": "command" } },
+      "required": ["command"],
+      "not": { "anyOf": [{ "required": ["entry"] }, { "required": ["runtime"] }, { "required": ["handler"] }, { "required": ["skill"] }, { "required": ["args"] }] }
+    },
+    {
+      "properties": { "runner": { "const": "script" } },
+      "required": ["entry", "runtime"],
+      "not": { "anyOf": [{ "required": ["command"] }, { "required": ["handler"] }, { "required": ["skill"] }] }
+    },
+    {
+      "properties": { "runner": { "const": "agent" } },
+      "required": ["skill"],
+      "not": { "anyOf": [{ "required": ["command"] }, { "required": ["entry"] }, { "required": ["runtime"] }, { "required": ["handler"] }, { "required": ["args"] }] }
+    },
+    {
+      "properties": { "runner": { "const": "host" } },
+      "required": ["handler"],
+      "not": { "anyOf": [{ "required": ["command"] }, { "required": ["entry"] }, { "required": ["runtime"] }, { "required": ["skill"] }, { "required": ["args"] }] }
+    }
+  ],
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$", "maxLength": 160 },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": { "pattern": "^(?:/|[A-Za-z]:|.*(?:^|/)\\.\\.(?:/|$))" }
+    }
+  }
+}

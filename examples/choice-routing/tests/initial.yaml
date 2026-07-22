@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: choice discovery is initially actionable
+graph: choice
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: discover

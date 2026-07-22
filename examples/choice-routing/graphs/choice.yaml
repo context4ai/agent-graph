@@ -1,0 +1,23 @@
+schema: agent-graph.graph.v1
+id: choice
+entrypoints:
+  default: discover
+nodes:
+  - { id: discover, kind: action, action: actions/discover.yaml }
+  - { id: option-a, kind: action, action: actions/choose.yaml, description: Option A, priority: 50 }
+  - { id: option-b, kind: action, action: actions/choose.yaml, description: Option B, priority: 40 }
+  - { id: option-c, kind: action, action: actions/choose.yaml, description: Option C, priority: 30 }
+  - { id: option-d, kind: action, action: actions/choose.yaml, description: Option D, priority: 20 }
+  - { id: option-e, kind: action, action: actions/choose.yaml, description: Option E, priority: 10 }
+  - { id: done, kind: terminal, terminalOutcome: completed, join: any }
+edges:
+  - { from: discover, to: option-a, outcomes: [completed] }
+  - { from: discover, to: option-b, outcomes: [completed] }
+  - { from: discover, to: option-c, outcomes: [completed] }
+  - { from: discover, to: option-d, outcomes: [completed] }
+  - { from: discover, to: option-e, outcomes: [completed] }
+  - { from: option-a, to: done, outcomes: [completed] }
+  - { from: option-b, to: done, outcomes: [completed] }
+  - { from: option-c, to: done, outcomes: [completed] }
+  - { from: option-d, to: done, outcomes: [completed] }
+  - { from: option-e, to: done, outcomes: [completed] }

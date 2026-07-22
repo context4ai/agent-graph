@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: read-status
+runner: command
+effect: read
+command: "printf '# Workspace status\\n\\nNo blocking issue was reported.\\n'"

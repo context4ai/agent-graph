@@ -1,0 +1,15 @@
+schema: agent-graph.graph.v1
+id: quality
+entrypoints:
+  default: check
+nodes:
+  - id: check
+    kind: action
+    action: actions/check.yaml
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: check
+    to: done
+    outcomes: [completed]

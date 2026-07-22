@@ -1,0 +1,5 @@
+schema: agent-graph.provider.v1
+id: example.getting-started
+version: 0.1.0
+description: Minimal agent-led workflow.
+graphs: [graphs/main.yaml]

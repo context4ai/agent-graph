@@ -1,0 +1,6 @@
+schema: agent-graph.resource.v1
+id: schema.draft-output
+kind: schema
+mediaType: application/schema+json
+path: schemas/draft-output.schema.json
+description: Output contract used only by the drafting route.

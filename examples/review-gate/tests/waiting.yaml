@@ -1,0 +1,10 @@
+schema: agent-graph.test.v1
+name: review requires the user without authority
+graph: review
+entry: default
+state:
+  outcomes:
+    review/prepare: completed
+expect:
+  statusCode: waiting-user
+  primaryNode: approve

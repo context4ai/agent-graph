@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: preparation is the first route
+graph: main
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: prepare

@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: inspect
+runner: agent
+effect: read
+skill: skills/inspector/SKILL.md

@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: inspection comes before approval
+graph: release
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: inspect
