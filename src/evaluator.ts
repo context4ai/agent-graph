@@ -142,10 +142,10 @@ function edgeMatches(outcome: Outcome | undefined, outcomes: Outcome[] | undefin
   return outcome !== undefined && (outcomes ?? ["completed"]).includes(outcome);
 }
 
-function graphStatusForCandidates(candidates: RouteCandidate[], diagnostics: Diagnostic[]): EvaluationStatus {
+function graphStatusForCandidates(candidates: RouteCandidate[]): EvaluationStatus {
   if (candidates.some((candidate) => candidate.availability === "immediate")) return "actionable";
   if (candidates.some((candidate) => candidate.availability === "requires-user")) return "waiting-user";
-  return diagnostics.some((diagnostic) => diagnostic.severity === "error") ? "blocked" : "blocked";
+  return "blocked";
 }
 
 function evaluateFrame(
@@ -282,12 +282,23 @@ function evaluateFrame(
     .map((node) => outcomes.get(node.id))
     .filter((outcome): outcome is Outcome => outcome !== undefined);
 
-  if (reachedTerminals.length > 0) {
-    return { statusCode: "complete", outcome: reachedTerminals[0], candidates: [], diagnostics };
+  const terminalOutcomes = [...new Set(reachedTerminals)].sort();
+  if (terminalOutcomes.length > 1) {
+    diagnostics.push({
+      code: "terminal-outcome-ambiguous",
+      severity: "error",
+      message: `Graph ${graph.definition.id} reached terminals with conflicting outcomes: ${terminalOutcomes.join(", ")}`,
+      path: graph.path,
+      detail: { outcomes: terminalOutcomes },
+    });
+    return { statusCode: "error", candidates: [], diagnostics };
+  }
+  if (terminalOutcomes.length === 1) {
+    return { statusCode: "complete", outcome: terminalOutcomes[0], candidates: [], diagnostics };
   }
   candidates.sort(compareCandidates);
   if (candidates.length > 0) {
-    return { statusCode: graphStatusForCandidates(candidates, diagnostics), candidates, diagnostics };
+    return { statusCode: graphStatusForCandidates(candidates), candidates, diagnostics };
   }
   if (diagnostics.length === 0) {
     diagnostics.push({

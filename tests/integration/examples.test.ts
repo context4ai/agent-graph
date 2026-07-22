@@ -8,6 +8,7 @@ const examples = [
   "dynamic-resource",
   "facts-recovery",
   "getting-started",
+  "independent-verification",
   "monitoring-loop",
   "recovery",
   "review-gate",

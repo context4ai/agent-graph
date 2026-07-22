@@ -44,7 +44,11 @@
       "additionalProperties": false,
       "required": ["path"],
       "properties": {
-        "path": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+$" },
+        "path": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+$",
+          "description": "Dotted object path; numeric segments index JSON arrays."
+        },
         "equals": { "type": ["string", "number", "boolean", "null"] },
         "exists": { "type": "boolean" }
       },

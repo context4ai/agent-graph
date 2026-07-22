@@ -138,3 +138,5 @@ See [`examples/shared-provider`](../../examples/shared-provider) and [`examples/
 | Quality and release | `validateSchema`, `runGraphTests`, `buildProviderBundle`, `inspectProvider` |
 
 All filesystem paths returned by the SDK are resolved paths for the current installation. Definitions inside a Provider remain relative. Evaluation and route resolution are side-effect free; only explicitly named authoring, Run mutation, build, and materialization APIs write files.
+
+`materializeResource` accepts `timeoutMs`, `maxOutputBytes`, and `maxErrorBytes` guardrails. Materializers inherit a minimal environment; a trusted host may explicitly pass additional variables with `env`. Agent Graph variables override names supplied through that option.

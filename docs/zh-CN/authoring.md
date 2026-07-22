@@ -25,7 +25,7 @@ Provider Manifest 列出 Graph 文件；Graph 引用 Action 和 Resource；Actio
 - `subgraph`：调用同一 Provider 中另一张 Graph 的指定 Entry；
 - `terminal`：显式 Graph 结果。
 
-`priority` 用于多个路线同时可用时排序。`join: all` 要求所有入边满足，`join: any` 接受任一匹配入边。
+`priority` 只对同时合法的路线排序，不判断语义适配度。应使用 `requiresFacts` 或显式前置 Action，让可观察状态决定哪些选项合法。`join: all` 要求所有入边满足，`join: any` 接受任一匹配入边。
 
 ## Outcome 与 Edge
 
@@ -38,6 +38,8 @@ Edge 根据显式 Outcome 匹配；省略 `outcomes` 等价于 `[completed]`。
 ```
 
 普通 `flow` 边推进工作流。同一转移还需要可检查的因果标记时，使用 `consumes`、`requires` 或 `gatedBy`。这些标记不能替代 Fact Check；`gatedBy` 必须从 Gate 开始。
+
+Edge 不携带 Artifact 或共享状态。输出应由宿主持久化，再把稳定引用、Digest 或 Receipt 作为 Facts 提供。Fan-out 与 fan-in 描述合法可达性，不会让 CLI 并发执行分支。
 
 `repeat` 边在来源返回匹配结果时，显式重新激活 Action 或 Gate：
 
@@ -61,6 +63,14 @@ satisfiedBy:
 ```
 
 如果 Run 记录 Action 已完成，但 `satisfiedBy` 事实不存在，Evaluator 返回 `unverified`，不会把历史当作证明。Fact 应由真正能够检查系统边界的机制提供。
+
+数字路径段用于读取数组项，例如 `artifacts.0.digest` 读取第一个已观测 Artifact 的 Digest。
+
+## 独立验证模式
+
+当产出者不应自证结果时，使用独立的 read-effect Action。为其声明 Host Handler，要求已观测的 Artifact 引用或 Digest，并把验证 Receipt 配置到 `satisfiedBy`。只有验证声明却没有 Receipt 时，节点会变成 `unverified`，可以重复验证或进入恢复。
+
+这是一种编写模式，不是新的 Node Kind：Provider 能声明边界，但宿主必须把 Handler 绑定到具有独立权限的只读 Verifier。`effect: read` 用于表达意图和执行策略检查，不负责隔离进程身份或文件系统。示例见 [`examples/independent-verification`](../../examples/independent-verification)。
 
 ## Gate 与全托管会话
 
@@ -101,7 +111,7 @@ path: schemas/draft-output.schema.json
 
 Route 返回原生目标文件，同时 Provider 仍拥有类型化的 Resource 身份。
 
-动态 Context View 使用 YAML/JSON 描述，其 Materializer 必须指向只读 Command 或 Script Action。只有显式运行 Materialize 命令才会执行，并写入宿主指定 Cache。
+动态 Context View 使用 YAML/JSON 描述，其 Materializer 必须指向只读 Command 或 Script Action。只有显式运行 Materialize 命令才会执行，并写入宿主指定 Cache。参考 Runtime 提供可配置的时间和输出上限，且默认不继承任意宿主环境变量；Read Effect 仍不是沙箱。
 
 ## Subgraph
 

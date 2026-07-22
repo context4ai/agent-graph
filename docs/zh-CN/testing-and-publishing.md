@@ -81,7 +81,7 @@ Provider 项目可以依赖 `agent-graph`，并在自己的包里发布 Provider
 自动化临时执行时应固定版本：
 
 ```bash
-npx agent-graph@0.1.0 --manifest ./provider.yaml validate
+npx @c4a/agent-graph@0.1.1 --manifest ./provider.yaml validate
 ```
 
 ## 包审计清单

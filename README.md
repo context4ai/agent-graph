@@ -1,6 +1,8 @@
 # Agent Graph
 
-Agent Graph brings Graph Engineering to Agent Skills through a context and work orchestration layer. It connects knowledge, instructions, scripts, observable state, and human gates into a navigable work graph so an Agent can discover what matters now, take the next legal action, and keep moving toward a goal.
+Agent Graph is the model-free work-contract layer of Graph Engineering for Agent Skills. It connects knowledge, instructions, scripts, observable state, and human gates into a navigable work graph so an Agent can discover what matters now, take the next legal action, and keep moving toward a goal.
+
+It coordinates work, not Agents. Agent Graph does not invoke models, assign Agent identities, transport shared mutable state, or schedule parallel workers. Existing Agents and hosts consume its fact-grounded Routes and enforce the execution boundary.
 
 Agents often have access to enough knowledge. The harder problem is knowing which part applies now, which action is legal next, what proves that action is complete, and where to resume after interruption. A longer prompt does not solve this reliably.
 
@@ -48,16 +50,16 @@ It is not an Agent framework, model runtime, or hidden task executor. It never c
 Run without a permanent installation:
 
 ```bash
-npx agent-graph@0.1.0 --version
-npx agent-graph@0.1.0 init ./my-provider --id my-provider
+npx @c4a/agent-graph@0.1.1 --version
+npx @c4a/agent-graph@0.1.1 init ./my-provider --id my-provider
 # Bun users can use the same package without installation:
-bunx agent-graph@0.1.0 --version
+bunx @c4a/agent-graph@0.1.1 --version
 ```
 
 Or install the CLI:
 
 ```bash
-npm install --global agent-graph@0.1.0
+npm install --global @c4a/agent-graph@0.1.1
 agent-graph --version
 ```
 
@@ -73,26 +75,26 @@ Node.js 20 or newer is the supported runtime. Bun is used for project developmen
 ## Quick start
 
 ```bash
-npx agent-graph@0.1.0 init ./my-provider --id my-provider
+npx @c4a/agent-graph@0.1.1 init ./my-provider --id my-provider
 cd my-provider
 
-npx agent-graph@0.1.0 validate --format json
-npx agent-graph@0.1.0 test tests --format json
-npx agent-graph@0.1.0 evaluate main --format json
+npx @c4a/agent-graph@0.1.1 validate --format json
+npx @c4a/agent-graph@0.1.1 test tests --format json
+npx @c4a/agent-graph@0.1.1 evaluate main --format json
 ```
 
 `evaluate` returns an `agent-graph.evaluation.v1` envelope. Resolve its `primaryRoute.routeId` to obtain only the action and resources selected for that state:
 
 ```bash
-npx agent-graph@0.1.0 route main <route-id> --revision <revision> --format json
+npx @c4a/agent-graph@0.1.1 route main <route-id> --revision <revision> --format json
 ```
 
 For a resumable task, keep runtime state wherever the host chooses:
 
 ```bash
-npx agent-graph@0.1.0 run start main --state .runtime/run.json
-npx agent-graph@0.1.0 run status --state .runtime/run.json --format json
-npx agent-graph@0.1.0 run record main/work completed --state .runtime/run.json
+npx @c4a/agent-graph@0.1.1 run start main --state .runtime/run.json
+npx @c4a/agent-graph@0.1.1 run status --state .runtime/run.json --format json
+npx @c4a/agent-graph@0.1.1 run record main/work completed --state .runtime/run.json
 ```
 
 Agent Graph does not reserve `.agent-graph`, a home-directory cache, or any host-specific directory. Bundle, runtime, checkpoint, and cache paths are explicit.

@@ -138,3 +138,5 @@ if (evaluation.primaryRoute) {
 | 质量与发布 | `validateSchema`、`runGraphTests`、`buildProviderBundle`、`inspectProvider` |
 
 SDK 返回的文件系统路径都是当前安装中的解析路径；Provider 内定义仍保持相对引用。Evaluation 和 Route 解析无副作用；只有显式命名的开发、Run 修改、Build 与 Materialization API 会写文件。
+
+`materializeResource` 接受 `timeoutMs`、`maxOutputBytes` 与 `maxErrorBytes` 护栏。Materializer 默认继承最小环境；可信宿主可通过 `env` 显式传入其他变量，Agent Graph 自身变量会覆盖同名注入值。

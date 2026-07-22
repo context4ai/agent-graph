@@ -8,7 +8,7 @@ Agent Graph 吸收其中值得落地的工程原则，但不宣称拥有这个�
 
 > 如何让 Agent 发现下一条合法动作，并只获得该动作所需上下文，同时让长工作流可观察、可测试、可恢复？
 
-本项目的答案是：以 Skills 为入口的工作图、外部事实、类型化 Outcome、显式 Gate、文件资源和可选 Run 记录。
+本项目的答案是：无模型、以 Skills 为入口的工作契约图，以及外部 Facts、类型化 Outcome、显式 Gate、文件资源和可选 Run 记录。它编排工作，不编排 Agent。
 
 ## 从提示词工程到上下文拓扑
 
@@ -79,6 +79,8 @@ CLI 不会把循环隐藏在内部 Daemon 中。每轮都是一条 Route，每�
 
 它不定义持久 Agent 身份、通信权限、模型分配、委托层级或自主多 Agent 调度。未来 Runtime 可以消费相同 Route 契约，但当前不应把这些能力伪装成普通 Graph Node。
 
+它也不会让共享 State 对象沿 Edge 流动。Edge 描述控制与因果意图；宿主在 Graph 外持久化 Artifact，再把可观察的引用、Digest 与 Receipt 作为 Facts 引回。这使路线求值保持确定性，也避免隐式可变内存成为事实来源。
+
 ## 渐进披露是图属性
 
 传统渐进披露常被简化成“把细节放到另一个文件”。Agent Graph 将选择过程结构化：
@@ -109,7 +111,7 @@ CLI 不会把循环隐藏在内部 Daemon 中。每轮都是一条 Route，每�
 Agent 行为具有概率性，但工作流边界无需如此。Agent Graph 测试不调用模型，直接断言已知状态对应的 Route，可快速覆盖：
 
 - Gate 与 Authority；
-- 顺序与 fan-in；
+- 顺序与 fan-in 可达性；
 - 部分失败与恢复；
 - Fact-backed 完成；
 - 重复工作与停止；
@@ -139,6 +141,8 @@ Agent 行为具有概率性，但工作流边界无需如此。Agent Graph 测�
 - 自动生成或自修改 Graph；
 - 跨 Provider Graph 调用或合并；
 - 模型调用和多 Agent 编排；
+- 并行或并发 Fan-out 执行；
+- 沿 Edge 传递 Artifact 或共享可变状态；
 - 调度、队列、分布式锁或 Durable Timer；
 - 自动信任命令或第三方 Skill；
 - 从语义上证明 Agent 产物正确。

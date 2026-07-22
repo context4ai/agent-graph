@@ -149,7 +149,12 @@ export async function readStaticResourceMetadata(path: string): Promise<StaticRe
 export function getFact(facts: Record<string, JsonValue>, path: string): JsonValue | undefined {
   let current: JsonValue | undefined = facts;
   for (const segment of path.split(".")) {
-    if (current === null || Array.isArray(current) || typeof current !== "object") return undefined;
+    if (Array.isArray(current)) {
+      if (!/^(?:0|[1-9][0-9]*)$/.test(segment)) return undefined;
+      current = current[Number(segment)];
+      continue;
+    }
+    if (current === null || typeof current !== "object") return undefined;
     current = current[segment];
   }
   return current;

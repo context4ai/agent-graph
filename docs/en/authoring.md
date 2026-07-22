@@ -25,7 +25,7 @@ Four node kinds keep control semantics explicit:
 - `subgraph`: a call to a named entrypoint in another Graph in the same Provider;
 - `terminal`: an explicit graph outcome.
 
-`priority` selects among simultaneously available routes. `join: all` requires all incoming flow edges; `join: any` accepts any matching incoming edge.
+`priority` ranks simultaneously legal routes; it does not decide semantic fitness. Use `requiresFacts` or an explicit preceding Action to make options legal from observable state. `join: all` requires all incoming flow edges; `join: any` accepts any matching incoming edge.
 
 ## Outcomes and edges
 
@@ -38,6 +38,8 @@ An edge matches an explicit outcome. Omitting `outcomes` means `[completed]`.
 ```
 
 Ordinary `flow` edges advance the graph. Use `consumes`, `requires`, and `gatedBy` when the same transition also needs an inspectable causal label. These labels do not replace Fact checks; `gatedBy` must start at a Gate.
+
+Edges carry no artifact or shared state. Persist outputs through the host, then publish stable references, digests, or receipts as Facts. Fan-out and fan-in describe legal reachability; they do not make the CLI execute branches concurrently.
 
 A `repeat` edge explicitly rearms an Action or Gate when its source returns a matching outcome:
 
@@ -61,6 +63,14 @@ satisfiedBy:
 ```
 
 If a Run says an Action completed but its `satisfiedBy` facts are absent, the evaluator returns `unverified`; it does not treat history as proof. Model facts at the boundary that can actually inspect the system.
+
+Numeric path segments address array items. For example, `artifacts.0.digest` reads the first observed artifact's digest.
+
+## Independent verification pattern
+
+Use a separate read-effect Action when a producer must not verify its own result. Give that Action a host handler, require an observed artifact reference or digest, and use a verification receipt in `satisfiedBy`. A claimed verification without the receipt becomes `unverified` and can repeat or enter recovery.
+
+This is an authoring pattern, not a special node kind: the Provider can declare the boundary, while the host must bind the handler to an independently authorized, read-only verifier. `effect: read` documents intent and supports policy checks; it does not enforce process identity or filesystem isolation. See [`examples/independent-verification`](../../examples/independent-verification).
 
 ## Gates and managed sessions
 
@@ -101,7 +111,7 @@ path: schemas/draft-output.schema.json
 
 The Route returns the native target file, while the Provider still has a typed Resource identity.
 
-Dynamic context views are YAML/JSON resource descriptors. Their materializer must reference a read-only command or script Action. Materialization happens only through an explicit command and writes to a host-selected cache.
+Dynamic context views are YAML/JSON resource descriptors. Their materializer must reference a read-only command or script Action. Materialization happens only through an explicit command and writes to a host-selected cache. The reference runtime enforces configurable time and output limits and does not inherit arbitrary host environment variables by default; the read effect still is not a sandbox.
 
 ## Subgraphs
 

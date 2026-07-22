@@ -1,6 +1,6 @@
 # Agent Graph v1 协议规范
 
-本文定义 `agent-graph@0.1.0` 实现的 `agent-graph.*.v1` 对象。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
+本文定义 `@c4a/agent-graph@0.1.1` 实现的 `agent-graph.*.v1` 对象。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
 
 ## 1. Provider
 
@@ -31,12 +31,17 @@ Provider 是独立版本、信任和发布边界。
 schema: agent-graph.graph.v1
 id: release
 entrypoints:
-  default: inspect
-nodes: []
+  default: done
+nodes:
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
 edges: []
 ```
 
 Graph 是确定性路线定义。`entrypoints` 将公开入口名映射到一个节点；节点 ID 在当前 Graph 内唯一。
+
+每张 Graph 都必须声明至少一个 Terminal；Terminal 不能拥有出边。一次 Evaluation 同时到达多个相同 Outcome 的 Terminal 时，以该 Outcome 完成；如果到达的 Terminal Outcome 冲突，则返回 `terminal-outcome-ambiguous` 与 `error`，不会按声明顺序选择一个。
 
 ### 2.1 节点类型
 
@@ -50,7 +55,7 @@ Graph 是确定性路线定义。`entrypoints` 将公开入口名映射到一个
 通用节点字段：
 
 - `description`：简短展示名，不参与机器判断；
-- `priority`：同一可用性等级内的确定性路线排序；
+- `priority`：同一可用性等级内的确定性路线排序，不负责语义选择；
 - `join`：`all` 要求所有入边匹配，`any` 只要求一条；
 - `requiresFacts`：全部满足后节点才合法；
 - `satisfiedBy`：无需重放即可证明 Action 或 Gate 完成的可观察事实；
@@ -70,7 +75,7 @@ satisfiedBy:
     equals: passed
 ```
 
-`path` 是点分字段查找；每项只能使用 `exists` 或 `equals` 之一，比较值只能是 JSON 标量。协议不执行 JavaScript、模板、Shell 或自由条件 DSL。
+`path` 是点分查找；数字段用于索引 JSON 数组，例如 `items.0.digest` 指向第一项的 `digest`，其他字段用于对象属性。每项只能使用 `exists` 或 `equals` 之一，比较值只能是 JSON 标量。协议不执行 JavaScript、模板、Shell 或自由条件 DSL。
 
 Action 配置 `satisfiedBy` 后：
 
@@ -117,9 +122,13 @@ Authority 属于当前输入或 Run。Provider 定义不能永久开启全托管
 
 所有非 Repeat Kind 都通过显式 Outcome 决定可达性；Kind 为检查、测试和宿主策略保留因果含义，但不会凭空产生制品新鲜度或外部证明，这些约束必须使用 `requiresFacts` 与 `satisfiedBy` 建模。`gatedBy` Edge 必须从 Gate 开始。
 
+Edge 不传输运行时值、Artifact 或共享可变状态；`consumes` 只记录因果意图。宿主必须把 Artifact 持久化到自己的文件或对象 Store，再把可观察的引用、Digest 或 Receipt 作为 Facts 提供给依赖它的下游节点。
+
 非 Repeat 图必须无环，循环必须显式声明，不能由普通流转意外形成。`repeat` 目标只能是 Action 或 Gate，并会把目标重新置为 pending 以进入下一次迭代。Run 事件保留历史迭代，但节点当前 Outcome 会被后续记录替换。
 
 多条替代成功路径汇聚到一个节点时使用 `join: any`；默认 `all` 适用于所有前驱都必须成功的 fan-in。
+
+Fan-out 与 fan-in 只表达可达性拓扑，不表示并发执行。Evaluation 返回一条 Primary Route 与紧凑备选；Agent Graph 不启动并行 Worker，也不合并它们的内存。
 
 ### 2.5 Subgraph
 
@@ -201,7 +210,9 @@ materializer: actions/read-status.yaml
 
 Context View 是数据。Materializer 必须是 `read` effect 的 command 或 script Action。Evaluation 和 Route 解析不会隐式执行；由 Route 选择的动态 Location 携带 Route Revision。`resource materialize` 必须接收该 Revision，显式运行后将 stdout 写入宿主指定的内容寻址 Cache，并返回位置、Digest 与 Revision。
 
-Materializer 进程可读取 `AGENT_GRAPH_PROVIDER_ROOT`、`AGENT_GRAPH_WORKSPACE`、`AGENT_GRAPH_REVISION` 和 JSON 格式的 `AGENT_GRAPH_INPUT`。其输出不能包含用于覆盖当前 Route 的指令。
+Materializer 进程可读取 `AGENT_GRAPH_PROVIDER_ROOT`、`AGENT_GRAPH_WORKSPACE`、`AGENT_GRAPH_REVISION` 和 JSON 格式的 `AGENT_GRAPH_INPUT`。默认只继承启动常见 Runtime 所需的最小进程环境；SDK 宿主可以显式补充变量。其输出不能包含用于覆盖当前 Route 的指令。
+
+参考实现默认限制为 30 秒、10 MiB stdout 与 1 MiB stderr；SDK 选项和 CLI 参数可以收紧或放宽。超限时终止进程，返回结构化错误，并且不写 Cache Receipt。`effect: read` 是供检查和宿主策略使用的声明契约，不是操作系统沙箱；宿主仍负责信任或隔离 Materializer 代码。
 
 ## 5. Outcome 与 Evaluation
 

@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: produce-artifact
+runner: agent
+effect: write
+skill: skills/produce/SKILL.md

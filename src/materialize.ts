@@ -6,6 +6,46 @@ import { digestText, resolveContainedPath, writeJsonAtomic, writeTextAtomic } fr
 import { locateResource } from "./router.js";
 import type { ActionDefinition, DynamicResourceDefinition, JsonValue, LoadedProvider, ResourceLocation } from "./types.js";
 
+export const DEFAULT_MATERIALIZER_TIMEOUT_MS = 30_000;
+export const DEFAULT_MATERIALIZER_MAX_OUTPUT_BYTES = 10 * 1024 * 1024;
+export const DEFAULT_MATERIALIZER_MAX_ERROR_BYTES = 1024 * 1024;
+
+export interface MaterializeResourceOptions {
+  cache: string;
+  workspace: string;
+  revision: string;
+  input?: JsonValue;
+  timeoutMs?: number;
+  maxOutputBytes?: number;
+  maxErrorBytes?: number;
+  env?: Record<string, string>;
+}
+
+interface CaptureOptions {
+  workspace: string;
+  revision: string;
+  input: JsonValue | undefined;
+  timeoutMs: number;
+  maxOutputBytes: number;
+  maxErrorBytes: number;
+  env: Record<string, string> | undefined;
+}
+
+const INHERITED_ENVIRONMENT_KEYS = [
+  "PATH",
+  "PATHEXT",
+  "SYSTEMROOT",
+  "WINDIR",
+  "COMSPEC",
+  "TMPDIR",
+  "TMP",
+  "TEMP",
+  "LANG",
+  "LC_ALL",
+  "LC_CTYPE",
+  "TZ",
+] as const;
+
 function extensionFor(mediaType: string): string {
   if (mediaType.includes("json")) return ".json";
   if (mediaType.includes("markdown")) return ".md";
@@ -28,40 +68,109 @@ function materializerCommand(provider: LoadedProvider, action: ActionDefinition)
 async function capture(
   provider: LoadedProvider,
   action: ActionDefinition,
-  workspace: string,
-  revision: string,
-  input: JsonValue | undefined,
+  options: CaptureOptions,
 ): Promise<string> {
   const plan = materializerCommand(provider, action);
-  const cwd = action.cwd === "provider" ? provider.root : resolve(workspace);
+  const workspace = resolve(options.workspace);
+  const cwd = action.cwd === "provider" ? provider.root : workspace;
+  const environment: NodeJS.ProcessEnv = {};
+  for (const key of INHERITED_ENVIRONMENT_KEYS) {
+    if (process.env[key] !== undefined) environment[key] = process.env[key];
+  }
+  Object.assign(environment, options.env);
+  Object.assign(environment, {
+    AGENT_GRAPH_PROVIDER_ROOT: provider.root,
+    AGENT_GRAPH_WORKSPACE: workspace,
+    AGENT_GRAPH_REVISION: options.revision,
+    AGENT_GRAPH_INPUT: JSON.stringify(options.input ?? null),
+  });
   return new Promise((accept, reject) => {
+    const detached = process.platform !== "win32";
     const child = spawn(plan.command, plan.args, {
       cwd,
-      env: {
-        ...process.env,
-        AGENT_GRAPH_PROVIDER_ROOT: provider.root,
-        AGENT_GRAPH_WORKSPACE: resolve(workspace),
-        AGENT_GRAPH_REVISION: revision,
-        AGENT_GRAPH_INPUT: JSON.stringify(input ?? null),
-      },
+      detached,
+      env: environment,
       stdio: ["ignore", "pipe", "pipe"],
     });
-    let stdout = "";
-    let stderr = "";
-    child.stdout.setEncoding("utf8").on("data", (chunk: string) => { stdout += chunk; });
-    child.stderr.setEncoding("utf8").on("data", (chunk: string) => { stderr += chunk; });
-    child.on("error", reject);
+    const stdout: Buffer[] = [];
+    const stderr: Buffer[] = [];
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    let settled = false;
+    let terminated = false;
+    const terminate = (): void => {
+      if (child.exitCode !== null || child.killed || terminated) return;
+      terminated = true;
+      if (detached && child.pid !== undefined) {
+        try {
+          process.kill(-child.pid, "SIGKILL");
+          return;
+        } catch {
+          // Fall back to the direct child when the process group no longer exists.
+        }
+      }
+      child.kill("SIGKILL");
+    };
+    const fail = (error: AgentGraphError | Error): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      terminate();
+      reject(error);
+    };
+    const timer = setTimeout(() => {
+      fail(new AgentGraphError(
+        "materializer-timeout",
+        `Materializer ${action.id} exceeded the ${options.timeoutMs}ms timeout`,
+      ));
+    }, options.timeoutMs);
+    child.stdout.on("data", (chunk: Buffer) => {
+      stdoutBytes += chunk.length;
+      if (stdoutBytes > options.maxOutputBytes) {
+        fail(new AgentGraphError(
+          "materializer-output-limit",
+          `Materializer ${action.id} exceeded the ${options.maxOutputBytes} byte stdout limit`,
+        ));
+        return;
+      }
+      stdout.push(chunk);
+    });
+    child.stderr.on("data", (chunk: Buffer) => {
+      stderrBytes += chunk.length;
+      if (stderrBytes > options.maxErrorBytes) {
+        fail(new AgentGraphError(
+          "materializer-error-limit",
+          `Materializer ${action.id} exceeded the ${options.maxErrorBytes} byte stderr limit`,
+        ));
+        return;
+      }
+      stderr.push(chunk);
+    });
+    child.on("error", fail);
     child.on("close", (code) => {
-      if (code === 0) accept(stdout);
-      else reject(new AgentGraphError("materializer-failed", `Materializer ${action.id} exited with ${code}: ${stderr.trim()}`));
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (code === 0) accept(Buffer.concat(stdout).toString("utf8"));
+      else reject(new AgentGraphError(
+        "materializer-failed",
+        `Materializer ${action.id} exited with ${code}: ${Buffer.concat(stderr).toString("utf8").trim()}`,
+      ));
     });
   });
+}
+
+function positiveInteger(value: number, label: string): number {
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new AgentGraphError("materializer-option-invalid", `${label} must be a positive integer: ${value}`);
+  }
+  return value;
 }
 
 export async function materializeResource(
   provider: LoadedProvider,
   referenceOrId: string,
-  options: { cache: string; workspace: string; revision: string; input?: JsonValue },
+  options: MaterializeResourceOptions,
 ): Promise<ResourceLocation> {
   if (!/^sha256:[a-f0-9]{64}$/.test(options.revision)) {
     throw new AgentGraphError("revision-invalid", `Dynamic resource revision is invalid: ${options.revision}`);
@@ -77,7 +186,15 @@ export async function materializeResource(
   if (!action) throw new AgentGraphError("materializer-missing", `Resource ${definition.id} references missing materializer`);
   if (action.effect !== "read") throw new AgentGraphError("materializer-effect-invalid", `Materializer ${action.id} must be read-only`);
 
-  const content = await capture(provider, action, options.workspace, options.revision, options.input);
+  const content = await capture(provider, action, {
+    workspace: options.workspace,
+    revision: options.revision,
+    input: options.input,
+    timeoutMs: positiveInteger(options.timeoutMs ?? DEFAULT_MATERIALIZER_TIMEOUT_MS, "timeoutMs"),
+    maxOutputBytes: positiveInteger(options.maxOutputBytes ?? DEFAULT_MATERIALIZER_MAX_OUTPUT_BYTES, "maxOutputBytes"),
+    maxErrorBytes: positiveInteger(options.maxErrorBytes ?? DEFAULT_MATERIALIZER_MAX_ERROR_BYTES, "maxErrorBytes"),
+    env: options.env,
+  });
   const digest = digestText(content);
   const cache = resolve(options.cache);
   await mkdir(cache, { recursive: true });

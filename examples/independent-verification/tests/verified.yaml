@@ -1,0 +1,13 @@
+schema: agent-graph.test.v1
+name: independent verification receipt proves completion
+graph: main
+entry: default
+state:
+  facts:
+    artifact:
+      digest: sha256:observed
+    verification:
+      receipt: sha256:verified
+expect:
+  statusCode: complete
+  outcome: completed

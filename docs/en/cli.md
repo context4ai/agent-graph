@@ -6,8 +6,8 @@ All modes run the same bundled CLI:
 
 ```bash
 agent-graph ...                    # installed binary
-npx agent-graph@0.1.0 ...         # npm one-shot
-bunx agent-graph@0.1.0 ...        # Bun one-shot
+npx @c4a/agent-graph@0.1.1 ...    # npm one-shot
+bunx @c4a/agent-graph@0.1.1 ...   # Bun one-shot
 node ./agent-graph.mjs ...         # single file shipped by a Provider
 ```
 
@@ -118,9 +118,12 @@ Returns an installed static file and digest. A dynamic resource returns a materi
 Additional options:
 
 - `--workspace <directory>`; default current directory;
-- `--input '<json>'` or `--input @input.json`.
+- `--input '<json>'` or `--input @input.json`;
+- `--timeout-ms <milliseconds>`; default `30000`;
+- `--max-output-bytes <bytes>`; default `10485760`;
+- `--max-error-bytes <bytes>`; default `1048576`.
 
-Pass the revision from the Route that selected the context view. Only a read-effect command or script materializer is accepted. The resulting filename is content-addressed. The returned location and cache receipt preserve the selecting revision so a host can reject stale context.
+Pass the revision from the Route that selected the context view. Only a read-effect command or script materializer is accepted. The process inherits a minimal environment, not every host variable. Limits terminate runaway materializers before a cache receipt is written. The resulting filename is content-addressed, and the returned location and receipt preserve the selecting revision so a host can reject stale context. Read effect is a contract, not a sandbox.
 
 ## Tests and build
 

@@ -112,6 +112,12 @@ agent-graph run authority --state .runtime/release.json --set release.approve
 
 The host is responsible for clearing it when the user's explicit managed-session instruction ends. `run resume` clears it automatically. Authority only resolves a `delegatable` gate and never bypasses fact checks, schema validation, verification, or non-delegatable gates.
 
+## Dynamic resource guardrails
+
+Dynamic context materialization executes Provider code only when the host explicitly asks for it. The reference runtime defaults to a 30-second timeout, a 10 MiB stdout limit, and a 1 MiB stderr limit. CLI flags or SDK options can adjust these limits. A timeout or output overflow terminates the materializer and does not create a cache receipt.
+
+Materializers receive only the Agent Graph variables plus a minimal inherited environment needed to start common runtimes. SDK hosts can explicitly inject additional variables for a trusted integration. Do not assume `effect: read` is a sandbox: it is declarative metadata, and the host must isolate untrusted Provider code with its own process, container, permission, and secret policy.
+
 ## Storage ownership
 
 The CLI accepts exact paths so the host can choose:
@@ -123,4 +129,4 @@ The CLI accepts exact paths so the host can choose:
 
 Provider bundles are read-only. Run and checkpoint files are durable only if the host chooses durable paths. Materialized resources are cache entries and must be reproducible after deletion.
 
-See [`examples/monitoring-loop`](../../examples/monitoring-loop), [`examples/recovery`](../../examples/recovery), and [`examples/facts-recovery`](../../examples/facts-recovery).
+See [`examples/monitoring-loop`](../../examples/monitoring-loop), [`examples/recovery`](../../examples/recovery), [`examples/facts-recovery`](../../examples/facts-recovery), and [`examples/independent-verification`](../../examples/independent-verification).

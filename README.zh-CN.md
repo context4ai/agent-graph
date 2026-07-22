@@ -1,6 +1,8 @@
 # Agent Graph
 
-Agent Graph 将 Graph Engineering 引入 Agent Skills，是一层上下文与工作编排机制。它把知识、操作说明、脚本、可观察状态和人工门禁连接成一张可导航的工作图，让 Agent 发现当前真正相关的内容，执行下一条合法动作，并持续推进目标。
+Agent Graph 是面向 Agent Skills 的 Graph Engineering 无模型工作契约层。它把知识、操作说明、脚本、可观察状态和人工门禁连接成一张可导航的工作图，让 Agent 发现当前真正相关的内容，执行下一条合法动作，并持续推进目标。
+
+它编排工作，不编排 Agent。Agent Graph 不调用模型、不分配 Agent 身份、不传输共享可变状态，也不调度并行 Worker；已有 Agent 与宿主消费它基于事实选择的 Route，并负责落实执行边界。
 
 Agent 很多时候并不缺知识。更难的问题是：现在该读哪一部分、下一步允许做什么、什么事实能够证明动作已经完成，以及会话中断后从哪里继续。把所有内容塞进一个更长的 Prompt，并不能可靠地解决这些问题。
 
@@ -48,16 +50,16 @@ Agent Graph 是一套 Skills 原生的文件规范，并提供参考 SDK 与 CLI
 无需长期安装即可直接运行：
 
 ```bash
-npx agent-graph@0.1.0 --version
-npx agent-graph@0.1.0 init ./my-provider --id my-provider
+npx @c4a/agent-graph@0.1.1 --version
+npx @c4a/agent-graph@0.1.1 init ./my-provider --id my-provider
 # Bun 用户也可以直接临时运行同一个包：
-bunx agent-graph@0.1.0 --version
+bunx @c4a/agent-graph@0.1.1 --version
 ```
 
 也可以全局安装 CLI：
 
 ```bash
-npm install --global agent-graph@0.1.0
+npm install --global @c4a/agent-graph@0.1.1
 agent-graph --version
 ```
 
@@ -73,26 +75,26 @@ bun agent-graph.mjs --version
 ## 快速开始
 
 ```bash
-npx agent-graph@0.1.0 init ./my-provider --id my-provider
+npx @c4a/agent-graph@0.1.1 init ./my-provider --id my-provider
 cd my-provider
 
-npx agent-graph@0.1.0 validate --format json
-npx agent-graph@0.1.0 test tests --format json
-npx agent-graph@0.1.0 evaluate main --format json
+npx @c4a/agent-graph@0.1.1 validate --format json
+npx @c4a/agent-graph@0.1.1 test tests --format json
+npx @c4a/agent-graph@0.1.1 evaluate main --format json
 ```
 
 `evaluate` 返回 `agent-graph.evaluation.v1`。使用其中的 `primaryRoute.routeId` 解析路线，只会拿到当前状态所选中的动作和资源：
 
 ```bash
-npx agent-graph@0.1.0 route main <route-id> --revision <revision> --format json
+npx @c4a/agent-graph@0.1.1 route main <route-id> --revision <revision> --format json
 ```
 
 长任务可以把运行状态放到宿主自己选择的位置：
 
 ```bash
-npx agent-graph@0.1.0 run start main --state .runtime/run.json
-npx agent-graph@0.1.0 run status --state .runtime/run.json --format json
-npx agent-graph@0.1.0 run record main/work completed --state .runtime/run.json
+npx @c4a/agent-graph@0.1.1 run start main --state .runtime/run.json
+npx @c4a/agent-graph@0.1.1 run status --state .runtime/run.json --format json
+npx @c4a/agent-graph@0.1.1 run record main/work completed --state .runtime/run.json
 ```
 
 Agent Graph 不规定 `.agent-graph`、用户主目录缓存或任何宿主专属目录。Bundle、Run、Checkpoint 和 Cache 的路径都由调用方显式提供。

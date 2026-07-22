@@ -40,7 +40,7 @@ agent-graph import scripts ./inspect.sh ./package.sh \
 agent-graph import workflow ./workflow.yaml --into ./provider
 ```
 
-紧凑 Importer 会在写入前校验 Step 形状、缺失依赖、标准化 ID 冲突和依赖环，并保留 Command 与 `dependsOn` 关系，包括 fan-out 和 fan-in。多个根节点前会加入确定性 Start Action，所有叶节点后加入 Terminal。它不执行模板、自由表达式、Secrets、Matrix 展开或供应商特定重试策略。
+紧凑 Importer 会在写入前校验 Step 形状、缺失依赖、标准化 ID 冲突和依赖环，并保留 Command 与 `dependsOn` 关系，包括 fan-out 和 fan-in 可达性。多个根节点前会加入确定性 Start Action，所有叶节点后加入 Terminal。这种拓扑不表示并行执行：Agent Graph 每次选择一条 Primary Route。Importer 不执行模板、自由表达式、Secrets、Matrix 展开或供应商特定重试策略。
 
 ## `IMPORT_REPORT.md`
 

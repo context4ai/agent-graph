@@ -1,0 +1,7 @@
+schema: agent-graph.test.v1
+name: production is the initial route
+graph: main
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: produce

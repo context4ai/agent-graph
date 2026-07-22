@@ -112,6 +112,12 @@ agent-graph run authority --state .runtime/release.json --set release.approve
 
 当用户明确的全托管会话结束时，宿主负责清除 Authority；`run resume` 会自动清除。Authority 只能解析 `delegatable` Gate，不能绕过 Fact Check、Schema、验证或不可委托 Gate。
 
+## 动态资源护栏
+
+只有宿主显式请求时，动态 Context 物化才会执行 Provider 代码。参考 Runtime 默认限制为 30 秒、10 MiB stdout 与 1 MiB stderr；CLI 参数或 SDK 选项可以调整。超时或输出超限时会终止 Materializer，且不生成 Cache Receipt。
+
+Materializer 只接收 Agent Graph 变量和启动常见 Runtime 所需的最小继承环境；可信集成可由 SDK 宿主显式注入其他变量。不要把 `effect: read` 当作沙箱：它是声明元数据，宿主仍须用自己的进程、容器、权限和 Secret 策略隔离不可信 Provider 代码。
+
 ## 存储所有权
 
 CLI 接受精确路径，因此宿主可选择：
@@ -123,4 +129,4 @@ CLI 接受精确路径，因此宿主可选择：
 
 Provider Bundle 是只读内容。Run 与 Checkpoint 只有在宿主选择持久位置时才持久；Materialized Resource 属于可删除并重建的 Cache。
 
-完整示例见 [`examples/monitoring-loop`](../../examples/monitoring-loop)、[`examples/recovery`](../../examples/recovery) 和 [`examples/facts-recovery`](../../examples/facts-recovery)。
+完整示例见 [`examples/monitoring-loop`](../../examples/monitoring-loop)、[`examples/recovery`](../../examples/recovery)、[`examples/facts-recovery`](../../examples/facts-recovery) 和 [`examples/independent-verification`](../../examples/independent-verification)。

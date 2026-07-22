@@ -4,6 +4,9 @@ import { resolve } from "node:path";
 import packageMetadata from "../package.json" with { type: "json" };
 import {
   AgentGraphError,
+  DEFAULT_MATERIALIZER_MAX_ERROR_BYTES,
+  DEFAULT_MATERIALIZER_MAX_OUTPUT_BYTES,
+  DEFAULT_MATERIALIZER_TIMEOUT_MS,
   OUTCOMES,
   assertRunTargetsProvider,
   buildProviderBundle,
@@ -93,6 +96,14 @@ function outcomeValues(value: JsonValue): Record<string, Outcome> {
   return outcomes;
 }
 
+function positiveIntegerOption(value: string): number {
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+    throw new AgentGraphError("option-invalid", `Expected a positive integer, received: ${value}`);
+  }
+  return parsed;
+}
+
 async function evaluationInput(options: { state?: string; facts?: string; outcomes?: string; authority?: string[] }): Promise<EvaluationInput> {
   const directFacts = options.facts ? objectValue(await jsonArgument(options.facts), "facts") : {};
   const directOutcomes = options.outcomes ? outcomeValues(await jsonArgument(options.outcomes)) : {};
@@ -119,7 +130,7 @@ function addEvaluationOptions(command: Command): Command {
 
 const program = new Command()
   .name("agent-graph")
-  .description("Skills-native graph specification and toolchain for agent-led workflows")
+  .description("Model-free work-contract graphs for Agent Skills")
   .version(VERSION)
   .option("-m, --manifest <path>", "provider or bundle manifest", "provider.yaml")
   .option("--skill <path>", "resolve the provider through metadata.agent-graph in a SKILL.md")
@@ -377,13 +388,27 @@ resourceCommand.command("materialize")
   .requiredOption("--revision <digest>", "revision from the route that selected this context view")
   .option("--workspace <directory>", "workspace visible to the read-only materializer", ".")
   .option("--input <json>", "materializer input JSON or @file")
-  .action(async (resource: string, options: { cache: string; workspace: string; revision: string; input?: string }, command: Command) => {
+  .option("--timeout-ms <milliseconds>", "maximum materializer runtime", positiveIntegerOption, DEFAULT_MATERIALIZER_TIMEOUT_MS)
+  .option("--max-output-bytes <bytes>", "maximum captured stdout", positiveIntegerOption, DEFAULT_MATERIALIZER_MAX_OUTPUT_BYTES)
+  .option("--max-error-bytes <bytes>", "maximum captured stderr", positiveIntegerOption, DEFAULT_MATERIALIZER_MAX_ERROR_BYTES)
+  .action(async (resource: string, options: {
+    cache: string;
+    workspace: string;
+    revision: string;
+    input?: string;
+    timeoutMs: number;
+    maxOutputBytes: number;
+    maxErrorBytes: number;
+  }, command: Command) => {
     const input = options.input ? await jsonArgument(options.input) : undefined;
     const location = await materializeResource(await providerFor(command), resource, {
       cache: options.cache,
       workspace: options.workspace,
       revision: options.revision,
       input,
+      timeoutMs: options.timeoutMs,
+      maxOutputBytes: options.maxOutputBytes,
+      maxErrorBytes: options.maxErrorBytes,
     });
     output(command, location, [`Materialized ${location.id}: ${location.filePath}`, `Digest: ${location.digest}`]);
   });

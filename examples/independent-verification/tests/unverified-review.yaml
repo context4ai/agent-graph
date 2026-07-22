@@ -1,0 +1,13 @@
+schema: agent-graph.test.v1
+name: a review claim without its receipt repeats verification
+graph: main
+entry: default
+state:
+  facts:
+    artifact:
+      digest: sha256:observed
+  outcomes:
+    main/verify: completed
+expect:
+  statusCode: actionable
+  primaryNode: verify

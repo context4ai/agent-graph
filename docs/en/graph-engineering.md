@@ -8,7 +8,7 @@ Agent Graph uses the useful engineering principles behind that discussion withou
 
 > How can an Agent discover the next legal action and only the context needed for that action, while a long workflow remains observable, testable, and recoverable?
 
-The answer is a Skills-native work graph with external facts, typed outcomes, explicit gates, file resources, and an optional Run record.
+The answer is a model-free, Skills-native work-contract graph with external facts, typed outcomes, explicit gates, file resources, and an optional Run record. It coordinates work, not Agents.
 
 ## From prompt engineering to context topology
 
@@ -79,6 +79,8 @@ Some Graph Engineering articles distinguish a stable organization graph from a t
 
 It does not define persistent Agent identities, communication permissions, model allocation, delegation hierarchies, or autonomous multi-Agent scheduling. A future runtime can consume the same Route contract, but those concerns should not be disguised as Graph nodes today.
 
+It also does not move a shared state object along edges. An edge describes control and causal intent. Hosts persist artifacts outside the graph and reintroduce observable references, digests, and receipts as Facts. This keeps route evaluation deterministic and prevents implicit mutable memory from becoming the source of truth.
+
 ## Progressive disclosure is a graph property
 
 Traditional progressive disclosure is often described as “put details in another file.” Agent Graph makes the decision structural:
@@ -109,7 +111,7 @@ This allows a repository Skill, an npm CLI, a plugin, and an enterprise product 
 Agent behavior is probabilistic, but the workflow boundary does not need to be. Agent Graph tests assert routes for known states without calling a model. This provides fast coverage for:
 
 - gate and authority behavior;
-- ordering and fan-in;
+- ordering and fan-in reachability;
 - partial failure and recovery;
 - fact-backed completion;
 - repeated work and stopping;
@@ -139,6 +141,8 @@ The test suite cannot prove that an Agent will produce a good document or patch.
 - automatically generated or self-modifying Graph definitions;
 - cross-Provider graph calls or merging;
 - model invocation and multi-Agent orchestration;
+- parallel or concurrent fan-out execution;
+- edge-carried artifacts or shared mutable state;
 - scheduling, queues, distributed locks, or durable timers;
 - automatic trust in commands or third-party Skills;
 - semantic proof that an Agent-created artifact is correct.

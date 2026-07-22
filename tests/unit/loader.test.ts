@@ -13,8 +13,8 @@ describe("provider loading", () => {
     directories.push(directory);
     await initProvider(directory, "cycle-test");
     await writeTextAtomic(resolve(directory, "provider.yaml"), `schema: agent-graph.provider.v1\nid: cycle-test\nversion: 0.1.0\ngraphs: [graphs/a.yaml, graphs/b.yaml]\n`);
-    await writeTextAtomic(resolve(directory, "graphs/a.yaml"), `schema: agent-graph.graph.v1\nid: a\nentrypoints: { default: child }\nnodes: [{ id: child, kind: subgraph, graph: b, entry: default }]\nedges: []\n`);
-    await writeTextAtomic(resolve(directory, "graphs/b.yaml"), `schema: agent-graph.graph.v1\nid: b\nentrypoints: { default: child }\nnodes: [{ id: child, kind: subgraph, graph: a, entry: default }]\nedges: []\n`);
+    await writeTextAtomic(resolve(directory, "graphs/a.yaml"), `schema: agent-graph.graph.v1\nid: a\nentrypoints: { default: child }\nnodes: [{ id: child, kind: subgraph, graph: b, entry: default }, { id: done, kind: terminal, terminalOutcome: completed }]\nedges: []\n`);
+    await writeTextAtomic(resolve(directory, "graphs/b.yaml"), `schema: agent-graph.graph.v1\nid: b\nentrypoints: { default: child }\nnodes: [{ id: child, kind: subgraph, graph: a, entry: default }, { id: done, kind: terminal, terminalOutcome: completed }]\nedges: []\n`);
     try {
       await loadProvider(resolve(directory, "provider.yaml"));
       throw new Error("expected recursion rejection");
@@ -34,11 +34,40 @@ entrypoints: { default: first }
 nodes:
   - { id: first, kind: action, action: actions/work.yaml }
   - { id: second, kind: action, action: actions/work.yaml }
+  - { id: done, kind: terminal, terminalOutcome: completed }
 edges:
   - { from: first, to: second, outcomes: [completed] }
   - { from: second, to: first, outcomes: [completed] }
 `);
     await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({ code: "graph-flow-cycle" });
+  });
+
+  test("rejects a graph without an explicit terminal", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-no-terminal-"));
+    directories.push(directory);
+    await initProvider(directory, "no-terminal");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: work }
+nodes: [{ id: work, kind: action, action: actions/work.yaml }]
+edges: []
+`);
+    await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({ code: "graph-terminal-missing" });
+  });
+
+  test("rejects outgoing edges from a terminal node", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-terminal-edge-"));
+    directories.push(directory);
+    await initProvider(directory, "terminal-edge");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: done }
+nodes:
+  - { id: done, kind: terminal, terminalOutcome: completed }
+  - { id: work, kind: action, action: actions/work.yaml }
+edges: [{ from: done, to: work, outcomes: [completed] }]
+`);
+    await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({ code: "graph-terminal-edge-invalid" });
   });
 
   test("rejects a write action reused as a dynamic resource materializer", async () => {

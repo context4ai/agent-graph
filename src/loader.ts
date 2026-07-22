@@ -40,6 +40,12 @@ function validateGraphSemantics(graph: LoadedGraph): void {
     }
     nodeIds.add(node.id);
   }
+  if (!graph.definition.nodes.some((node) => node.kind === "terminal")) {
+    throw new AgentGraphError(
+      "graph-terminal-missing",
+      `Graph ${graph.definition.id} must declare at least one terminal node`,
+    );
+  }
   for (const [entry, node] of Object.entries(graph.definition.entrypoints)) {
     if (!nodeIds.has(node)) {
       throw new AgentGraphError("graph-entry-missing", `Graph ${graph.definition.id} entry ${entry} targets missing node ${node}`);
@@ -51,6 +57,12 @@ function validateGraphSemantics(graph: LoadedGraph): void {
       throw new AgentGraphError(
         "graph-edge-node-missing",
         `Graph ${graph.definition.id} edge ${edge.from} -> ${edge.to} references a missing node`,
+      );
+    }
+    if (graph.nodeById.get(edge.from)?.kind === "terminal") {
+      throw new AgentGraphError(
+        "graph-terminal-edge-invalid",
+        `Graph ${graph.definition.id} terminal node cannot have outgoing edges: ${edge.from} -> ${edge.to}`,
       );
     }
     const key = `${edge.kind ?? "flow"}:${edge.from}:${edge.to}:${(edge.outcomes ?? ["completed"]).join(",")}`;

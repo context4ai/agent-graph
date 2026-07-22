@@ -40,7 +40,7 @@ Scripts become a sequential Graph. File extensions select Node, Bun, Python, or 
 agent-graph import workflow ./workflow.yaml --into ./provider
 ```
 
-The compact importer validates step shapes, missing dependencies, normalized ID collisions, and dependency cycles before writing. It preserves commands and `dependsOn` relationships, including fan-out and fan-in, adds a deterministic start action for multiple roots, and places a terminal after all leaves. It does not evaluate templating, arbitrary workflow expressions, secrets, matrix expansion, or vendor-specific retry policies.
+The compact importer validates step shapes, missing dependencies, normalized ID collisions, and dependency cycles before writing. It preserves commands and `dependsOn` relationships, including fan-out and fan-in reachability, adds a deterministic start action for multiple roots, and places a terminal after all leaves. This topology does not imply parallel execution: Agent Graph selects one primary Route at a time. The importer does not evaluate templating, arbitrary workflow expressions, secrets, matrix expansion, or vendor-specific retry policies.
 
 ## `IMPORT_REPORT.md`
 

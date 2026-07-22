@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: verify-artifact
+runner: host
+effect: read
+handler: verifier.independent

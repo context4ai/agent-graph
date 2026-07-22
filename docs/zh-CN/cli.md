@@ -6,8 +6,8 @@
 
 ```bash
 agent-graph ...                    # 已安装命令
-npx agent-graph@0.1.0 ...         # npm 临时运行
-bunx agent-graph@0.1.0 ...        # Bun 临时运行
+npx @c4a/agent-graph@0.1.1 ...    # npm 临时运行
+bunx @c4a/agent-graph@0.1.1 ...   # Bun 临时运行
 node ./agent-graph.mjs ...         # Provider 随包携带的单文件
 ```
 
@@ -118,9 +118,12 @@ run events --state <path>
 附加选项：
 
 - `--workspace <directory>`，默认当前目录；
-- `--input '<json>'` 或 `--input @input.json`。
+- `--input '<json>'` 或 `--input @input.json`；
+- `--timeout-ms <milliseconds>`，默认 `30000`；
+- `--max-output-bytes <bytes>`，默认 `10485760`；
+- `--max-error-bytes <bytes>`，默认 `1048576`。
 
-`revision` 应使用选择该 Context View 的 Route Revision。只接受 read effect 的 command 或 script Materializer。生成文件使用内容寻址名称；返回的 Location 与 Cache Receipt 都保留选择它的 Revision，宿主据此拒绝过期上下文。
+`revision` 应使用选择该 Context View 的 Route Revision。只接受 read effect 的 command 或 script Materializer。进程只继承最小环境，不会继承宿主全部变量；超限时在写入 Cache Receipt 前终止。生成文件使用内容寻址名称，Location 与 Receipt 都保留选择它的 Revision，宿主据此拒绝过期上下文。Read Effect 是契约，不是沙箱。
 
 ## 测试与构建
 

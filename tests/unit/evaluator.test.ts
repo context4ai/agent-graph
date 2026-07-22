@@ -1,8 +1,12 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
-import { evaluateGraph, loadProvider, resolveRoute, validateSchema } from "../../src/index.js";
+import { evaluateGraph, initProvider, loadProvider, resolveRoute, validateSchema, writeTextAtomic } from "../../src/index.js";
 
 const example = (name: string) => resolve(import.meta.dir, "../../examples", name, "provider.yaml");
+const directories: string[] = [];
+afterEach(async () => Promise.all(directories.splice(0).map((directory) => rm(directory, { recursive: true, force: true }))));
 
 describe("graph evaluation", () => {
   test("chooses a fact-backed recovery route when completion is unverified", async () => {
@@ -88,6 +92,30 @@ describe("graph evaluation", () => {
       outcomes: { ...input.outcomes, "choice/option-a": "completed" },
     }).evaluation;
     expect(completed.statusCode).toBe("complete");
+  });
+
+  test("reports conflicting terminal outcomes instead of choosing by declaration order", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-terminal-outcomes-"));
+    directories.push(directory);
+    await initProvider(directory, "terminal-outcomes");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: work }
+nodes:
+  - { id: work, kind: action, action: actions/work.yaml }
+  - { id: success, kind: terminal, terminalOutcome: completed }
+  - { id: failure, kind: terminal, terminalOutcome: failed }
+edges:
+  - { from: work, to: success, outcomes: [completed] }
+  - { from: work, to: failure, outcomes: [completed] }
+`);
+    const provider = await loadProvider(resolve(directory, "provider.yaml"));
+    const evaluation = evaluateGraph(provider, "main", "default", {
+      outcomes: { "main/work": "completed" },
+    }).evaluation;
+    expect(evaluation.statusCode).toBe("error");
+    expect(evaluation.outcome).toBeUndefined();
+    expect(evaluation.diagnostics.map((diagnostic) => diagnostic.code)).toContain("terminal-outcome-ambiguous");
   });
 
   test("rejects a route id after the evaluation revision changes", async () => {

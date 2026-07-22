@@ -1,0 +1,11 @@
+schema: agent-graph.test.v1
+name: an observed artifact is routed to independent verification
+graph: main
+entry: default
+state:
+  facts:
+    artifact:
+      digest: sha256:observed
+expect:
+  statusCode: actionable
+  primaryNode: verify

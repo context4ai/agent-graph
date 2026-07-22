@@ -1,0 +1,35 @@
+schema: agent-graph.graph.v1
+id: main
+entrypoints:
+  default: produce
+nodes:
+  - id: produce
+    kind: action
+    action: actions/produce.yaml
+    satisfiedBy:
+      - path: artifact.digest
+        exists: true
+  - id: verify
+    kind: action
+    action: actions/verify.yaml
+    requiresFacts:
+      - path: artifact.digest
+        exists: true
+    satisfiedBy:
+      - path: verification.receipt
+        exists: true
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: produce
+    to: verify
+    kind: consumes
+    outcomes: [completed]
+  - from: verify
+    to: verify
+    kind: repeat
+    outcomes: [unverified]
+  - from: verify
+    to: done
+    outcomes: [completed]

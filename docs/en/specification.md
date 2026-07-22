@@ -1,6 +1,6 @@
 # Agent Graph specification v1
 
-This document defines the `agent-graph.*.v1` objects implemented by `agent-graph@0.1.0`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
+This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.1.1`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
 
 ## 1. Provider
 
@@ -31,12 +31,17 @@ The source manifest may have any filename. A built bundle uses `provider.yaml` p
 schema: agent-graph.graph.v1
 id: release
 entrypoints:
-  default: inspect
-nodes: []
+  default: done
+nodes:
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
 edges: []
 ```
 
 A Graph is a deterministic route definition. `entrypoints` maps a public entry name to one node. Each node ID is unique within its Graph.
+
+Every Graph must declare at least one Terminal. Terminal nodes cannot have outgoing edges. If one evaluation reaches several Terminals with the same Outcome, the frame completes with that Outcome; conflicting reached Terminal Outcomes produce `terminal-outcome-ambiguous` and an `error` status rather than selecting by declaration order.
 
 ### 2.1 Node kinds
 
@@ -50,7 +55,7 @@ A Graph is a deterministic route definition. `entrypoints` maps a public entry n
 Common node fields:
 
 - `description`: short human label, never a machine condition;
-- `priority`: deterministic route ranking within one availability class;
+- `priority`: deterministic route ranking within one availability class, never a semantic chooser;
 - `join`: `all` requires all incoming edges to match; `any` requires one;
 - `requiresFacts`: all checks must pass before the node is legal;
 - `satisfiedBy`: observable facts that prove an Action or Gate complete without replaying it;
@@ -70,7 +75,7 @@ satisfiedBy:
     equals: passed
 ```
 
-`path` is a dotted lookup. Each check has exactly one of `exists` or `equals`. Values are scalar JSON values. There is no JavaScript, template expansion, shell evaluation, or arbitrary condition DSL.
+`path` is a dotted lookup. Numeric segments index JSON arrays, so `items.0.digest` addresses the first item's `digest`; other segments address object fields. Each check has exactly one of `exists` or `equals`. Values are scalar JSON values. There is no JavaScript, template expansion, shell evaluation, or arbitrary condition DSL.
 
 When an action has `satisfiedBy`:
 
@@ -117,9 +122,13 @@ All edges define an explicit outcome transition. If `outcomes` is omitted it def
 
 Every non-repeat kind uses the same explicit Outcome transition for reachability; the kind preserves causal intent for inspection, testing, and host policy. It does not invent artifact freshness or external proof. Model those with `requiresFacts` and `satisfiedBy`. A `gatedBy` edge must start at a Gate.
 
+Edges do not transport runtime values, artifacts, or shared mutable state. `consumes` records causal intent only. The host must persist an artifact in its own file or object store, then expose an observable reference, digest, or receipt as Facts when downstream legality or completion depends on it.
+
 Non-repeat graphs must be acyclic; loops must be explicit rather than accidental. A `repeat` edge must target an action or gate and resets that target to pending for the next iteration. Event history retains earlier iterations even though the current node outcome is replaced.
 
 Use `join: any` for alternative success paths converging on one node. The default `all` is appropriate for fan-in where every predecessor must succeed.
+
+Fan-out and fan-in are reachability topology, not concurrent execution. Evaluation returns one primary Route plus compact alternatives; Agent Graph does not launch parallel workers or merge their memory.
 
 ### 2.5 Subgraphs
 
@@ -201,7 +210,9 @@ materializer: actions/read-status.yaml
 
 A context view is data. Its materializer must be a `read` action using a command or script runner. Evaluation and route resolution never run it. A Route-bound dynamic location carries the Route revision. `resource materialize` requires that revision, runs explicitly, writes stdout into a host-selected content-addressed cache, and returns a location plus digest and revision.
 
-Materializer processes receive `AGENT_GRAPH_PROVIDER_ROOT`, `AGENT_GRAPH_WORKSPACE`, `AGENT_GRAPH_REVISION`, and JSON `AGENT_GRAPH_INPUT`. They must not emit instructions that override the selected Route.
+Materializer processes receive `AGENT_GRAPH_PROVIDER_ROOT`, `AGENT_GRAPH_WORKSPACE`, `AGENT_GRAPH_REVISION`, and JSON `AGENT_GRAPH_INPUT`. By default they inherit only a minimal process environment needed to start common runtimes; SDK hosts may explicitly add variables. They must not emit instructions that override the selected Route.
+
+The reference implementation applies a 30-second timeout, a 10 MiB stdout limit, and a 1 MiB stderr limit by default. SDK options and CLI flags can lower or raise those limits. Exceeding one terminates the process and produces a structured error without writing a cache receipt. `effect: read` is a declared contract for inspection and host policy, not an operating-system sandbox; hosts remain responsible for trusting or isolating materializer code.
 
 ## 5. Outcomes and evaluation
 
