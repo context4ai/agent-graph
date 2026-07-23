@@ -9,3 +9,5 @@ state:
 expect:
   statusCode: actionable
   primaryNode: verify
+  primaryReasonCode: route.main.verify
+  handler: verifier.independent

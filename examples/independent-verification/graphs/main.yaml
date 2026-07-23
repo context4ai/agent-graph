@@ -5,12 +5,14 @@ entrypoints:
 nodes:
   - id: produce
     kind: action
+    reasonCode: route.main.produce
     action: actions/produce.yaml
     satisfiedBy:
       - path: artifact.digest
         exists: true
   - id: verify
     kind: action
+    reasonCode: route.main.verify
     action: actions/verify.yaml
     requiresFacts:
       - path: artifact.digest

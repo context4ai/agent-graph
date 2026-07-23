@@ -99,4 +99,4 @@ Then test the produced tarball in a clean temporary prefix:
 5. run the binary through npm/npx-style package resolution;
 6. inspect tarball contents for LICENSE, metadata, docs, schemas, templates, and path leaks.
 
-Do not publish from a dirty or unreviewed working tree. Versioning starts at `0.1.0` and follows semantic versioning.
+Do not publish from a dirty or unreviewed working tree. Package releases follow semantic versioning; Provider manifests are independently versioned by their authors.

@@ -8,3 +8,7 @@ state:
 expect:
   statusCode: waiting-user
   primaryNode: approval
+  primaryReasonCode: route.release.approval-required
+  availability: requires-user
+  gateResolution: user
+  recordNode: release/approval

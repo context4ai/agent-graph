@@ -15,6 +15,7 @@ export function inspectProvider(provider: LoadedProvider) {
       edges: [...provider.graphs.values()].reduce((sum, graph) => sum + graph.definition.edges.length, 0),
       actions: provider.actions.size,
       resources: provider.resources.size,
+      codes: provider.codeCatalog?.entries.size ?? 0,
     },
     graphs: [...provider.graphs.values()]
       .map((graph) => ({
@@ -26,6 +27,7 @@ export function inspectProvider(provider: LoadedProvider) {
           id: node.id,
           kind: node.kind,
           description: node.description,
+          ...((node.kind === "action" || node.kind === "gate") ? { reasonCode: node.reasonCode } : {}),
           priority: node.priority ?? 0,
         })),
         dependencies: [...(provider.graphDependencies.get(graph.definition.id) ?? [])].sort(),
@@ -47,5 +49,6 @@ export function inspectProvider(provider: LoadedProvider) {
         path: relativePortable(provider.root, resource.path),
       }))
       .sort((left, right) => left.id.localeCompare(right.id)),
+    codes: provider.codeCatalog?.definition.codes ?? [],
   };
 }

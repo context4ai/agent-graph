@@ -4,3 +4,6 @@ version: 0.1.0
 graphs:
   - graphs/main.yaml
   - graphs/quality.yaml
+compatibility:
+  agentGraph: ^0.2.0
+  node: ">=20"

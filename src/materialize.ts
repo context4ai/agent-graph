@@ -176,8 +176,9 @@ export async function materializeResource(
     throw new AgentGraphError("revision-invalid", `Dynamic resource revision is invalid: ${options.revision}`);
   }
   const location = await locateResource(provider, referenceOrId);
-  const resourcePath = location.materialize?.resourcePath ?? location.filePath;
-  const resource = resourcePath ? provider.resources.get(resourcePath) : undefined;
+  const resource = [...provider.resources.values()].find(
+    (candidate) => candidate.metadata.id === location.id,
+  );
   if (!resource) throw new AgentGraphError("resource-missing", `Provider ${provider.manifest.id} has no resource ${referenceOrId}`);
   if (!resource.dynamic) throw new AgentGraphError("resource-static", `Resource ${resource.metadata.id} is static and does not need materialization`);
   const definition = resource.metadata as DynamicResourceDefinition;

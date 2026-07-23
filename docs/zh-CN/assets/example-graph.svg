@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="440" viewBox="20 20 1400 440" role="img" aria-labelledby="title desc">
+  <title id="title">一张简单的 Agent Graph</title>
+  <desc id="desc">可观察事实表明写草稿已经完成，检查草稿是当前路线，完成节点仍在等待。</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#d5d5d5" opacity="0.46"/>
+    </pattern>
+    <filter id="lift" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#181818" flood-opacity="0.075"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef6f2e"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#a3a3a3"/>
+    </marker>
+    <style>
+      text[font-size="20"] { font-size: 24px; }
+      text[font-size="16"] { font-size: 18px; }
+      text[font-size="12"] { font-size: 14px; }
+      text[font-size="10"] { font-size: 11px; }
+      text[font-size="9"] { font-size: 10px; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="480" fill="#f1f1f2"/>
+  <rect x="20" y="20" width="1400" height="440" fill="url(#grid)"/>
+
+  <g font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <text x="52" y="61" fill="#181818" font-size="20" font-weight="500" letter-spacing="-0.35">一张简单工作图</text>
+    <text x="52" y="84" fill="#717171" font-size="12">事实证明哪些步骤已经完成，并选出下一条合法动作。</text>
+    <g transform="translate(1215 47)">
+      <rect width="156" height="28" rx="14" fill="#f7f7f7" stroke="#d5d5d5"/>
+      <circle cx="17" cy="14" r="4" fill="#ef6f2e"/>
+      <text x="29" y="18" fill="#535353" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" letter-spacing="0.8">FACT-GROUNDED</text>
+    </g>
+  </g>
+
+  <g fill="none" stroke-width="2">
+    <path d="M 420 229 H 539" stroke="#ef6f2e" marker-end="url(#arrow)"/>
+    <path d="M 860 229 H 979" stroke="#a3a3a3" stroke-dasharray="6 7" marker-end="url(#arrow-muted)"/>
+  </g>
+
+  <g filter="url(#lift)" font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <g transform="translate(100 112)">
+      <rect width="320" height="234" rx="12" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <circle cx="36" cy="35" r="13" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+      <text x="36" y="39" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" font-weight="600">01</text>
+      <text x="24" y="82" fill="#181818" font-size="20" font-weight="500">写草稿</text>
+      <text x="24" y="116" fill="#535353" font-size="12">
+        <tspan x="24" dy="0">宿主观察到：</tspan>
+        <tspan x="24" dy="22" font-family="'SFMono-Regular', Consolas, monospace">draft.saved = true</tspan>
+      </text>
+      <line x1="24" y1="166" x2="296" y2="166" stroke="#e5e5e5"/>
+      <rect x="24" y="185" width="88" height="24" rx="12" fill="none" stroke="#d5d5d5"/>
+      <text x="68" y="201" text-anchor="middle" fill="#717171" font-size="10" letter-spacing="0.65">已完成</text>
+      <path d="M 273 187 l 6 6 l 12 -14" fill="none" stroke="#a3a3a3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <g transform="translate(540 112)">
+      <rect width="320" height="234" rx="12" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <rect x="1" y="1" width="318" height="5" rx="3" fill="#ef6f2e"/>
+      <circle cx="36" cy="35" r="13" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+      <text x="36" y="39" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" font-weight="600">02</text>
+      <text x="24" y="82" fill="#181818" font-size="20" font-weight="500">检查草稿</text>
+      <text x="24" y="116" fill="#535353" font-size="12">
+        <tspan x="24" dy="0">宿主观察到：</tspan>
+        <tspan x="24" dy="22" font-family="'SFMono-Regular', Consolas, monospace">review.passed = false</tspan>
+      </text>
+      <line x1="24" y1="166" x2="296" y2="166" stroke="#e5e5e5"/>
+      <rect x="24" y="185" width="112" height="24" rx="12" fill="none" stroke="#ef6f2e" stroke-opacity="0.55"/>
+      <text x="80" y="201" text-anchor="middle" fill="#d95817" font-size="10" letter-spacing="0.65">当前路线</text>
+      <path d="M 270 201 l 10 -17 l 10 17 M 275 194 h 10" fill="none" stroke="#ef6f2e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <g transform="translate(980 112)">
+      <rect width="320" height="234" rx="12" fill="#fdfdfd" stroke="#d5d5d5"/>
+      <circle cx="36" cy="35" r="13" fill="#f7e4d8" stroke="#ef6f2e" stroke-opacity="0.45"/>
+      <text x="36" y="39" text-anchor="middle" fill="#d95817" font-family="'SFMono-Regular', Consolas, monospace" font-size="10" font-weight="600">03</text>
+      <text x="24" y="82" fill="#181818" font-size="20" font-weight="500">完成</text>
+      <text x="24" y="116" fill="#535353" font-size="12">
+        <tspan x="24" dy="0">满足以下事实后到达：</tspan>
+        <tspan x="24" dy="22" font-family="'SFMono-Regular', Consolas, monospace">review.passed = true</tspan>
+      </text>
+      <line x1="24" y1="166" x2="296" y2="166" stroke="#e5e5e5"/>
+      <rect x="24" y="185" width="76" height="24" rx="12" fill="none" stroke="#d5d5d5"/>
+      <text x="62" y="201" text-anchor="middle" fill="#717171" font-size="10" letter-spacing="0.65">等待中</text>
+      <path d="M 270 181 v 22 M 270 182 h 18 l -5 6 l 5 6 h -18" fill="none" stroke="#a3a3a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <g font-family="Inter, Geist, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="11">
+    <rect x="570" y="387" width="260" height="29" rx="14.5" fill="#f7f7f7" stroke="#d5d5d5"/>
+    <text x="700" y="405" text-anchor="middle" fill="#535353">事实选出“检查草稿”</text>
+  </g>
+</svg>

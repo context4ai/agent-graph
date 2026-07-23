@@ -5,12 +5,14 @@ entrypoints:
 nodes:
   - id: package
     kind: action
+    reasonCode: route.build.package
     action: actions/package.yaml
     satisfiedBy:
       - path: artifact.digest
         exists: true
   - id: verify-artifact
     kind: action
+    reasonCode: route.build.verify-artifact
     action: actions/verify.yaml
   - id: done
     kind: terminal

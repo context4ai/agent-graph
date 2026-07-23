@@ -2,6 +2,16 @@
 
 Import creates a draft; it cannot infer business or safety semantics from file order alone.
 
+## Package contract changes in 0.2.0
+
+`0.2.0` is a pre-1.0 contract-tightening release:
+
+- an Action or Gate node must declare a `route.*` `reasonCode`;
+- a Skill binding uses `agent-graph`, `agent-graph.graph`, and `agent-graph.entry` to select Provider, Graph, and Entry explicitly;
+- Providers that declare a Code Catalog receive closed-set validation for every route reason.
+
+Update all three Skill metadata fields and validate every Provider before adopting the new runtime. Provider manifest versions remain independent from the `@c4a/agent-graph` package version.
+
 ## Existing Agent Skill
 
 ```bash
@@ -12,7 +22,7 @@ agent-graph import skill ../legacy-skill/SKILL.md \
 agent-graph validate --manifest ./provider/provider.yaml
 ```
 
-The importer copies the complete Skill directory, adds a relative locator to the copied `SKILL.md`, and creates one agent Action and Graph. It preserves the original instructions but does not split them into guessed phases.
+The importer copies the complete Skill directory, adds a relative Provider/Graph/Entry binding to the copied `SKILL.md`, and creates one agent Action and Graph. It preserves the original instructions but does not split them into guessed phases.
 
 After import, review:
 

@@ -1,0 +1,13 @@
+schema: agent-graph.test.v1
+name: an empty batch advances to review
+graph: main
+entry: default
+state:
+  facts:
+    batch:
+      remaining: 0
+expect:
+  statusCode: waiting-user
+  primaryNode: review
+  primaryReasonCode: route.batch.review
+  gateResolution: user

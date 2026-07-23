@@ -5,6 +5,7 @@ import { evaluateGraph, type RouteCandidate } from "./evaluator.js";
 import { digestFile, parseFrontmatter, readText, resolveContainedPath } from "./io.js";
 import type {
   ActionDefinition,
+  CodeLocation,
   DynamicResourceDefinition,
   EvaluationInput,
   LoadedProvider,
@@ -38,20 +39,20 @@ async function staticLocation(path: string, metadata: StaticResourceMetadata): P
   };
 }
 
-function dynamicLocation(path: string, metadata: DynamicResourceDefinition, revision?: string): ResourceLocation {
+function dynamicLocation(metadata: DynamicResourceDefinition, revision?: string): ResourceLocation {
   return {
     schema: "agent-graph.resource-location.v1",
     id: metadata.id,
     kind: metadata.kind,
     mediaType: metadata.mediaType,
     ...(revision ? { revision } : {}),
-    materialize: { resourcePath: path },
+    materialize: { resourceId: metadata.id },
   };
 }
 
 async function locateLoadedResource(resource: LoadedResource, revision?: string): Promise<ResourceLocation> {
   return resource.dynamic
-    ? dynamicLocation(resource.path, resource.metadata as DynamicResourceDefinition, revision)
+    ? dynamicLocation(resource.metadata as DynamicResourceDefinition, revision)
     : staticLocation(resource.contentPath, resource.metadata as StaticResourceMetadata);
 }
 
@@ -79,10 +80,26 @@ export async function locateResource(provider: LoadedProvider, referenceOrId: st
   throw new AgentGraphError("resource-missing", `Provider ${provider.manifest.id} has no resource ${referenceOrId}`);
 }
 
+export async function locateCode(provider: LoadedProvider, code: string): Promise<CodeLocation> {
+  const entry = provider.codeCatalog?.entries.get(code);
+  if (!entry) throw new AgentGraphError("code-missing", `Provider ${provider.manifest.id} has no catalog entry for ${code}`);
+  const resource = provider.codeCatalog?.documents.get(code);
+  const document = resource ? await locateLoadedResource(resource) : undefined;
+  return {
+    schema: "agent-graph.code-location.v1",
+    provider: provider.manifest.id,
+    code: entry.code,
+    kind: entry.kind,
+    summary: entry.summary,
+    ...(entry.severity ? { severity: entry.severity } : {}),
+    ...(document ? { document } : {}),
+  };
+}
+
 async function resourcesForCandidate(provider: LoadedProvider, candidate: RouteCandidate, revision: string) {
   const requiredReferences = [...(candidate.node.resources?.required ?? [])];
   const recommendedReferences = [...(candidate.node.resources?.recommended ?? [])];
-  const action = candidate.node.action
+  const action = candidate.node.kind === "action"
     ? provider.actions.get(resolveContainedPath(provider.root, candidate.node.action, "action reference"))
     : undefined;
   const required = await Promise.all(requiredReferences.map((reference) => locateResource(provider, reference, revision)));
@@ -131,7 +148,7 @@ export async function resolveRoute(
     throw new AgentGraphError("route-stale", `Route ${routeId} is not available at revision ${evaluation.revision}`);
   }
   const resources = await resourcesForCandidate(provider, candidate, evaluation.revision);
-  const action = candidate.node.action
+  const action = candidate.node.kind === "action"
     ? provider.actions.get(resolveContainedPath(provider.root, candidate.node.action, "action reference"))
     : undefined;
   return {
@@ -142,6 +159,8 @@ export async function resolveRoute(
     graph: candidate.graph.definition.id,
     node: candidate.node.id,
     statusCode: candidate.statusCode,
+    reasonCode: candidate.reasonCode,
+    ...(candidate.hint ? { hint: candidate.hint } : {}),
     availability: candidate.availability,
     callPath: candidate.callPath,
     ...(action ? {
@@ -153,7 +172,7 @@ export async function resolveRoute(
     } : {}),
     commandPlan: action ? planForAction(provider, action.definition, input.workspace ?? process.cwd()) : [],
     resources,
-    ...(candidate.node.gate ? {
+    ...(candidate.node.kind === "gate" ? {
       gate: {
         ...candidate.node.gate,
         resolution: candidate.gateResolution ?? "user",

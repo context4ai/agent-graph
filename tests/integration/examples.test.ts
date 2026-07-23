@@ -6,6 +6,7 @@ const examples = [
   "choice-routing",
   "dynamic-context",
   "dynamic-resource",
+  "fact-driven-batch",
   "facts-recovery",
   "getting-started",
   "independent-verification",
@@ -22,6 +23,7 @@ describe("published examples", () => {
     test(`${name} validates and its graph cases pass`, async () => {
       const root = resolve(import.meta.dir, "../../examples", name);
       const provider = await loadProvider(resolve(root, "provider.yaml"));
+      expect(provider.manifest.compatibility?.agentGraph).toBe("^0.2.0");
       const results = await runGraphTests(provider, resolve(root, "tests"));
       expect(results.length).toBeGreaterThan(0);
       expect(results.filter((result) => !result.passed)).toEqual([]);
@@ -29,11 +31,15 @@ describe("published examples", () => {
   }
 
   test("provider registry resolves two independent Skills to one provider", async () => {
-    const { readProviderRegistry, resolveSkillManifest } = await import("../../src/index.js");
+    const { readProviderRegistry, resolveSkillBinding } = await import("../../src/index.js");
     const root = resolve(import.meta.dir, "../../examples/provider-registry");
     const registry = await readProviderRegistry(resolve(root, "registry.yaml"));
-    const first = await resolveSkillManifest(resolve(root, "consumer-a/SKILL.md"), { registry });
-    const second = await resolveSkillManifest(resolve(root, "consumer-b/SKILL.md"), { registry });
+    const first = await resolveSkillBinding(resolve(root, "consumer-a/SKILL.md"), { registry });
+    const second = await resolveSkillBinding(resolve(root, "consumer-b/SKILL.md"), { registry });
     expect(first.manifestPath).toBe(second.manifestPath);
+    expect(first.graph).toBe("main");
+    expect(first.entry).toBe("default");
+    const provider = await loadProvider(first.manifestPath);
+    expect(provider.manifest.compatibility?.agentGraph).toBe("^0.2.0");
   });
 });

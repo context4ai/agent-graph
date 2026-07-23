@@ -17,7 +17,7 @@ expect:
   primaryNode: verify-artifact
 ```
 
-Assertions may cover `statusCode`, `primaryNode`, terminal `outcome`, and required diagnostic codes. They do not execute commands or call an Agent, so they remain fast and deterministic.
+Assertions may cover `statusCode`, primary and alternative nodes, `primaryReasonCode`, availability, command or host handler, selected Resources, Gate resolution, recording key, terminal `outcome`, and required diagnostic codes. They do not execute commands or call an Agent, so they remain fast and deterministic.
 An empty or missing test path is an error rather than a vacuous pass.
 
 ## Recommended case matrix
@@ -25,6 +25,7 @@ An empty or missing test path is an error rather than a vacuous pass.
 For each production Graph, cover:
 
 - initial route;
+- stable reason code and optional Code Catalog resolution;
 - deterministic primary/alternative ranking and compact route truncation;
 - every branch Outcome;
 - user gate and explicitly delegated gate;
@@ -61,6 +62,7 @@ Run these in CI before packaging the product that carries the Provider.
 - static Resource definitions and their native content files;
 - dynamic Resource definitions;
 - dynamic materializer Actions and files.
+- the optional Provider Code Catalog and its referenced static documents.
 
 Tests and unrelated authoring files remain outside the Bundle. Generated `manifest.json` records catalogs, every copied file digest, same-Provider Graph dependencies, and an overall digest. It has no timestamp, so unchanged inputs produce the same manifest.
 
@@ -81,7 +83,7 @@ Provider projects may instead depend on `agent-graph` and publish their built bu
 For reproducible automation, pin the one-shot version:
 
 ```bash
-npx @c4a/agent-graph@0.1.1 --manifest ./provider.yaml validate
+npx @c4a/agent-graph@0.2.0 --manifest ./provider.yaml validate
 ```
 
 ## Package audit checklist

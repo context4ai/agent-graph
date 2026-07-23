@@ -5,6 +5,7 @@ entrypoints:
 nodes:
   - id: work
     kind: action
+    reasonCode: route.main.work
     action: actions/work.yaml
     resources:
       required:

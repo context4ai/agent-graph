@@ -42,6 +42,7 @@ Event 采用追加式记录；Outcome 只保留每个状态键的最新值。因
 nodes:
   - id: poll
     kind: action
+    reasonCode: route.monitor.poll
     action: actions/poll.yaml
   - id: done
     kind: terminal

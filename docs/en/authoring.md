@@ -27,6 +27,8 @@ Four node kinds keep control semantics explicit:
 
 `priority` ranks simultaneously legal routes; it does not decide semantic fitness. Use `requiresFacts` or an explicit preceding Action to make options legal from observable state. `join: all` requires all incoming flow edges; `join: any` accepts any matching incoming edge.
 
+Action and Gate nodes require a stable `reasonCode` beginning with `route.`. It explains why the route is available; it is not a condition. A Code Catalog is optional, but declaring one turns route reasons into a closed, documented set. Keep Graph topology stable and put current targets and other run parameters in Facts. A Host Action can resolve those Facts without creating one node per target.
+
 ## Outcomes and edges
 
 An edge matches an explicit outcome. Omitting `outcomes` means `[completed]`.
@@ -76,6 +78,7 @@ This is an authoring pattern, not a special node kind: the Provider can declare 
 
 ```yaml
 kind: gate
+reasonCode: route.review.required
 gate:
   id: result-review
   prompt: Review the prepared result.
@@ -115,4 +118,4 @@ Dynamic context views are YAML/JSON resource descriptors. Their materializer mus
 
 ## Subgraphs
 
-Subgraphs provide control composition within one Provider. A parent declares the child Graph and entrypoint. The child route is returned with a call path, and its terminal outcome flows back to the parent. Static and runtime recursion checks prevent a child from calling an ancestor. Cross-Provider subgraphs are intentionally not supported in v0.1.
+Subgraphs provide control composition within one Provider. A parent declares the child Graph and entrypoint. The child route is returned with a call path, and its terminal outcome flows back to the parent. Static and runtime recursion checks prevent a child from calling an ancestor. Cross-Provider subgraphs are intentionally not supported in v1.

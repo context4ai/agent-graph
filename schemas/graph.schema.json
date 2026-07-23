@@ -31,6 +31,11 @@
       "pattern": "^[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$",
       "maxLength": 160
     },
+    "reasonCode": {
+      "type": "string",
+      "pattern": "^route\\.[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$",
+      "maxLength": 160
+    },
     "relativePath": {
       "type": "string",
       "minLength": 1,
@@ -73,6 +78,7 @@
         "id": { "$ref": "#/$defs/id" },
         "kind": { "enum": ["action", "gate", "subgraph", "terminal"] },
         "description": { "type": "string", "maxLength": 1000 },
+        "reasonCode": { "$ref": "#/$defs/reasonCode" },
         "priority": { "type": "integer", "minimum": -1000, "maximum": 1000, "default": 0 },
         "join": { "enum": ["all", "any"], "default": "all" },
         "action": { "$ref": "#/$defs/relativePath" },
@@ -97,23 +103,23 @@
       "oneOf": [
         {
           "properties": { "kind": { "const": "action" } },
-          "required": ["action"],
+          "required": ["action", "reasonCode"],
           "not": { "anyOf": [{ "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["terminalOutcome"] }] }
         },
         {
           "properties": { "kind": { "const": "gate" } },
-          "required": ["gate"],
+          "required": ["gate", "reasonCode"],
           "not": { "anyOf": [{ "required": ["action"] }, { "required": ["graph"] }, { "required": ["entry"] }, { "required": ["terminalOutcome"] }] }
         },
         {
           "properties": { "kind": { "const": "subgraph" } },
           "required": ["graph", "entry"],
-          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["gate"] }, { "required": ["terminalOutcome"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
+          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["gate"] }, { "required": ["reasonCode"] }, { "required": ["terminalOutcome"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
         },
         {
           "properties": { "kind": { "const": "terminal" } },
           "required": ["terminalOutcome"],
-          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
+          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["reasonCode"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
         }
       ]
     },

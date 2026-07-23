@@ -17,7 +17,7 @@ expect:
   primaryNode: verify-artifact
 ```
 
-可断言 `statusCode`、`primaryNode`、终态 `outcome` 和必须存在的诊断码。测试不会执行命令或调用 Agent，因此快速且确定。
+可断言 `statusCode`、Primary/Alternative Node、`primaryReasonCode`、Availability、Command 或 Host Handler、选中 Resource、Gate Resolution、记录键、终态 `outcome` 和必须存在的诊断码。测试不会执行命令或调用 Agent，因此快速且确定。
 测试路径不存在或不含 Case 时会报错，不会把空集合当成通过。
 
 ## 推荐 Case 矩阵
@@ -25,6 +25,7 @@ expect:
 每张生产 Graph 至少覆盖：
 
 - 初始路线；
+- 稳定 Reason Code 与可选 Code Catalog 解析；
 - 确定性 Primary/Alternative 排序与紧凑路线截断；
 - 每种分支 Outcome；
 - 用户 Gate 和显式委托后的 Gate；
@@ -61,6 +62,7 @@ agent-graph validate --manifest dist/provider/manifest.json
 - 静态 Resource 定义及其原生内容文件；
 - 动态 Resource 定义；
 - 动态 Materializer Action 与文件。
+- 可选 Provider Code Catalog 及其引用的静态文档。
 
 测试与无关开发文件不进入 Bundle。生成的 `manifest.json` 记录目录、每个复制文件的 digest、同 Provider Graph 依赖和整体 digest。Manifest 不包含时间戳，因此相同输入产生相同结果。
 
@@ -81,7 +83,7 @@ Provider 项目可以依赖 `agent-graph`，并在自己的包里发布 Provider
 自动化临时执行时应固定版本：
 
 ```bash
-npx @c4a/agent-graph@0.1.1 --manifest ./provider.yaml validate
+npx @c4a/agent-graph@0.2.0 --manifest ./provider.yaml validate
 ```
 
 ## 包审计清单

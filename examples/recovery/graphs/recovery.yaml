@@ -5,12 +5,15 @@ entrypoints:
 nodes:
   - id: apply
     kind: action
+    reasonCode: route.recovery.apply
     action: actions/apply.yaml
   - id: verify
     kind: action
+    reasonCode: route.recovery.verify
     action: actions/verify.yaml
   - id: recover
     kind: action
+    reasonCode: route.recovery.recover
     action: actions/recover.yaml
     join: any
   - id: done

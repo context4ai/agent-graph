@@ -5,6 +5,7 @@ entrypoints:
 nodes:
   - id: check
     kind: action
+    reasonCode: route.quality.check
     action: actions/check.yaml
   - id: done
     kind: terminal

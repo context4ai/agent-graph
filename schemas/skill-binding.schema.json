@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/skill-binding.schema.json",
+  "title": "Resolved Agent Graph Skill Binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "skillPath", "locator", "graph", "entry", "manifestPath", "provider"],
+  "properties": {
+    "schema": { "const": "agent-graph.skill-binding.v1" },
+    "skillPath": { "type": "string", "minLength": 1 },
+    "locator": { "type": "string", "pattern": "^(?:path:|provider:).+" },
+    "graph": { "type": "string", "minLength": 1 },
+    "entry": { "type": "string", "minLength": 1 },
+    "manifestPath": { "type": "string", "minLength": 1 },
+    "provider": { "type": "string", "minLength": 1 }
+  }
+}

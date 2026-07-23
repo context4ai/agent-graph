@@ -5,6 +5,7 @@ entrypoints:
 nodes:
   - id: inspect
     kind: action
+    reasonCode: route.main.inspect
     action: actions/inspect.yaml
     resources:
       required: [resources/status.yaml]

@@ -3,3 +3,8 @@ id: "{{providerId}}"
 version: 0.1.0
 graphs:
   - graphs/main.yaml
+catalogs:
+  codes: codes.yaml
+compatibility:
+  agentGraph: ^0.2.0
+  node: ">=20"

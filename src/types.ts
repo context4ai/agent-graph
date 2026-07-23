@@ -22,6 +22,9 @@ export interface ProviderManifest {
   name?: string;
   description?: string;
   graphs: string[];
+  catalogs?: {
+    codes?: string;
+  };
   compatibility?: {
     agentGraph?: string;
     node?: string;
@@ -46,21 +49,43 @@ export interface GateDefinition {
   delegatable?: boolean;
 }
 
-export interface GraphNode {
+interface GraphNodeBase {
   id: string;
-  kind: "action" | "gate" | "subgraph" | "terminal";
   description?: string;
   priority?: number;
   join?: "all" | "any";
-  action?: string;
-  graph?: string;
-  entry?: string;
-  gate?: GateDefinition;
-  terminalOutcome?: Outcome;
   requiresFacts?: FactCheck[];
+}
+
+export interface ActionGraphNode extends GraphNodeBase {
+  kind: "action";
+  reasonCode: string;
+  action: string;
   satisfiedBy?: FactCheck[];
   resources?: NodeResources;
 }
+
+export interface GateGraphNode extends GraphNodeBase {
+  kind: "gate";
+  reasonCode: string;
+  gate: GateDefinition;
+  satisfiedBy?: FactCheck[];
+  resources?: NodeResources;
+}
+
+export interface SubgraphGraphNode extends GraphNodeBase {
+  kind: "subgraph";
+  graph: string;
+  entry: string;
+}
+
+export interface TerminalGraphNode extends GraphNodeBase {
+  kind: "terminal";
+  terminalOutcome: Outcome;
+}
+
+export type RoutableGraphNode = ActionGraphNode | GateGraphNode;
+export type GraphNode = ActionGraphNode | GateGraphNode | SubgraphGraphNode | TerminalGraphNode;
 
 export interface GraphEdge {
   from: string;
@@ -115,6 +140,20 @@ export interface StaticFileResourceDefinition {
 }
 
 export type ResourceKind = "procedure" | "diagnostic" | "template" | "schema" | "context-view" | "skill";
+export type CodeKind = "route-reason" | "diagnostic";
+
+export interface CodeCatalogEntry {
+  code: string;
+  kind: CodeKind;
+  summary: string;
+  severity?: Diagnostic["severity"];
+  document?: string;
+}
+
+export interface CodeCatalogDefinition {
+  schema: "agent-graph.code-catalog.v1";
+  codes: CodeCatalogEntry[];
+}
 
 export interface StaticResourceMetadata {
   id: string;
@@ -140,6 +179,13 @@ export interface LoadedResource {
   dynamic: boolean;
 }
 
+export interface LoadedCodeCatalog {
+  path: string;
+  definition: CodeCatalogDefinition;
+  entries: Map<string, CodeCatalogEntry>;
+  documents: Map<string, LoadedResource>;
+}
+
 export interface LoadedProvider {
   manifestPath: string;
   root: string;
@@ -147,6 +193,7 @@ export interface LoadedProvider {
   graphs: Map<string, LoadedGraph>;
   actions: Map<string, LoadedAction>;
   resources: Map<string, LoadedResource>;
+  codeCatalog?: LoadedCodeCatalog;
   files: Set<string>;
   graphDependencies: Map<string, Set<string>>;
   graphDigests: Map<string, string>;
@@ -158,6 +205,7 @@ export interface Diagnostic {
   severity: "info" | "warning" | "error";
   message: string;
   path?: string;
+  documentRef?: string;
   detail?: JsonValue;
 }
 
@@ -204,6 +252,8 @@ export interface RouteSummary {
   graph: string;
   node: string;
   statusCode: EvaluationStatus;
+  reasonCode: string;
+  hint?: string;
   availability: "immediate" | "requires-user" | "blocked";
   label: string;
 }
@@ -230,7 +280,7 @@ export interface ResourceLocation {
   digest?: string;
   filePath?: string;
   materialize?: {
-    resourcePath: string;
+    resourceId: string;
   };
 }
 
@@ -250,6 +300,8 @@ export interface Route {
   graph: string;
   node: string;
   statusCode: EvaluationStatus;
+  reasonCode: string;
+  hint?: string;
   availability: "immediate" | "requires-user" | "blocked";
   callPath: string[];
   action?: {
@@ -305,6 +357,15 @@ export interface AgentGraphTestCase {
   expect: {
     statusCode: EvaluationStatus;
     primaryNode?: string;
+    primaryReasonCode?: string;
+    alternativeNodes?: string[];
+    availability?: RouteSummary["availability"];
+    command?: string;
+    handler?: string;
+    requiredResources?: string[];
+    recommendedResources?: string[];
+    gateResolution?: "user" | "session-authority";
+    recordNode?: string;
     outcome?: Outcome;
     diagnosticsInclude?: string[];
   };
@@ -315,4 +376,37 @@ export interface TestCaseResult {
   path: string;
   passed: boolean;
   failures: string[];
+}
+
+export interface SkillBinding {
+  locator: string;
+  graph: string;
+  entry: string;
+}
+
+export interface ResolvedSkillBinding extends SkillBinding {
+  schema: "agent-graph.skill-binding.v1";
+  skillPath: string;
+  manifestPath: string;
+  provider: string;
+}
+
+export interface CodeLocation {
+  schema: "agent-graph.code-location.v1";
+  provider: string;
+  code: string;
+  kind: CodeKind;
+  summary: string;
+  severity?: Diagnostic["severity"];
+  document?: ResourceLocation;
+}
+
+export interface ErrorEnvelope {
+  schema: "agent-graph.error.v1";
+  state: "error";
+  error: {
+    code: string;
+    message: string;
+    diagnostics: Diagnostic[];
+  };
 }

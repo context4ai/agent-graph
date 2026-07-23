@@ -1,0 +1,15 @@
+schema: agent-graph.test.v1
+name: a pending target selects the stable batch handler
+graph: main
+entry: default
+state:
+  facts:
+    batch:
+      remaining: 2
+      nextTarget: module-b
+expect:
+  statusCode: actionable
+  primaryNode: process-next
+  primaryReasonCode: route.batch.process-next
+  handler: batch.process-next
+  requiredResources: [procedure.process-batch]

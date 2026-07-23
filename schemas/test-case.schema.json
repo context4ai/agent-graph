@@ -34,6 +34,15 @@
       "properties": {
         "statusCode": { "enum": ["actionable", "waiting-user", "blocked", "complete", "error"] },
         "primaryNode": { "type": "string" },
+        "primaryReasonCode": { "type": "string" },
+        "alternativeNodes": { "type": "array", "items": { "type": "string" } },
+        "availability": { "enum": ["immediate", "requires-user", "blocked"] },
+        "command": { "type": "string", "minLength": 1 },
+        "handler": { "type": "string", "minLength": 1 },
+        "requiredResources": { "type": "array", "items": { "type": "string" } },
+        "recommendedResources": { "type": "array", "items": { "type": "string" } },
+        "gateResolution": { "enum": ["user", "session-authority"] },
+        "recordNode": { "type": "string", "minLength": 1 },
         "outcome": { "$ref": "#/$defs/outcome" },
         "diagnosticsInclude": { "type": "array", "items": { "type": "string" } }
       }

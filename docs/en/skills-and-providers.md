@@ -2,7 +2,7 @@
 
 ## Agent Skills remain the entry contract
 
-Agent Graph extends Agent Skills; it does not replace them. A graph-enabled Skill should remain useful to a host during discovery: its `name` and `description` explain when to invoke it, while one metadata value tells the integration where graph behavior lives.
+Agent Graph extends Agent Skills; it does not replace them. A graph-enabled Skill should remain useful to a host during discovery: its `name` and `description` explain when to invoke it, while three namespaced metadata values form one complete machine binding.
 
 ```yaml
 ---
@@ -10,18 +10,19 @@ name: release-package
 description: Inspect, review, and release a package through the installed workflow.
 metadata:
   agent-graph: path:../../release-graph/provider.yaml
+  agent-graph.graph: release
+  agent-graph.entry: default
 ---
 ```
 
 The Skill body should contain only the bootstrap contract:
 
-1. identify the Graph and entry to use;
-2. evaluate before taking lifecycle action;
-3. resolve the selected Route;
-4. read required route resources completely;
-5. treat recommended resources as optional context;
-6. stop for unresolved user gates;
-7. record the explicit Outcome and evaluate again.
+1. evaluate the bound Graph and Entry before taking lifecycle action;
+2. resolve the selected Route;
+3. read required route resources completely;
+4. treat recommended resources as optional context;
+5. stop for unresolved user gates;
+6. record the explicit Outcome and evaluate again.
 
 Do not copy all graph phases, diagnostics, schemas, or generated workspace context into the Skill.
 
@@ -52,6 +53,8 @@ The Provider directory may be called anything. Relative references must not esca
 ```yaml
 metadata:
   agent-graph: provider:company/release
+  agent-graph.graph: release
+  agent-graph.entry: default
 ```
 
 CLI registry example:
@@ -69,9 +72,25 @@ The registry file belongs to the host. It must not be generated into every consu
 
 ## One Provider, many Skills and Graphs
 
-Several Skills may share one Provider and choose different Graphs or entries in their bodies. The graph files, procedures, and schemas remain single-source. One Provider may also contain several Graphs that share Action or Resource definitions.
+Several Skills may share one Provider and select different Graphs or Entries in their metadata. The loader validates Provider, Graph, and Entry together; the Agent never infers this machine choice from prose. Graph files, procedures, and schemas remain single-source. One Provider may also contain several Graphs that share Action or Resource definitions.
 
 Sharing an Action or Resource does not create an execution dependency. Only explicit edges, fact requirements, and Subgraph nodes do.
+
+## Static Graphs, dynamic Facts
+
+A Graph describes stable work categories and possible states. It should not create one node per current module, document, date, phase, or queue item. Those values belong in Facts.
+
+A stable host Action is the boundary between the Graph and product-specific parameters:
+
+```yaml
+schema: agent-graph.action.v1
+id: process-next
+runner: host
+effect: write
+handler: batch.process-next
+```
+
+The integration host invokes `batch.process-next` with the same current Facts used for evaluation and resolves the concrete target there. After execution it refreshes Facts and evaluates again. See [`examples/fact-driven-batch`](../../examples/fact-driven-batch).
 
 ## Multiple Providers in one host
 
@@ -104,18 +123,18 @@ import {
   evaluateGraph,
   loadProvider,
   resolveRoute,
-  resolveSkillManifest,
-} from "agent-graph";
+  resolveSkillBinding,
+} from "@c4a/agent-graph";
 
-const { manifestPath } = await resolveSkillManifest(skillPath, { registry });
-const provider = await loadProvider(manifestPath);
-const { evaluation } = evaluateGraph(provider, graphId, entry, currentState);
+const binding = await resolveSkillBinding(skillPath, { registry });
+const provider = await loadProvider(binding.manifestPath);
+const { evaluation } = evaluateGraph(provider, binding.graph, binding.entry, currentState);
 
 if (evaluation.primaryRoute) {
   const route = await resolveRoute(
     provider,
-    graphId,
-    entry,
+    binding.graph,
+    binding.entry,
     evaluation.primaryRoute.routeId,
     currentState,
     evaluation.revision,
@@ -130,9 +149,9 @@ See [`examples/shared-provider`](../../examples/shared-provider) and [`examples/
 
 | Responsibility | APIs |
 |---|---|
-| Provider discovery | `readSkillLocator`, `resolveSkillManifest`, `readProviderRegistry`, `loadProvider` |
+| Provider discovery | `readSkillBinding`, `resolveSkillBinding`, `readProviderRegistry`, `loadProvider` |
 | Routing | `evaluateGraph`, `computeRevision`, `resolveRoute`, `nodeStateKey` |
-| Resources | `locateResource`, `materializeResource` |
+| Resources and codes | `locateResource`, `materializeResource`, `locateCode` |
 | Optional Run files | `createRun`, `loadRun`, `recordOutcome`, `updateRunFacts`, `updateRunAuthorities`, `checkpointRun`, `resumeRun` |
 | Authoring | `initProvider`, `importSkill`, `importScripts`, `importWorkflow` |
 | Quality and release | `validateSchema`, `runGraphTests`, `buildProviderBundle`, `inspectProvider` |

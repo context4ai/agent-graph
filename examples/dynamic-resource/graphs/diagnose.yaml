@@ -5,6 +5,7 @@ entrypoints:
 nodes:
   - id: diagnose
     kind: action
+    reasonCode: route.diagnose.run
     action: actions/diagnose.yaml
     resources:
       required:

@@ -3,6 +3,8 @@ name: getting-started-operator
 description: Prepare the current requested result using the route returned by Agent Graph.
 metadata:
   agent-graph: path:../../provider.yaml
+  agent-graph.graph: main
+  agent-graph.entry: default
 ---
 
 # Operator

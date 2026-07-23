@@ -2,7 +2,7 @@
 
 ## Agent Skills 仍是入口契约
 
-Agent Graph 扩展 Agent Skills，不替代它。启用 Graph 的 Skill 在宿主发现阶段仍应独立有用：`name` 和 `description` 说明何时调用；一个 metadata 值告诉集成层 Graph 行为位于何处。
+Agent Graph 扩展 Agent Skills，不替代它。启用 Graph 的 Skill 在宿主发现阶段仍应独立有用：`name` 和 `description` 说明何时调用；三个带命名空间的 metadata 值共同构成完整机器绑定。
 
 ```yaml
 ---
@@ -10,18 +10,19 @@ name: release-package
 description: Inspect, review, and release a package through the installed workflow.
 metadata:
   agent-graph: path:../../release-graph/provider.yaml
+  agent-graph.graph: release
+  agent-graph.entry: default
 ---
 ```
 
 Skill 正文只保留 Bootstrap 契约：
 
-1. 指明使用的 Graph 与 Entry；
-2. 任何生命周期动作前先 evaluate；
-3. 解析选中的 Route；
-4. 完整读取 Route 的 required 资源；
-5. 将 recommended 资源作为可选上下文；
-6. 遇到未解析用户门禁时停止；
-7. 记录显式 Outcome 并再次 evaluate。
+1. 任何生命周期动作前先 evaluate 已绑定的 Graph 与 Entry；
+2. 解析选中的 Route；
+3. 完整读取 Route 的 required 资源；
+4. 将 recommended 资源作为可选上下文；
+5. 遇到未解析用户门禁时停止；
+6. 记录显式 Outcome 并再次 evaluate。
 
 不要把所有阶段、诊断、Schema 或生成的工作区上下文复制进 Skill。
 
@@ -52,6 +53,8 @@ Provider 目录可以使用任意名称。开始加载后，其中的相对引�
 ```yaml
 metadata:
   agent-graph: provider:company/release
+  agent-graph.graph: release
+  agent-graph.entry: default
 ```
 
 CLI Registry 示例：
@@ -69,9 +72,25 @@ Registry 文件属于宿主，不应复制到每个消费者项目。Skill 也�
 
 ## 一个 Provider，多份 Skill 与 Graph
 
-多份 Skill 可以共享同一 Provider，并在正文中选择不同 Graph 或 Entry；Graph、Procedure 与 Schema 只维护一份。一个 Provider 也可包含多张 Graph，共享 Action 或 Resource 定义。
+多份 Skill 可以共享同一 Provider，并在 metadata 中选择不同 Graph 或 Entry。Loader 一次校验 Provider、Graph 与 Entry，Agent 不需要从正文猜测机器选择。Graph、Procedure 与 Schema 只维护一份。一个 Provider 也可包含多张 Graph，共享 Action 或 Resource 定义。
 
 共享 Action 或 Resource 不会自动产生执行依赖；只有显式 Edge、Fact Requirement 和 Subgraph Node 才建立关系。
+
+## 静态 Graph，动态 Facts
+
+Graph 描述稳定的任务类别与可能状态，不应为当前模块、文档、日期、phase 或队列项各生成一个节点。这些值属于 Facts。
+
+稳定 Host Action 是 Graph 与产品运行参数之间的边界：
+
+```yaml
+schema: agent-graph.action.v1
+id: process-next
+runner: host
+effect: write
+handler: batch.process-next
+```
+
+集成宿主使用产生当前 Evaluation 的同一份 Facts 调用 `batch.process-next`，在 Handler 内解析具体目标；执行后刷新 Facts 并再次 evaluate。参见 [`examples/fact-driven-batch`](../../examples/fact-driven-batch)。
 
 ## 同一宿主安装多个 Provider
 
@@ -104,18 +123,18 @@ import {
   evaluateGraph,
   loadProvider,
   resolveRoute,
-  resolveSkillManifest,
-} from "agent-graph";
+  resolveSkillBinding,
+} from "@c4a/agent-graph";
 
-const { manifestPath } = await resolveSkillManifest(skillPath, { registry });
-const provider = await loadProvider(manifestPath);
-const { evaluation } = evaluateGraph(provider, graphId, entry, currentState);
+const binding = await resolveSkillBinding(skillPath, { registry });
+const provider = await loadProvider(binding.manifestPath);
+const { evaluation } = evaluateGraph(provider, binding.graph, binding.entry, currentState);
 
 if (evaluation.primaryRoute) {
   const route = await resolveRoute(
     provider,
-    graphId,
-    entry,
+    binding.graph,
+    binding.entry,
     evaluation.primaryRoute.routeId,
     currentState,
     evaluation.revision,
@@ -130,9 +149,9 @@ if (evaluation.primaryRoute) {
 
 | 职责 | API |
 |---|---|
-| Provider 发现 | `readSkillLocator`、`resolveSkillManifest`、`readProviderRegistry`、`loadProvider` |
+| Provider 发现 | `readSkillBinding`、`resolveSkillBinding`、`readProviderRegistry`、`loadProvider` |
 | 路由 | `evaluateGraph`、`computeRevision`、`resolveRoute`、`nodeStateKey` |
-| Resource | `locateResource`、`materializeResource` |
+| Resource 与 Code | `locateResource`、`materializeResource`、`locateCode` |
 | 可选 Run 文件 | `createRun`、`loadRun`、`recordOutcome`、`updateRunFacts`、`updateRunAuthorities`、`checkpointRun`、`resumeRun` |
 | 开发 | `initProvider`、`importSkill`、`importScripts`、`importWorkflow` |
 | 质量与发布 | `validateSchema`、`runGraphTests`、`buildProviderBundle`、`inspectProvider` |

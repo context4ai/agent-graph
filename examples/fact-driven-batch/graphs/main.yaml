@@ -1,0 +1,41 @@
+schema: agent-graph.graph.v1
+id: main
+description: A static batch graph whose host handler resolves the current target from Facts.
+entrypoints:
+  default: process-next
+nodes:
+  - id: process-next
+    kind: action
+    reasonCode: route.batch.process-next
+    action: actions/process-next.yaml
+    requiresFacts:
+      - path: batch.remaining
+        exists: true
+    satisfiedBy:
+      - path: batch.remaining
+        equals: 0
+    resources:
+      required: [resources/process-batch.md]
+  - id: review
+    kind: gate
+    reasonCode: route.batch.review
+    gate:
+      id: batch-review
+      prompt: Review the completed batch?
+      authority: batch.review
+      delegatable: true
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: process-next
+    to: process-next
+    kind: repeat
+    outcomes: [partial]
+  - from: process-next
+    to: review
+    outcomes: [completed]
+  - from: review
+    to: done
+    kind: gatedBy
+    outcomes: [completed]

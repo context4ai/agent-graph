@@ -73,9 +73,11 @@ CLI 不会把循环隐藏在内部 Daemon 中。每轮都是一条 Route，每�
 
 - Provider 定义可信能力与资源；
 - Skill 暴露可发现入口；
-- Graph 定义动作关系；
+- Graph 定义稳定动作类别与合法关系；
 - Route 根据当前 Facts 动态选择；
 - Run 可选地记录一次执行。
+
+动态工作不要求运行时改写 Graph。当前目标和参数继续作为 Facts，由稳定 Host Action 在执行时解析；这样既能让 Route 随现实变化，也能保持契约可测试。
 
 它不定义持久 Agent 身份、通信权限、模型分配、委托层级或自主多 Agent 调度。未来 Runtime 可以消费相同 Route 契约，但当前不应把这些能力伪装成普通 Graph Node。
 
@@ -131,6 +133,7 @@ Agent 行为具有概率性，但工作流边界无需如此。Agent Graph 测�
 | 显式权限 | Gate 与会话级 Authority 输入 |
 | 恢复 | Failure Edge、Repeat Edge、Run Event、Checkpoint/Resume |
 | 可解释 | 确定性 Evaluation、Route、Inspection 与 Digest |
+| 稳定原因 | Route Reason Code 与可选文件化 Code Catalog |
 | 可测试 | 声明式 State-to-Route Case |
 | 可迁移 | Provider 相对引用与宿主选择 Store |
 | 供应链边界 | Action Effect、可达文件 Bundle 与内容 Digest |

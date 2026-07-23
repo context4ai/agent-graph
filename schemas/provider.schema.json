@@ -17,6 +17,13 @@
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/relativePath" }
     },
+    "catalogs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "codes": { "$ref": "#/$defs/relativePath" }
+      }
+    },
     "compatibility": {
       "type": "object",
       "additionalProperties": false,

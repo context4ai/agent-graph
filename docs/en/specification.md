@@ -1,6 +1,6 @@
 # Agent Graph specification v1
 
-This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.1.1`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
+This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.2.0`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
 
 ## 1. Provider
 
@@ -10,12 +10,14 @@ id: company/release
 version: 0.1.0
 graphs:
   - graphs/release.yaml
+catalogs:
+  codes: codes.yaml
 compatibility:
-  agentGraph: ^0.1.0
+  agentGraph: ^0.2.0
   node: ">=20"
 ```
 
-A Provider is one independently versioned trust and publication boundary.
+A Provider is one independently versioned trust and publication boundary. Its `version` describes that Provider, not the installed `@c4a/agent-graph` package; `compatibility.agentGraph` declares the supported toolchain range.
 
 - `id` identifies the Provider; hosts fully qualify runtime identities with Provider, Graph, and node IDs.
 - `version` is semantic-version syntax.
@@ -24,6 +26,19 @@ A Provider is one independently versioned trust and publication boundary.
 - multiple Providers remain isolated; v1 does not merge them or permit cross-Provider Subgraphs.
 
 The source manifest may have any filename. A built bundle uses `provider.yaml` plus a generated `manifest.json`.
+
+### 1.1 Skill binding
+
+A graph-enabled Skill binds Provider, Graph, and Entry as one machine contract:
+
+```yaml
+metadata:
+  agent-graph: path:../../provider.yaml
+  agent-graph.graph: release
+  agent-graph.entry: default
+```
+
+`agent-graph` is either a `path:` locator relative to that `SKILL.md` or a host-resolved `provider:` locator. The loader validates all three fields together. These protocol keys intentionally use the project-neutral `agent-graph` namespace; the npm scope is only a package-distribution identity. An integration must not ask the Agent to infer Graph or Entry from prose.
 
 ## 2. Graph
 
@@ -41,6 +56,8 @@ edges: []
 
 A Graph is a deterministic route definition. `entrypoints` maps a public entry name to one node. Each node ID is unique within its Graph.
 
+Graph topology is static. Runtime target names, dates, phase IDs, collections, and queue items belong in Facts; a stable Host Action resolves the concrete target. Providers must not rewrite or generate Graph nodes merely because those parameter values changed.
+
 Every Graph must declare at least one Terminal. Terminal nodes cannot have outgoing edges. If one evaluation reaches several Terminals with the same Outcome, the frame completes with that Outcome; conflicting reached Terminal Outcomes produce `terminal-outcome-ambiguous` and an `error` status rather than selecting by declaration order.
 
 ### 2.1 Node kinds
@@ -55,6 +72,7 @@ Every Graph must declare at least one Terminal. Terminal nodes cannot have outgo
 Common node fields:
 
 - `description`: short human label, never a machine condition;
+- `reasonCode`: required for Action and Gate nodes; a stable machine explanation beginning with `route.` for selecting that route;
 - `priority`: deterministic route ranking within one availability class, never a semantic chooser;
 - `join`: `all` requires all incoming edges to match; `any` requires one;
 - `requiresFacts`: all checks must pass before the node is legal;
@@ -90,6 +108,7 @@ Provider integrations are responsible for observing and supplying trustworthy fa
 
 ```yaml
 kind: gate
+reasonCode: route.release.approval-required
 gate:
   id: release-approval
   prompt: Approve this release?
@@ -166,7 +185,7 @@ Runner-specific execution fields are mutually exclusive; a command cannot also d
 
 `cwd` is `workspace` by default or `provider`. `inputSchema` and `outputSchema` include schemas in the bundle. `files` includes additional runtime files used by the action. Script and Skill references are validated and packaged. A Skill in a dedicated directory carries that directory; a Provider-root `SKILL.md` carries only itself, so its supporting files must be explicit.
 
-Agent Graph resolves actions but does not automatically execute them. A product host may build an executor around the same Route contract.
+Agent Graph resolves actions but does not automatically execute them. A product host may build an executor around the same Route contract. For a Host Action, the integration uses the same Facts that produced the Evaluation to resolve current parameters, invokes the stable Handler, refreshes Facts, and evaluates again.
 
 ## 4. Resources
 
@@ -210,9 +229,30 @@ materializer: actions/read-status.yaml
 
 A context view is data. Its materializer must be a `read` action using a command or script runner. Evaluation and route resolution never run it. A Route-bound dynamic location carries the Route revision. `resource materialize` requires that revision, runs explicitly, writes stdout into a host-selected content-addressed cache, and returns a location plus digest and revision.
 
+The unresolved location exposes only an opaque `{ resourceId }` materialization request plus the Route revision. It does not expose the Provider's descriptor path or materializer command. Product-specific hosts may render the view themselves; Agent Graph does not print the content into the Route.
+
 Materializer processes receive `AGENT_GRAPH_PROVIDER_ROOT`, `AGENT_GRAPH_WORKSPACE`, `AGENT_GRAPH_REVISION`, and JSON `AGENT_GRAPH_INPUT`. By default they inherit only a minimal process environment needed to start common runtimes; SDK hosts may explicitly add variables. They must not emit instructions that override the selected Route.
 
 The reference implementation applies a 30-second timeout, a 10 MiB stdout limit, and a 1 MiB stderr limit by default. SDK options and CLI flags can lower or raise those limits. Exceeding one terminates the process and produces a structured error without writing a cache receipt. `effect: read` is a declared contract for inspection and host policy, not an operating-system sandbox; hosts remain responsible for trusting or isolating materializer code.
+
+### 4.3 Code Catalog
+
+A Provider may declare one `agent-graph.code-catalog.v1` file:
+
+```yaml
+schema: agent-graph.code-catalog.v1
+codes:
+  - code: route.release.inspect
+    kind: route-reason
+    summary: The release artifact still needs inspection.
+    document: resources/release-checklist.md
+```
+
+`route-reason` explains why a Route was selected; `diagnostic` identifies a product condition and may add `severity`. `summary` is a compact hint and never a machine condition. `document` is an optional static Resource, read only when the explanation is needed.
+
+Every `reasonCode` is schema-checked for the `route.<id>` shape even without a Catalog. In this minimal mode, the code remains a machine-stable route reason but has no closed-set spelling check, hint, or document. If a Provider declares a Catalog, every Action and Gate `reasonCode` must resolve to a `route-reason` entry; use a Catalog when the Provider needs closed-set validation or discoverable explanations. A missing Catalog is not a warning because Catalog support is optional by design.
+
+There is no separate `infoCode`: non-blocking information uses a Diagnostic code with `severity: info`.
 
 ## 5. Outcomes and evaluation
 
@@ -231,6 +271,7 @@ They are not aliases. In particular, `partial`, `unverified`, and `skipped` must
 - `statusCode`: `actionable`, `waiting-user`, `blocked`, `complete`, or `error`;
 - optional terminal Outcome;
 - one primary and up to three deterministic alternative route summaries;
+- a required `reasonCode` and optional catalog-derived `hint` on each route summary;
 - compact diagnostics.
 
 Evaluation is read-only. Same definitions and routing inputs produce the same revision and ordering. Timestamps in outcome records do not affect routing revisions, and a file used only by an unrelated Graph does not invalidate the current Graph's routes. When more alternatives are available, an informational diagnostic reports available and returned counts; the SDK's internal candidate list remains available to a host implementing a dedicated chooser.
@@ -241,6 +282,7 @@ Evaluation is read-only. Same definitions and routing inputs produce the same re
 
 - current `revision` and revision-bound `routeId`;
 - target Graph, node, and Subgraph call path;
+- generic `statusCode`, stable `reasonCode`, and optional short `hint`;
 - availability and optional gate resolution;
 - action identity and effect;
 - command plan or host handler;
@@ -267,7 +309,7 @@ The protocol defines no default global or project directory for mutable state.
 
 ## 8. Graph tests
 
-`agent-graph.test.v1` declares an input state and expected status, primary node, terminal Outcome, or diagnostic codes. It does not execute actions or call a model. Test cases are deterministic routing fixtures suitable for CI.
+`agent-graph.test.v1` declares an input state and expected status, primary and alternative nodes, reason code, availability, command or handler, selected Resources, Gate resolution, recording key, terminal Outcome, or diagnostic codes. It does not execute actions or call a model. Test cases are deterministic routing fixtures suitable for CI.
 
 ## 9. Build bundle
 
@@ -285,4 +327,10 @@ The bundle is relocatable and can itself be loaded through `manifest.json`. Load
 
 ## 10. Compatibility and extension policy
 
-Unknown fields are rejected in v1 objects. This prevents misspelled safety fields from being ignored. New semantics require a new schema version or an explicitly defined compatible extension point. Agent hosts should branch on schema and status codes, never on human descriptions.
+Unknown fields are rejected in v1 objects. This prevents misspelled safety fields from being ignored.
+
+Until the npm package reaches `1.0.0`, the `agent-graph.*.v1` family is still in its public draft finalization period. A `0.x` release may tighten a required field or invariant under semantic-versioning rules, but must document the break and update every shipped template, example, and test. `0.2.0` makes Action and Gate `reasonCode` mandatory and completes the Skill binding with explicit Graph and Entry fields.
+
+After the `1.0.0` stability boundary, incompatible new semantics require a new schema version; compatible additions require an explicitly defined extension point. Agent hosts should branch on schema, status codes, reason codes, and diagnostic codes, never on human descriptions.
+
+JSON CLI failures use `agent-graph.error.v1`; automation branches on `error.code`. Error and diagnostic messages remain concise. Detailed interpretation belongs in Provider catalog documents or package manuals, not in an ever-growing error string.

@@ -5,3 +5,7 @@ entry: default
 expect:
   statusCode: actionable
   primaryNode: inspect
+  primaryReasonCode: route.release.inspect
+  command: npm pack --dry-run
+  recommendedResources: [release.checklist]
+  recordNode: release/inspect

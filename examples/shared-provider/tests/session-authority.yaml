@@ -9,3 +9,6 @@ state:
 expect:
   statusCode: actionable
   primaryNode: approval
+  primaryReasonCode: route.release.approval-required
+  availability: immediate
+  gateResolution: session-authority

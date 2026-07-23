@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: process-next
+runner: host
+effect: write
+handler: batch.process-next

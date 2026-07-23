@@ -21,6 +21,9 @@ describe("legacy imports", () => {
     await importWorkflow(resolve(examples, "importing/legacy-workflow.yaml"), directory);
     const provider = await loadProvider(resolve(directory, "provider.yaml"));
     expect([...provider.graphs.keys()].sort()).toEqual(["main", "imported-release", "imported-scripts", "imported-skill"].sort());
+    expect(provider.codeCatalog?.entries.has("route.imported-skill.use-skill")).toBe(true);
+    expect(provider.codeCatalog?.entries.has("route.imported-scripts.step-1")).toBe(true);
+    expect(provider.codeCatalog?.entries.has("route.imported-release.start")).toBe(true);
     const report = await readFile(resolve(directory, "IMPORT_REPORT.md"), "utf8");
     expect(report).toContain("## Skill imported-skill");
     expect(report).toContain("## Scripts imported-scripts");

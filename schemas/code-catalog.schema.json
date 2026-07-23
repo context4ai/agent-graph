@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/code-catalog.schema.json",
+  "title": "Agent Graph Code Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "codes"],
+  "properties": {
+    "schema": { "const": "agent-graph.code-catalog.v1" },
+    "codes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/code" }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$",
+      "maxLength": 160
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": { "pattern": "^(?:/|[A-Za-z]:|.*(?:^|/)\\.\\.(?:/|$))" }
+    },
+    "code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "kind", "summary"],
+      "properties": {
+        "code": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["route-reason", "diagnostic"] },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "severity": { "enum": ["info", "warning", "error"] },
+        "document": { "$ref": "#/$defs/relativePath" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "route-reason" } } },
+          "then": {
+            "allOf": [
+              { "properties": { "code": { "type": "string", "pattern": "^route\\." } } },
+              { "not": { "required": ["severity"] } }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

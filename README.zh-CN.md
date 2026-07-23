@@ -1,120 +1,136 @@
 # Agent Graph
 
-Agent Graph 是面向 Agent Skills 的 Graph Engineering 无模型工作契约层。它把知识、操作说明、脚本、可观察状态和人工门禁连接成一张可导航的工作图，让 Agent 发现当前真正相关的内容，执行下一条合法动作，并持续推进目标。
+Agent Graph 是面向 Agent Skills 的工作契约层。你把一套流程写成一张步骤图，运行时它根据当前事实告诉 Agent 下一步该做什么、要读哪几个文件、怎样才算做完。它自己从不调用模型。
 
-它编排工作，不编排 Agent。Agent Graph 不调用模型、不分配 Agent 身份、不传输共享可变状态，也不调度并行 Worker；已有 Agent 与宿主消费它基于事实选择的 Route，并负责落实执行边界。
+Agent Graph 只协调工作本身：它不调用模型，不分配 Agent 身份，不传输共享可变状态，也不调度并行 Worker。这些由已有的 Agent 和宿主完成——它们消费 Agent Graph 基于事实给出的 Route，并守住执行边界。
 
-Agent 很多时候并不缺知识。更难的问题是：现在该读哪一部分、下一步允许做什么、什么事实能够证明动作已经完成，以及会话中断后从哪里继续。把所有内容塞进一个更长的 Prompt，并不能可靠地解决这些问题。
+Agent 很多时候并不缺知识。更难的是判断：现在该读哪一部分、下一步允许做什么、什么事实能证明动作已经完成，以及会话中断后从哪里继续。把内容不断塞进更长的 Prompt，并不能可靠地解决这些问题。
 
-> 上下文应按需发现，而不是不断堆积。计划是显式的，路径则由当前现实状态决定。
+> 上下文应按需发现，而不是不断堆积。计划是显式的，路径由当前现实状态决定。
 
 [English](./README.md) · [用户手册](./docs/zh-CN/README.md) · [Graph Engineering](./docs/zh-CN/graph-engineering.md) · [开发指南](./DEVELOPMENT.md)
 
-## 从知识走向可验证的进展
+## 先看一个最简单的例子
 
-Graph 记录既定计划的边界，包括动作、依赖、选择、门禁、证据和恢复路线，但不强迫每次运行都经过同一条静态流水线。每一轮，Agent Graph 都根据可观察事实和已有 Outcome 求值，选择一条合法 Route，再只暴露该 Route 所需的资源：
+假设 Agent 只需要完成一件事：写一份草稿，检查草稿，然后结束。
+
+流程只有三步：
+
+```text
+写草稿  →  检查草稿  →  完成
+```
+
+现在，宿主能够观察到两个事实：
+
+```text
+draft.saved   = true
+review.passed = false
+```
+
+草稿已经保存，但还没有检查通过，所以 Agent Graph 直接把 **检查草稿** 作为当前 Route。
+
+![示例 Graph](./docs/zh-CN/assets/example-graph.svg)
+
+这里没有从对话中猜测进度。之后如果 `review.passed` 变成 `true`，下一轮求值就会到达 **完成**；如果它仍是 `false`，当前 Route 仍然是 **检查草稿**。
+
+理解这个例子只需要四个概念：
+
+- **Graph**：规定合法的步骤顺序。
+- **Facts**：描述当前真实状态。
+- **Route**：根据 Facts 选出的下一步。
+- **Action**：告诉 Agent 或宿主如何执行这一步。
+
+真实工作流可以继续加入所需文件、人工 Gate、显式 Outcome、分支和恢复路径，但基本循环不变。想查看可运行示例背后的实际文件，再进入[技术教程](./docs/zh-CN/getting-started.md)。
+
+## 两个反馈循环
+
+Graph 记录既定计划的边界——动作、依赖、选择、门禁、证据和恢复路线——但不强迫每次运行都走同一条静态流水线。每一轮求值都基于可观察事实和已有 Outcome 选出一条路线，并只暴露该路线所需的资源：
 
 ![Agent Graph 路由生命周期](./docs/zh-CN/assets/route-lifecycle.svg)
 
-由此形成两个反馈循环：
+- **运行反馈**改变下一条路线：成功推进目标，缺证据进入验证，失败进入恢复或另作选择；
+- **工程反馈**让工作流可被改进：事件、诊断和路由测试能暴露说明、事实定义或图结构中的问题。
 
-- **运行反馈**改变下一条 Route：成功可以推进目标，缺少证据会进入验证，失败则可以进入恢复或其他选择；
-- **工程反馈**让工作流持续改进：事件、诊断和路由测试可以暴露说明、事实定义或图结构中的问题。
-
-Agent Graph 不会在后台擅自重写自己的计划。运行时路由根据证据动态变化；Graph 本身由人和工程流程依据可观察结果持续优化。
+Agent Graph 不会在后台擅自重写自己的计划。运行时路由随证据变化，Graph 本身由人和工程流程依据可观察结果优化。
 
 > 进展应由事实证明，而不是依赖对话记忆。
 
-## 这套机制能带来什么
+## 它能解决什么
 
-- **承载大量知识，但不制造巨型 Prompt。** Procedure、Schema、手册和动态上下文都保留为文件资源，只有选中的 Route 需要时才会加载。
-- **让长任务跨越会话边界。** Facts 和显式 Outcomes 可以重建任务位置；可选 Run 进一步记录事件、Checkpoint 和可恢复的运行状态。
-- **让计划动态响应现实，但不会随意漂移。** Graph 规定合法选择和停止条件，当前证据决定实际经过的路径。
-- **让人工与 Agent 在明确权限下协作。** Gate 说明谁必须决策，以及用户是否只在当前会话委托了决定权。
-- **在运行模型前检查和测试流程。** 作者可以验证引用、循环、资源边界和预期 Route，而不必先让模型实际执行整个工作流。
-- **根据证据改进系统。** 团队可以检查为何选中某条 Route、它暴露了哪些上下文、记录了什么 Outcome，以及恢复从哪里开始。
+- **承载大量知识而不撑大 Prompt。** Procedure、Schema、手册和动态上下文都是文件资源，选中的路线需要时才加载。
+- **让长任务跨越会话。** Facts 和显式 Outcome 能重建任务进度；可选的 Run 再记录事件、Checkpoint 和可恢复状态。
+- **计划随现实响应，又不至于漂移。** Graph 规定合法选择和停止条件，当前证据决定实际经过的路径。
+- **运行模型之前就能测试。** 作者可以校验引用、循环、资源边界和预期路线，不必先让模型跑一遍整个流程。
 
 ## 项目提供什么
 
-Agent Graph 是一套 Skills 原生的文件规范，并提供参考 SDK 与 CLI。项目包含：
+Agent Graph 是一套 Skills 原生的文件规范，并附带参考 SDK 与 CLI：
 
 - Provider、Graph、Action、Resource、Run 和测试用例的版本化规范；
-- 用于加载和求值这些文件、兼容 Node.js 的 SDK；
+- 兼容 Node.js、用于加载和求值这些文件的 SDK；
 - 用于创建、检查、测试、构建和恢复工作流的 CLI；
-- 用于新项目，以及将既有 Skills、脚本和依赖工作流转成草案的模板与导入器。
+- 命名空间 Skill 绑定与 Provider Code Catalog，用于稳定表达路由原因；
+- 模板与导入器，用于起新项目，或把已有 Skill、脚本和依赖工作流转成草案。
 
-它不是 Agent 框架、模型运行时或隐藏任务执行器，也不会主动调用模型。CLI 只暴露当前合法路线、所需文件资源、命令计划、门禁和结果记录契约，由 Agent 或宿主决定如何完成这条路线。
+它不会主动调用模型。CLI 只暴露当前合法路线、所需文件、命令计划、门禁和结果记录契约，由 Agent 或宿主决定如何完成。
 
-## 安装与运行
+## 我该怎么接入
 
-无需长期安装即可直接运行：
+Agent Graph 是基础设施，只装 CLI 不会让现有 Agent 自动照做。一次接入涉及三方：Provider 定义流程契约，Skill 负责被发现，宿主（你的 Agent 或产品）提供事实、展示路线、执行门禁并记录结果。
 
-```bash
-npx @c4a/agent-graph@0.1.1 --version
-npx @c4a/agent-graph@0.1.1 init ./my-provider --id my-provider
-# Bun 用户也可以直接临时运行同一个包：
-bunx @c4a/agent-graph@0.1.1 --version
-```
+按处境对号入座：
 
-也可以全局安装 CLI：
+| 你的处境 | 从这里开始 |
+|---|---|
+| 改进一个已有 Skill | [迁移指南](./docs/zh-CN/migration.md) |
+| 从零建一个 Skill 或工作流 | [编写 Graph](./docs/zh-CN/authoring.md) |
+| 把路由能力嵌进自己的 CLI、插件或产品 | [Skill 与 Provider](./docs/zh-CN/skills-and-providers.md) |
+| 只是使用别人接好的能力 | 照常调用那个 Skill，通常无需自己安装或配置 |
 
-```bash
-npm install --global @c4a/agent-graph@0.1.1
-agent-graph --version
-```
+多份 Skill 可以共享一个 Provider，一个宿主也可以安装多个互相隔离的 Provider，不需要全局目录，也不会合并无关流程。
 
-npm 包还包含自包含的 `dist/agent-graph.mjs`。只复制这一个文件，即可用 Node.js 或 Bun 运行：
+安装（作者用前者，内嵌宿主用后者）：
 
 ```bash
-node agent-graph.mjs --version
-bun agent-graph.mjs --version
+npm install --save-dev @c4a/agent-graph   # 编写与 CI
+npm install @c4a/agent-graph              # 内嵌 SDK 的宿主
 ```
 
-用户运行时要求 Node.js 20 或更高版本。Bun 用于项目开发，普通用户并不必须安装 Bun。
+需要精确命令时看 [CLI 参考](./docs/zh-CN/cli.md)，想跟着跑一遍看[快速开始](./docs/zh-CN/getting-started.md)。支持 Node.js 20 及以上版本。
 
-## 快速开始
+## Skill 如何连接工作图
 
-```bash
-npx @c4a/agent-graph@0.1.1 init ./my-provider --id my-provider
-cd my-provider
+宿主先根据 `name` 和 `description` 判断一个 Skill 是否符合用户需求；Skill 被选中后，三个 metadata 字段再精确定位它使用的工作图：
 
-npx @c4a/agent-graph@0.1.1 validate --format json
-npx @c4a/agent-graph@0.1.1 test tests --format json
-npx @c4a/agent-graph@0.1.1 evaluate main --format json
-```
-
-`evaluate` 返回 `agent-graph.evaluation.v1`。使用其中的 `primaryRoute.routeId` 解析路线，只会拿到当前状态所选中的动作和资源：
-
-```bash
-npx @c4a/agent-graph@0.1.1 route main <route-id> --revision <revision> --format json
-```
-
-长任务可以把运行状态放到宿主自己选择的位置：
-
-```bash
-npx @c4a/agent-graph@0.1.1 run start main --state .runtime/run.json
-npx @c4a/agent-graph@0.1.1 run status --state .runtime/run.json --format json
-npx @c4a/agent-graph@0.1.1 run record main/work completed --state .runtime/run.json
-```
-
-Agent Graph 不规定 `.agent-graph`、用户主目录缓存或任何宿主专属目录。Bundle、Run、Checkpoint 和 Cache 的路径都由调用方显式提供。
-
-## Skill 绑定
-
-Skill 保持为发现与消费协议的薄入口：
-
-```yaml
+```markdown
 ---
-name: example-operator
-description: Execute the current route exposed by Agent Graph.
+name: draft-workflow
+description: 当用户需要撰写、检查并完成一份草稿时使用。
 metadata:
   agent-graph: path:../../provider.yaml
+  agent-graph.graph: draft
+  agent-graph.entry: default
 ---
+
+# Draft workflow
+
+1. 解析以上绑定，并对选中的 Graph 和 Entry 求值。
+2. 解析当前 Route，完整读取它要求的资源。
+3. 遇到尚未解决的人工 Gate 时停止。
+4. 只执行当前 Route 选择的 Action，记录显式 Outcome，再次求值。
 ```
 
-`path:` 相对 `SKILL.md` 解析。宿主也可以注册共享 Provider，再使用 `provider:<id>`；因此多个 Skills 可以复用同一张图而不复制图资源。
+| 字段 | 作用 |
+|---|---|
+| `agent-graph` | 定位包含工作流的 Provider |
+| `agent-graph.graph` | 选择 Provider 中的一张 Graph |
+| `agent-graph.entry` | 选择这张 Graph 的公开入口 |
 
-## 文档
+三个字段缺一不可，并由 Loader 一次校验。`path:` 始终相对当前 `SKILL.md` 解析，而不是相对进程工作目录；宿主也可以注册共享 Provider，改用 `provider:<id>`。
+
+Skill 正文只保留这段启动与消费规则。各阶段的操作说明、Schema 和上下文继续作为 Route 资源按需加载，不复制进 Skill。绑定只选择稳定工作流；当前模块、批次或日期属于运行时 Facts。完整规则参见 [Skill 与 Provider](./docs/zh-CN/skills-and-providers.md)。
+
+## 文档与参考
 
 - [快速开始](./docs/zh-CN/getting-started.md)
 - [编写 Graph](./docs/zh-CN/authoring.md)
@@ -124,6 +140,10 @@ metadata:
 - [运行、循环与恢复](./docs/zh-CN/runtime-and-recovery.md)
 - [测试与发布](./docs/zh-CN/testing-and-publishing.md)
 - [迁移已有工作流](./docs/zh-CN/migration.md)
+- [接入场景详解](./docs/zh-CN/adoption-paths.md)
 - [Graph Engineering：概念与实现](./docs/zh-CN/graph-engineering.md)
 
-可运行场景位于 [`examples/`](./examples)，机器可读契约位于 [`schemas/`](./schemas)。
+想直接查看仓库内容：
+
+- [`examples/`](./examples)：可运行的完整场景，第一次阅读可以从 [`getting-started`](./examples/getting-started) 开始；
+- [`schemas/`](./schemas)：供工具和集成使用的机器可读协议契约。

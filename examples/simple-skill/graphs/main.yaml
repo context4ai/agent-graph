@@ -6,6 +6,7 @@ entrypoints:
 nodes:
   - id: draft
     kind: action
+    reasonCode: route.main.draft
     action: actions/draft.yaml
     resources:
       required: [resources/drafting.md, resources/output-schema.yaml]

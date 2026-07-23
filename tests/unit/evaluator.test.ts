@@ -29,6 +29,8 @@ describe("graph evaluation", () => {
     const waiting = evaluateGraph(provider, "release", "default", { outcomes }).evaluation;
     const delegated = evaluateGraph(provider, "release", "default", { outcomes, authorities: ["release.approve"] }).evaluation;
     expect(waiting.statusCode).toBe("waiting-user");
+    expect(waiting.primaryRoute?.reasonCode).toBe("route.release.approval-required");
+    expect(waiting.primaryRoute?.hint).toBe("Publishing is waiting for an authorized approval.");
     expect(delegated.statusCode).toBe("actionable");
   });
 
@@ -102,7 +104,7 @@ describe("graph evaluation", () => {
 id: main
 entrypoints: { default: work }
 nodes:
-  - { id: work, kind: action, action: actions/work.yaml }
+  - { id: work, kind: action, reasonCode: route.main.work, action: actions/work.yaml }
   - { id: success, kind: terminal, terminalOutcome: completed }
   - { id: failure, kind: terminal, terminalOutcome: failed }
 edges:

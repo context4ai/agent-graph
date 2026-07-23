@@ -16,13 +16,17 @@ import { validateSchema } from "./schema.js";
 import type {
   ActionDefinition,
   BundleManifest,
+  CodeCatalogDefinition,
   DynamicResourceDefinition,
   GraphDefinition,
   LoadedAction,
+  LoadedCodeCatalog,
   LoadedGraph,
   LoadedProvider,
   LoadedResource,
   ProviderManifest,
+  ResolvedSkillBinding,
+  SkillBinding,
   StaticFileResourceDefinition,
 } from "./types.js";
 
@@ -257,6 +261,46 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
   const files = new Set<string>([resolvedManifestPath]);
   const actionIds = new Map<string, string>();
   const resourceIds = new Map<string, string>();
+  let codeCatalog: LoadedCodeCatalog | undefined;
+
+  if (manifest.catalogs?.codes) {
+    const catalogPath = resolveContainedPath(root, manifest.catalogs.codes, "code catalog reference");
+    await ensureContainedFile(root, catalogPath, "code catalog");
+    const definition = await readStructuredFile<CodeCatalogDefinition>(catalogPath);
+    await validateSchema("code-catalog", definition, catalogPath);
+    const entries = new Map<string, CodeCatalogDefinition["codes"][number]>();
+    for (const entry of definition.codes) {
+      if (entries.has(entry.code)) {
+        throw new AgentGraphError("code-catalog-code-duplicate", `Code catalog contains duplicate code: ${entry.code}`);
+      }
+      entries.set(entry.code, entry);
+    }
+    codeCatalog = { path: catalogPath, definition, entries, documents: new Map() };
+    files.add(catalogPath);
+    for (const entry of definition.codes) {
+      if (!entry.document) continue;
+      const resourcePath = resolveContainedPath(root, entry.document, "code document reference");
+      let resource = resources.get(resourcePath);
+      if (!resource) {
+        resource = await loadResource(root, entry.document);
+        const existing = resourceIds.get(resource.metadata.id);
+        if (existing && existing !== resource.path) {
+          throw new AgentGraphError(
+            "resource-id-duplicate",
+            `Resource id ${resource.metadata.id} is declared by both ${existing} and ${resource.path}`,
+          );
+        }
+        if (resource.dynamic) {
+          throw new AgentGraphError("code-document-dynamic", `Code ${entry.code} must reference a static document resource`);
+        }
+        resourceIds.set(resource.metadata.id, resource.path);
+        resources.set(resource.path, resource);
+        files.add(resource.path);
+        files.add(resource.contentPath);
+      }
+      codeCatalog.documents.set(entry.code, resource);
+    }
+  }
 
   for (const graphReference of manifest.graphs) {
     const graphPath = resolveContainedPath(root, graphReference, "graph reference");
@@ -301,9 +345,10 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
           directFiles.add(file);
         }
       }
+      const nodeResources = node.kind === "action" || node.kind === "gate" ? node.resources : undefined;
       for (const resourceReference of [
-        ...(node.resources?.required ?? []),
-        ...(node.resources?.recommended ?? []),
+        ...(nodeResources?.required ?? []),
+        ...(nodeResources?.recommended ?? []),
       ]) {
         const resourcePath = resolveContainedPath(root, resourceReference, "resource reference");
         if (!resources.has(resourcePath)) {
@@ -329,6 +374,27 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
   }
 
   detectGraphRecursion(graphDependencies);
+
+  if (codeCatalog) {
+    for (const graph of graphs.values()) {
+      for (const node of graph.definition.nodes) {
+        if (node.kind !== "action" && node.kind !== "gate") continue;
+        const entry = codeCatalog.entries.get(node.reasonCode!);
+        if (!entry) {
+          throw new AgentGraphError(
+            "route-reason-code-missing",
+            `Graph ${graph.definition.id} node ${node.id} reasonCode is not declared by the Provider code catalog: ${node.reasonCode}`,
+          );
+        }
+        if (entry.kind !== "route-reason") {
+          throw new AgentGraphError(
+            "route-reason-code-kind-invalid",
+            `Graph ${graph.definition.id} node ${node.id} reasonCode must use a route-reason catalog entry: ${node.reasonCode}`,
+          );
+        }
+      }
+    }
+  }
 
   for (const resource of resources.values()) {
     if (!resource.dynamic) continue;
@@ -428,7 +494,19 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
     }
   }
   const digest = digestValue({ manifest, files: fileDigests });
-  return { manifestPath: resolvedManifestPath, root, manifest, graphs, actions, resources, files, graphDependencies, graphDigests, digest };
+  return {
+    manifestPath: resolvedManifestPath,
+    root,
+    manifest,
+    graphs,
+    actions,
+    resources,
+    ...(codeCatalog ? { codeCatalog } : {}),
+    files,
+    graphDependencies,
+    graphDigests,
+    digest,
+  };
 }
 
 export async function readProviderRegistry(path: string): Promise<ProviderRegistry> {
@@ -449,55 +527,84 @@ export async function readProviderRegistry(path: string): Promise<ProviderRegist
   return result;
 }
 
-export async function readSkillLocator(skillPath: string): Promise<string> {
+export async function readSkillBinding(skillPath: string): Promise<SkillBinding> {
   const absolute = resolve(skillPath);
   const content = await readText(absolute);
   const { metadata } = parseFrontmatter(content, absolute);
   const extensionMetadata = metadata.metadata;
   if (extensionMetadata === null || typeof extensionMetadata !== "object" || Array.isArray(extensionMetadata)) {
-    throw new AgentGraphError("skill-binding-missing", `Skill ${absolute} does not declare metadata.agent-graph`);
+    throw new AgentGraphError("skill-binding-missing", `Skill ${absolute} does not declare Agent Graph metadata`);
   }
-  const locator = (extensionMetadata as Record<string, unknown>)["agent-graph"];
+  const values = extensionMetadata as Record<string, unknown>;
+  const locator = values["agent-graph"];
+  const graph = values["agent-graph.graph"];
+  const entry = values["agent-graph.entry"];
   if (typeof locator !== "string" || locator.trim().length === 0) {
     throw new AgentGraphError("skill-binding-missing", `Skill ${absolute} does not declare metadata.agent-graph`);
   }
-  return locator.trim();
+  if (typeof graph !== "string" || graph.trim().length === 0) {
+    throw new AgentGraphError("skill-binding-missing", `Skill ${absolute} does not declare metadata.agent-graph.graph`);
+  }
+  if (typeof entry !== "string" || entry.trim().length === 0) {
+    throw new AgentGraphError("skill-binding-missing", `Skill ${absolute} does not declare metadata.agent-graph.entry`);
+  }
+  return { locator: locator.trim(), graph: graph.trim(), entry: entry.trim() };
 }
 
-export async function resolveSkillManifest(
+export async function resolveSkillBinding(
   skillPath: string,
   options: LoadProviderOptions = {},
-): Promise<{ locator: string; manifestPath: string }> {
+): Promise<ResolvedSkillBinding> {
   const absolute = resolve(skillPath);
-  const locator = await readSkillLocator(absolute);
+  const binding = await readSkillBinding(absolute);
+  const locator = binding.locator;
+  let manifestPath: string;
   if (locator.startsWith("path:")) {
     const reference = locator.slice("path:".length);
     if (!reference) throw new AgentGraphError("skill-locator-invalid", `Skill path locator is empty: ${absolute}`);
     if (isAbsolute(reference) || /^[A-Za-z]:[\\/]/.test(reference)) {
       throw new AgentGraphError("skill-locator-absolute", `Skill path locator must be relative: ${absolute}`);
     }
-    const manifestPath = resolve(dirname(absolute), reference);
+    manifestPath = resolve(dirname(absolute), reference);
     await ensureFile(manifestPath, "skill provider manifest");
-    return { locator, manifestPath };
-  }
-  if (locator.startsWith("provider:")) {
+  } else if (locator.startsWith("provider:")) {
     const id = locator.slice("provider:".length);
-    const manifestPath = options.registry?.[id];
-    if (!manifestPath) {
+    const registered = options.registry?.[id];
+    if (!registered) {
       throw new AgentGraphError(
         "provider-unresolved",
         `Provider ${id} is not available; supply a host BundleResolver or --registry`,
       );
     }
-    await ensureFile(manifestPath, "registered provider manifest");
-    const provider = await loadProvider(manifestPath);
-    if (provider.manifest.id !== id) {
-      throw new AgentGraphError(
-        "provider-id-mismatch",
-        `Registry key ${id} resolved to Provider ${provider.manifest.id}`,
-      );
-    }
-    return { locator, manifestPath: resolve(manifestPath) };
+    manifestPath = resolve(registered);
+  } else {
+    throw new AgentGraphError("skill-locator-invalid", `Unsupported agent-graph locator in ${absolute}: ${locator}`);
   }
-  throw new AgentGraphError("skill-locator-invalid", `Unsupported agent-graph locator in ${absolute}: ${locator}`);
+  await ensureFile(manifestPath, "registered provider manifest");
+  const provider = await loadProvider(manifestPath);
+  if (locator.startsWith("provider:") && provider.manifest.id !== locator.slice("provider:".length)) {
+    throw new AgentGraphError(
+      "provider-id-mismatch",
+      `Registry key ${locator.slice("provider:".length)} resolved to Provider ${provider.manifest.id}`,
+    );
+  }
+  const graph = provider.graphs.get(binding.graph);
+  if (!graph) {
+    throw new AgentGraphError("skill-graph-missing", `Skill ${absolute} selects missing Graph ${binding.graph}`);
+  }
+  if (!Object.hasOwn(graph.definition.entrypoints, binding.entry)) {
+    throw new AgentGraphError(
+      "skill-entry-missing",
+      `Skill ${absolute} selects missing Entry ${binding.graph}#${binding.entry}`,
+    );
+  }
+  return {
+    schema: "agent-graph.skill-binding.v1",
+    skillPath: absolute,
+    locator,
+    graph: binding.graph,
+    entry: binding.entry,
+    manifestPath,
+    provider: provider.manifest.id,
+  };
 }

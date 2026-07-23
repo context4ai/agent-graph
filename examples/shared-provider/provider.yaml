@@ -2,3 +2,8 @@ schema: agent-graph.provider.v1
 id: example.shared-release
 version: 0.1.0
 graphs: [graphs/release.yaml]
+catalogs:
+  codes: codes.yaml
+compatibility:
+  agentGraph: ^0.2.0
+  node: ">=20"

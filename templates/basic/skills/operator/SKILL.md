@@ -3,6 +3,8 @@ name: "{{providerId}}-operator"
 description: Execute the current Agent Graph route using only its declared resources and action contract.
 metadata:
   agent-graph: path:../../provider.yaml
+  agent-graph.graph: main
+  agent-graph.entry: default
 ---
 
 # Operator

@@ -25,12 +25,18 @@
     "routeSummary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["routeId", "graph", "node", "statusCode", "availability", "label"],
+      "required": ["routeId", "graph", "node", "statusCode", "reasonCode", "availability", "label"],
       "properties": {
         "routeId": { "type": "string", "pattern": "^route:[a-f0-9]{20}$" },
         "graph": { "type": "string", "minLength": 1 },
         "node": { "type": "string", "minLength": 1 },
         "statusCode": { "$ref": "#/$defs/status" },
+        "reasonCode": {
+          "type": "string",
+          "pattern": "^route\\.[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$",
+          "maxLength": 160
+        },
+        "hint": { "type": "string", "maxLength": 160 },
         "availability": { "$ref": "#/$defs/availability" },
         "label": { "type": "string", "minLength": 1 }
       }
@@ -44,6 +50,7 @@
         "severity": { "enum": ["info", "warning", "error"] },
         "message": { "type": "string" },
         "path": { "type": "string" },
+        "documentRef": { "type": "string", "minLength": 1 },
         "detail": {}
       }
     }

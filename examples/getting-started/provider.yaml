@@ -3,3 +3,6 @@ id: example.getting-started
 version: 0.1.0
 description: Minimal agent-led workflow.
 graphs: [graphs/main.yaml]
+compatibility:
+  agentGraph: ^0.2.0
+  node: ">=20"

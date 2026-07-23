@@ -6,8 +6,8 @@
 
 ```bash
 agent-graph ...                    # 已安装命令
-npx @c4a/agent-graph@0.1.1 ...    # npm 临时运行
-bunx @c4a/agent-graph@0.1.1 ...   # Bun 临时运行
+npx @c4a/agent-graph@0.2.0 ...    # npm 临时运行
+bunx @c4a/agent-graph@0.2.0 ...   # Bun 临时运行
 node ./agent-graph.mjs ...         # Provider 随包携带的单文件
 ```
 
@@ -18,17 +18,17 @@ node ./agent-graph.mjs ...         # Provider 随包携带的单文件
 | 选项 | 含义 |
 |---|---|
 | `--manifest <path>` | 源码 Provider Manifest 或构建后的 Bundle Manifest，默认 `provider.yaml` |
-| `--skill <path>` | 通过此 Skill 的 `metadata.agent-graph` 解析 Provider |
+| `--skill <path>` | 通过 Skill 的 `agent-graph*` metadata 解析 Provider、Graph 与 Entry |
 | `--registry <path>` | 解析 `provider:` Skill Locator 的 Registry |
 | `--format human|json` | 简洁终端输出或结构化 JSON |
 
-存在 `--skill` 时由 Skill Locator 选择 Provider。Agent 与自动化应使用紧凑单行 JSON；人工检查可使用 `human`，或把 JSON 交给格式化工具。
+存在 `--skill` 时，其完整绑定选择 Provider、Graph 与 Entry；显式传入冲突的 Graph 或 Entry 会被拒绝。Agent 与自动化应使用紧凑单行 JSON；人工检查可使用 `human`，或把 JSON 交给格式化工具。
 
 ## 开发命令
 
 ### `init [directory] --id <id>`
 
-创建最小 Provider、Agent Action、已绑定 Skill、Procedure 示例和 Route 测试。即使 `provider.yaml` 尚不存在，也拒绝覆盖任何将要生成的路径。
+创建最小 Provider、Agent Action、已绑定 Skill、Procedure 示例、Code Catalog 和 Route 测试。即使 `provider.yaml` 尚不存在，也拒绝覆盖任何将要生成的路径。
 
 ### `import skill <SKILL.md> --into <provider-root> [--graph <id>]`
 
@@ -68,7 +68,7 @@ Dependency 转为 Edge，fan-in 使用默认 `all`。Importer 不会编造门禁
 
 ### `inspect skill <SKILL.md>`
 
-显示 Locator 与解析后的 Provider；`provider:` Locator 需要提供 `--registry`。
+显示完整绑定与解析后的 Provider；`provider:` Locator 需要提供 `--registry`。
 
 ### `schema list`、`schema path <name>` 与 `schema extract <name> --output <path>`
 
@@ -76,7 +76,7 @@ Dependency 转为 Edge，fan-in 使用默认 `all`。Importer 不会编造门禁
 
 ## Agent 路由
 
-### `evaluate <graph>`
+### `evaluate [graph]`
 
 选项：
 
@@ -88,7 +88,9 @@ Dependency 转为 Edge，fan-in 使用默认 `all`。Importer 不会编造门禁
 
 提供 `--state` 时从 Run 读取 facts、outcomes 与 authorities；直接参数会在当前调用中覆盖 Run。无 Run 时可提供字符串 Outcome，例如 `--outcomes '{"release/inspect":"completed"}'`。
 
-### `route <graph> [route-id]`
+使用 `--skill` 时省略 `graph`，完整 Skill 绑定是权威选择。
+
+### `route <graph> [route-id]` 或 `--skill <SKILL.md> route [route-id]`
 
 使用同样的 Evaluation 选项。省略 route ID 时解析当前 primary route。Agent 应传入上一次 Evaluation 的 `--revision <digest>`；Revision 已变化时会返回 `route-revision-stale`。不可用 ID 返回 `route-stale`。Route 解析只定位文件，不执行命令或 Materializer。
 
@@ -125,6 +127,16 @@ run events --state <path>
 
 `revision` 应使用选择该 Context View 的 Route Revision。只接受 read effect 的 command 或 script Materializer。进程只继承最小环境，不会继承宿主全部变量；超限时在写入 Cache Receipt 前终止。生成文件使用内容寻址名称，Location 与 Receipt 都保留选择它的 Revision，宿主据此拒绝过期上下文。Read Effect 是契约，不是沙箱。
 
+## 稳定 Code
+
+### `code list`
+
+列出 Provider 的可选 Code Catalog。Route 推荐原因使用 `kind: route-reason`，产品诊断使用 `kind: diagnostic`。
+
+### `code locate <code>`
+
+返回稳定 code、短摘要与可选静态文档位置，不把文档正文打印到 stdout。Agent 使用 code 做机器分支，只在需要解释时读取返回的文件。
+
 ## 测试与构建
 
 ### `test [file-or-directory]`
@@ -141,6 +153,7 @@ run events --state <path>
 
 ```json
 {
+  "schema": "agent-graph.error.v1",
   "state": "error",
   "error": {
     "code": "route-stale",

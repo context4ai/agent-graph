@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { mkdtemp, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
-import { AgentGraphError, computeRevision, initProvider, loadProvider, resolveSkillManifest, writeTextAtomic } from "../../src/index.js";
+import { AgentGraphError, computeRevision, initProvider, loadProvider, resolveSkillBinding, writeTextAtomic } from "../../src/index.js";
 
 const directories: string[] = [];
 afterEach(async () => Promise.all(directories.splice(0).map((directory) => rm(directory, { recursive: true, force: true }))));
@@ -32,8 +32,8 @@ describe("provider loading", () => {
 id: main
 entrypoints: { default: first }
 nodes:
-  - { id: first, kind: action, action: actions/work.yaml }
-  - { id: second, kind: action, action: actions/work.yaml }
+  - { id: first, kind: action, reasonCode: route.first, action: actions/work.yaml }
+  - { id: second, kind: action, reasonCode: route.second, action: actions/work.yaml }
   - { id: done, kind: terminal, terminalOutcome: completed }
 edges:
   - { from: first, to: second, outcomes: [completed] }
@@ -49,7 +49,7 @@ edges:
     await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
 id: main
 entrypoints: { default: work }
-nodes: [{ id: work, kind: action, action: actions/work.yaml }]
+nodes: [{ id: work, kind: action, reasonCode: route.work, action: actions/work.yaml }]
 edges: []
 `);
     await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({ code: "graph-terminal-missing" });
@@ -64,7 +64,7 @@ id: main
 entrypoints: { default: done }
 nodes:
   - { id: done, kind: terminal, terminalOutcome: completed }
-  - { id: work, kind: action, action: actions/work.yaml }
+  - { id: work, kind: action, reasonCode: route.work, action: actions/work.yaml }
 edges: [{ from: done, to: work, outcomes: [completed] }]
 `);
     await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({ code: "graph-terminal-edge-invalid" });
@@ -80,6 +80,7 @@ entrypoints: { default: work }
 nodes:
   - id: work
     kind: action
+    reasonCode: route.main.work
     action: actions/work.yaml
     resources:
       required: [resources/view.yaml]
@@ -108,7 +109,7 @@ graphs: [graphs/main.yaml, graphs/other.yaml]
 id: other
 entrypoints: { default: work }
 nodes:
-  - { id: work, kind: action, action: actions/other.yaml }
+  - { id: work, kind: action, reasonCode: route.other, action: actions/other.yaml }
   - { id: done, kind: terminal, terminalOutcome: completed }
 edges: [{ from: work, to: done, outcomes: [completed] }]
 `);
@@ -153,9 +154,70 @@ name: invalid-locator
 description: Invalid absolute locator fixture.
 metadata:
   agent-graph: path:/tmp/provider.yaml
+  agent-graph.graph: main
+  agent-graph.entry: default
 ---
 `);
-    await expect(resolveSkillManifest(skill)).rejects.toMatchObject({ code: "skill-locator-absolute" });
+    await expect(resolveSkillBinding(skill)).rejects.toMatchObject({ code: "skill-locator-absolute" });
+  });
+
+  test("requires a complete Skill binding and validates its Graph and Entry", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-skill-binding-"));
+    directories.push(directory);
+    await initProvider(resolve(directory, "provider"), "skill-binding");
+    const skill = resolve(directory, "SKILL.md");
+    await writeTextAtomic(skill, `---
+name: incomplete-binding
+description: Missing graph and entry.
+metadata:
+  agent-graph: path:./provider/provider.yaml
+---
+`);
+    await expect(resolveSkillBinding(skill)).rejects.toMatchObject({ code: "skill-binding-missing" });
+
+    await writeTextAtomic(skill, `---
+name: invalid-binding
+description: Selects a missing graph.
+metadata:
+  agent-graph: path:./provider/provider.yaml
+  agent-graph.graph: missing
+  agent-graph.entry: default
+---
+`);
+    await expect(resolveSkillBinding(skill)).rejects.toMatchObject({ code: "skill-graph-missing" });
+
+    await writeTextAtomic(skill, `---
+name: invalid-entry
+description: Selects a missing entry.
+metadata:
+  agent-graph: path:./provider/provider.yaml
+  agent-graph.graph: main
+  agent-graph.entry: missing
+---
+`);
+    await expect(resolveSkillBinding(skill)).rejects.toMatchObject({ code: "skill-entry-missing" });
+  });
+
+  test("requires catalog-backed route reasons when a Provider declares a Code Catalog", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-code-catalog-"));
+    directories.push(directory);
+    await initProvider(directory, "code-catalog");
+    await writeTextAtomic(resolve(directory, "provider.yaml"), `schema: agent-graph.provider.v1
+id: code-catalog
+version: 0.1.0
+graphs: [graphs/main.yaml]
+catalogs:
+  codes: codes.yaml
+`);
+    await writeTextAtomic(resolve(directory, "codes.yaml"), `schema: agent-graph.code-catalog.v1
+codes:
+  - code: route.other
+    kind: route-reason
+    summary: Another route.
+`);
+    await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({
+      code: "route-reason-code-missing",
+    });
   });
 
   test("rejects runner fields with ambiguous execution semantics", async () => {
@@ -180,7 +242,7 @@ skill: skills/getting-started/SKILL.md
 id: main
 entrypoints: { default: work }
 nodes:
-  - { id: work, kind: action, action: actions/work.yaml }
+  - { id: work, kind: action, reasonCode: route.work, action: actions/work.yaml }
   - { id: done, kind: terminal, terminalOutcome: completed }
 edges: [{ from: work, to: done, kind: gatedBy, outcomes: [completed] }]
 `);

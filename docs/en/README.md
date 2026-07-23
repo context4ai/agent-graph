@@ -2,11 +2,12 @@
 
 [简体中文](../zh-CN/README.md) · [Project README](../../README.md)
 
-This guide is for Provider authors, Skill authors, Agent-host integrators, and Agents consuming routes.
+This guide is for Provider authors, Skill authors, Agent-host integrators, and Agents consuming routes. Agent Graph is infrastructure: first identify where it belongs in your Skill or host, then use the technical references for that boundary.
 
 ## Choose your path
 
-- Start a new workflow: [Getting started](./getting-started.md)
+- Decide whether you are improving a Skill, creating a workflow, embedding a host, or consuming an installed integration: [Adoption paths](./adoption-paths.md)
+- Build a first Provider after choosing an adoption path: [Getting started](./getting-started.md)
 - Design nodes, edges, facts, gates, and resources: [Authoring graphs](./authoring.md)
 - Understand every protocol object: [Specification](./specification.md)
 - Connect Skills, plugins, and multiple Providers: [Skills and Providers](./skills-and-providers.md)
@@ -18,10 +19,10 @@ This guide is for Provider authors, Skill authors, Agent-host integrators, and A
 
 ## The consumption contract
 
-An Agent integrating Agent Graph needs only this loop:
+An Agent consuming an already integrated Agent Graph capability needs only this loop:
 
-1. Resolve the Provider from the current Skill or an explicit manifest.
-2. Run `evaluate` and branch on `statusCode`, not prose.
+1. Resolve Provider, Graph, and Entry from the current Skill binding or use an explicit manifest selection.
+2. Run `evaluate` and branch on `statusCode` and `reasonCode`, not prose.
 3. Select the primary route unless the user or task requires an alternative.
 4. Run `route` for that exact route ID and Evaluation revision.
 5. Read every required resource; read recommended resources only when useful.

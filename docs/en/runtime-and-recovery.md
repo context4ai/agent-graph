@@ -42,6 +42,7 @@ Events are append-only and outcomes keep only the latest record per state key. T
 nodes:
   - id: poll
     kind: action
+    reasonCode: route.monitor.poll
     action: actions/poll.yaml
   - id: done
     kind: terminal

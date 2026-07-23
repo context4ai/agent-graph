@@ -1,0 +1,6 @@
+schema: agent-graph.code-catalog.v1
+codes:
+  - code: route.main.work
+    kind: route-reason
+    summary: The requested work is ready to perform.
+    document: resources/procedure.md

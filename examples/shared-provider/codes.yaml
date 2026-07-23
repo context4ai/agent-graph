@@ -1,0 +1,14 @@
+schema: agent-graph.code-catalog.v1
+codes:
+  - code: route.release.inspect
+    kind: route-reason
+    summary: The release artifact still needs a read-only inspection.
+    document: resources/checklist.md
+  - code: route.release.approval-required
+    kind: route-reason
+    summary: Publishing is waiting for an authorized approval.
+    document: resources/checklist.md
+  - code: route.release.publish
+    kind: route-reason
+    summary: The inspected and approved artifact is ready to publish.
+    document: resources/checklist.md

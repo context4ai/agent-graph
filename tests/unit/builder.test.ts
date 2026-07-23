@@ -10,6 +10,7 @@ import {
   evaluateGraph,
   initProvider,
   loadProvider,
+  locateCode,
   resolveRoute,
   writeJsonAtomic,
   writeTextAtomic,
@@ -38,6 +39,12 @@ describe("deterministic provider builds", () => {
     const outputSchema = route.resources.required.find((resource) => resource.id === "schema.draft-output");
     expect(outputSchema?.filePath).toBe(resolve(directory, "first/schemas/draft-output.schema.json"));
     expect(JSON.parse(await readFile(outputSchema!.filePath!, "utf8"))).toEqual(expect.objectContaining({ type: "object" }));
+
+    const catalogSource = await loadProvider(resolve(import.meta.dir, "../../examples/shared-provider/provider.yaml"));
+    await buildProviderBundle(catalogSource, resolve(directory, "catalog"));
+    const catalogBundle = await loadProvider(resolve(directory, "catalog/manifest.json"));
+    const catalogCode = await locateCode(catalogBundle, "route.release.inspect");
+    expect(catalogCode.document?.filePath).toBe(resolve(directory, "catalog/resources/checklist.md"));
 
     const secondManifestPath = resolve(directory, "second/manifest.json");
     const inconsistent = JSON.parse(await readFile(secondManifestPath, "utf8")) as BundleManifest;

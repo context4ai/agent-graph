@@ -73,9 +73,11 @@ Some Graph Engineering articles distinguish a stable organization graph from a t
 
 - Providers define trusted capabilities and resources;
 - Skills expose discoverable entrances;
-- Graphs define current action relationships;
+- Graphs define stable action categories and legal relationships;
 - Routes are dynamically selected from current facts;
 - Runs optionally record one execution.
+
+Dynamic work does not require a dynamically rewritten Graph. Current targets and parameters remain Facts; stable Host Actions resolve them at execution time. This keeps the contract testable while letting each Route adapt to reality.
 
 It does not define persistent Agent identities, communication permissions, model allocation, delegation hierarchies, or autonomous multi-Agent scheduling. A future runtime can consume the same Route contract, but those concerns should not be disguised as Graph nodes today.
 
@@ -131,6 +133,7 @@ The test suite cannot prove that an Agent will produce a good document or patch.
 | Explicit authority | Gate plus session-scoped authority input |
 | Recovery | failure edges, repeat edges, Run events, checkpoint/resume |
 | Explainability | deterministic Evaluation, Route, inspection, and digests |
+| Stable reasons | route reason codes plus optional file-backed Code Catalog |
 | Testability | declarative state-to-route cases |
 | Portability | relative Provider references and host-selected stores |
 | Supply-chain clarity | Action effects, reachable-file bundles, content digests |

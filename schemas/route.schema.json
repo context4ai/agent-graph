@@ -4,7 +4,7 @@
   "title": "Agent Graph Route",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "provider", "revision", "routeId", "graph", "node", "statusCode", "availability", "callPath", "commandPlan", "resources", "diagnostics", "afterAction"],
+  "required": ["schema", "provider", "revision", "routeId", "graph", "node", "statusCode", "reasonCode", "availability", "callPath", "commandPlan", "resources", "diagnostics", "afterAction"],
   "properties": {
     "schema": { "const": "agent-graph.route.v1" },
     "provider": { "type": "string", "minLength": 1 },
@@ -13,6 +13,12 @@
     "graph": { "type": "string", "minLength": 1 },
     "node": { "type": "string", "minLength": 1 },
     "statusCode": { "enum": ["actionable", "waiting-user", "blocked", "complete", "error"] },
+    "reasonCode": {
+      "type": "string",
+      "pattern": "^route\\.[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$",
+      "maxLength": 160
+    },
+    "hint": { "type": "string", "maxLength": 160 },
     "availability": { "enum": ["immediate", "requires-user", "blocked"] },
     "callPath": { "type": "array", "items": { "type": "string" } },
     "action": {
@@ -90,8 +96,8 @@
         "materialize": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["resourcePath"],
-          "properties": { "resourcePath": { "type": "string", "minLength": 1 } }
+          "required": ["resourceId"],
+          "properties": { "resourceId": { "type": "string", "minLength": 1 } }
         }
       },
       "oneOf": [
@@ -108,6 +114,7 @@
         "severity": { "enum": ["info", "warning", "error"] },
         "message": { "type": "string" },
         "path": { "type": "string" },
+        "documentRef": { "type": "string", "minLength": 1 },
         "detail": {}
       }
     }

@@ -2,6 +2,16 @@
 
 Import 只生成草案，不能仅根据文件顺序推断业务或安全语义。
 
+## 0.2.0 包契约变化
+
+`0.2.0` 是一次发生在 1.0 前的契约收紧：
+
+- Action 或 Gate Node 必须声明 `route.*` 形式的 `reasonCode`；
+- Skill Binding 使用 `agent-graph`、`agent-graph.graph` 与 `agent-graph.entry` 显式选择 Provider、Graph 和 Entry；
+- 声明 Code Catalog 的 Provider 会对每个 Route Reason 执行闭集引用校验。
+
+采用新运行时前，应补齐 Skill 的三个 Metadata 字段并校验所有 Provider。Provider Manifest 版本与 `@c4a/agent-graph` 包版本相互独立。
+
 ## 已有 Agent Skill
 
 ```bash
@@ -12,7 +22,7 @@ agent-graph import skill ../legacy-skill/SKILL.md \
 agent-graph validate --manifest ./provider/provider.yaml
 ```
 
-Importer 会复制完整 Skill 目录，为副本 `SKILL.md` 加入相对 Locator，并生成一个 Agent Action 与 Graph。它保留原始指令，但不会把正文猜测拆成多个阶段。
+Importer 会复制完整 Skill 目录，为副本 `SKILL.md` 加入相对 Provider/Graph/Entry 绑定，并生成一个 Agent Action 与 Graph。它保留原始指令，但不会把正文猜测拆成多个阶段。
 
 导入后检查：
 

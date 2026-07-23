@@ -1,0 +1,10 @@
+schema: agent-graph.code-catalog.v1
+codes:
+  - code: route.batch.process-next
+    kind: route-reason
+    summary: The batch still contains a target that can be processed.
+    document: resources/process-batch.md
+  - code: route.batch.review
+    kind: route-reason
+    summary: Processing is complete and the batch is waiting for review.
+    document: resources/process-batch.md

@@ -1,120 +1,136 @@
 # Agent Graph
 
-Agent Graph is the model-free work-contract layer of Graph Engineering for Agent Skills. It connects knowledge, instructions, scripts, observable state, and human gates into a navigable work graph so an Agent can discover what matters now, take the next legal action, and keep moving toward a goal.
+Agent Graph is a work-contract layer for Agent Skills. You describe a workflow as a small graph of steps; at runtime it reads the current facts and tells an Agent what to do next, which files to read for that step, and what proves the step is done. It never calls a model itself.
 
-It coordinates work, not Agents. Agent Graph does not invoke models, assign Agent identities, transport shared mutable state, or schedule parallel workers. Existing Agents and hosts consume its fact-grounded Routes and enforce the execution boundary.
+Agent Graph coordinates the work, not the Agents. It does not invoke models, assign Agent identities, transport shared mutable state, or schedule parallel workers. Existing Agents and hosts consume its fact-grounded Routes and hold the execution boundary.
 
-Agents often have access to enough knowledge. The harder problem is knowing which part applies now, which action is legal next, what proves that action is complete, and where to resume after interruption. A longer prompt does not solve this reliably.
+Agents usually have enough knowledge. The harder problem is knowing which part applies now, which action is legal next, what proves that action is complete, and where to resume after an interruption. Making the prompt longer does not solve this reliably.
 
 > Context should be discovered, not accumulated. The plan is explicit; the path is selected from current reality.
 
 [简体中文](./README.zh-CN.md) · [User manual](./docs/en/README.md) · [Graph Engineering](./docs/en/graph-engineering.md) · [Development](./DEVELOPMENT.md)
 
-## From knowledge to verified progress
+## A simple example
 
-The Graph records the planned boundaries—actions, dependencies, choices, gates, evidence, and recovery paths—without forcing every run through one static pipeline. On each turn, Agent Graph evaluates observable facts and prior outcomes, selects a legal route, and discloses only the resources required by that route:
+Suppose an Agent has one job: write a draft, check it, and finish.
+
+The workflow has three steps:
+
+```text
+Write draft  →  Check draft  →  Done
+```
+
+Now assume the host can observe two facts:
+
+```text
+draft.saved   = true
+review.passed = false
+```
+
+The draft already exists, but it has not passed the check. Agent Graph therefore returns **Check draft** as the current Route.
+
+![Example Graph](./docs/en/assets/example-graph.svg)
+
+Nothing is guessed from the conversation. If `review.passed` later becomes `true`, the next evaluation reaches **Done**. If it remains `false`, the Route remains **Check draft**.
+
+Only four ideas matter in this first example:
+
+- **Graph** describes the legal sequence.
+- **Facts** describe what is true now.
+- **Route** is the next legal step selected from those Facts.
+- **Action** tells the Agent or host how to perform that step.
+
+Real workflows can add required files, human Gates, explicit Outcomes, choices, and recovery paths without changing this loop. See the [technical tutorial](./docs/en/getting-started.md) for the actual files behind a runnable example.
+
+## Two feedback loops
+
+The Graph records the planned boundaries—actions, dependencies, choices, gates, evidence, and recovery paths—without forcing every run through one static pipeline. Each evaluation selects a route from observable facts and prior Outcomes, and exposes only the resources that route needs:
 
 ![Agent Graph route lifecycle](./docs/en/assets/route-lifecycle.svg)
 
-This produces two feedback loops:
+- **runtime feedback** changes the next route: success advances the goal, missing evidence leads to verification, and failure leads to recovery or another choice;
+- **engineering feedback** makes the workflow improvable: events, diagnostics, and route tests reveal problems in instructions, fact definitions, or graph structure.
 
-- **runtime feedback** changes the next route: success can advance the goal, missing evidence can expose verification, and failure can lead to recovery or another choice;
-- **engineering feedback** makes the workflow improvable: events, diagnostics, and route tests reveal where instructions, facts, or graph structure need refinement.
-
-Agent Graph does not silently rewrite its own plan. Runtime routing adapts to evidence; people and engineering processes improve the Graph from observable results.
+Agent Graph does not silently rewrite its own plan. Runtime routing follows the evidence; the Graph itself is improved by people and engineering processes from observable results.
 
 > Progress should be proven by facts, not remembered from conversation.
 
-## What this makes possible
+## What it solves
 
-- **Large knowledge without a giant prompt.** Procedures, schemas, manuals, and generated context remain file resources until a selected route needs them.
-- **Long tasks that survive session boundaries.** Facts and explicit outcomes reconstruct where the work is; an optional Run adds events, checkpoints, and resumable operational state.
-- **Plans that react without becoming arbitrary.** The Graph defines legal choices and stop conditions, while current evidence determines the path through them.
-- **Human and Agent collaboration with visible authority.** Gates state who must decide and whether a user has delegated a decision for the current session.
-- **Debugging and testing before model behavior.** Authors can validate references, cycles, resource boundaries, and expected routes without asking a model to execute the workflow.
-- **Improvement grounded in evidence.** A team can inspect why a route was chosen, which context it exposed, what outcome was recorded, and where recovery began.
+- **Large knowledge without a giant prompt.** Procedures, schemas, manuals, and generated context stay file resources, loaded only when a selected route needs them.
+- **Long tasks that survive session boundaries.** Facts and explicit Outcomes reconstruct where the work is; an optional Run adds events, checkpoints, and resumable state.
+- **Plans that react without drifting.** The Graph fixes the legal choices and stop conditions; current evidence decides the actual path through them.
+- **Testing before model behavior.** Authors can validate references, cycles, resource boundaries, and expected routes without asking a model to run the whole workflow first.
 
 ## What the project provides
 
-Agent Graph is a Skills-native file specification with a reference SDK and CLI. The project includes:
+Agent Graph is a Skills-native file specification with a reference SDK and CLI:
 
-- a versioned specification for Providers, Graphs, Actions, Resources, Runs, and tests;
+- versioned specifications for Providers, Graphs, Actions, Resources, Runs, and tests;
 - a Node.js-compatible SDK for loading and evaluating those files;
 - a CLI for authoring, inspecting, testing, building, and resuming workflows;
-- templates and importers for starting new projects or converting existing Skills, scripts, and dependency workflows.
+- namespaced Skill bindings and Provider code catalogs for stable routing reasons;
+- templates and importers for starting new projects or drafting from existing Skills, scripts, and dependency workflows.
 
-It is not an Agent framework, model runtime, or hidden task executor. It never calls a model. The CLI exposes the current legal route, required file resources, command plan, gate, and recording contract; an Agent or host decides how to carry out that route.
+It never calls a model. The CLI exposes the current legal route, required files, command plan, gate, and recording contract; an Agent or host decides how to carry it out.
 
-## Install and run
+## How to adopt it
 
-Run without a permanent installation:
+Agent Graph is infrastructure; installing the CLI alone does not make an existing Agent follow a workflow. An integration involves three parts: a Provider defines the work contract, a Skill makes it discoverable, and a host (your Agent or product) supplies facts, presents routes, enforces gates, and records outcomes.
 
-```bash
-npx @c4a/agent-graph@0.1.1 --version
-npx @c4a/agent-graph@0.1.1 init ./my-provider --id my-provider
-# Bun users can use the same package without installation:
-bunx @c4a/agent-graph@0.1.1 --version
-```
+Start from the situation you have:
 
-Or install the CLI:
+| Your situation | Start here |
+|---|---|
+| Improve an existing Skill | [Migration](./docs/en/migration.md) |
+| Build a new Skill or workflow | [Authoring graphs](./docs/en/authoring.md) |
+| Embed routing in your own CLI, plugin, or product | [Skills and Providers](./docs/en/skills-and-providers.md) |
+| Just use a capability someone already integrated | Invoke that Skill normally; you usually do not install or configure anything |
 
-```bash
-npm install --global @c4a/agent-graph@0.1.1
-agent-graph --version
-```
+Several Skills can share one Provider, and one host can install several isolated Providers. There is no global directory, and unrelated workflows are not merged.
 
-The package also ships `dist/agent-graph.mjs`, a self-contained portable CLI. Copy that one file and run it with Node.js or Bun:
+Install (the first form for authors, the second for an embedded host):
 
 ```bash
-node agent-graph.mjs --version
-bun agent-graph.mjs --version
+npm install --save-dev @c4a/agent-graph   # authoring and CI
+npm install @c4a/agent-graph              # embedded SDK host
 ```
 
-Node.js 20 or newer is the supported runtime. Bun is used for project development and is optional for users.
+See the [CLI reference](./docs/en/cli.md) for exact commands, or [Getting started](./docs/en/getting-started.md) to run through it once. Node.js 20 or newer is supported.
 
-## Quick start
+## How a Skill connects to a graph
 
-```bash
-npx @c4a/agent-graph@0.1.1 init ./my-provider --id my-provider
-cd my-provider
+A host first uses `name` and `description` to decide whether a Skill matches the user's request. After the Skill is selected, three metadata fields identify the exact work graph it uses:
 
-npx @c4a/agent-graph@0.1.1 validate --format json
-npx @c4a/agent-graph@0.1.1 test tests --format json
-npx @c4a/agent-graph@0.1.1 evaluate main --format json
-```
-
-`evaluate` returns an `agent-graph.evaluation.v1` envelope. Resolve its `primaryRoute.routeId` to obtain only the action and resources selected for that state:
-
-```bash
-npx @c4a/agent-graph@0.1.1 route main <route-id> --revision <revision> --format json
-```
-
-For a resumable task, keep runtime state wherever the host chooses:
-
-```bash
-npx @c4a/agent-graph@0.1.1 run start main --state .runtime/run.json
-npx @c4a/agent-graph@0.1.1 run status --state .runtime/run.json --format json
-npx @c4a/agent-graph@0.1.1 run record main/work completed --state .runtime/run.json
-```
-
-Agent Graph does not reserve `.agent-graph`, a home-directory cache, or any host-specific directory. Bundle, runtime, checkpoint, and cache paths are explicit.
-
-## Skill binding
-
-A Skill remains a thin discovery and consumption shell:
-
-```yaml
+```markdown
 ---
-name: example-operator
-description: Execute the current route exposed by Agent Graph.
+name: draft-workflow
+description: Use when a user wants to write, review, and complete a draft.
 metadata:
   agent-graph: path:../../provider.yaml
+  agent-graph.graph: draft
+  agent-graph.entry: default
 ---
+
+# Draft workflow
+
+1. Resolve this binding and evaluate the selected Graph and Entry.
+2. Resolve the current Route and read all of its required resources.
+3. Stop at any unresolved human Gate.
+4. Execute only the selected Action, record an explicit Outcome, and evaluate again.
 ```
 
-`path:` resolves relative to `SKILL.md`. A host can instead register a shared Provider and use `provider:<id>`. This supports one graph used by several Skills without duplicating graph resources.
+| Field | Purpose |
+|---|---|
+| `agent-graph` | Locate the Provider that contains the workflow |
+| `agent-graph.graph` | Select one Graph from that Provider |
+| `agent-graph.entry` | Select a public entrypoint in that Graph |
 
-## Documentation
+All three fields are required and validated together. `path:` always resolves relative to the current `SKILL.md`, not the process working directory. A host can instead register a shared Provider and use `provider:<id>`.
+
+The Skill body keeps only this bootstrap and consumption contract. Phase-specific procedures, schemas, and context remain Route resources and are loaded on demand instead of being copied into the Skill. The binding selects a stable workflow; current modules, batches, and dates are runtime Facts. See [Skills and Providers](./docs/en/skills-and-providers.md) for the complete contract.
+
+## Documentation and reference
 
 - [Getting started](./docs/en/getting-started.md)
 - [Authoring graphs](./docs/en/authoring.md)
@@ -124,6 +140,10 @@ metadata:
 - [Runtime, loops, and recovery](./docs/en/runtime-and-recovery.md)
 - [Testing and publishing](./docs/en/testing-and-publishing.md)
 - [Migrating existing workflows](./docs/en/migration.md)
+- [Adoption paths in depth](./docs/en/adoption-paths.md)
 - [Graph Engineering: concept and implementation](./docs/en/graph-engineering.md)
 
-Runnable scenarios are under [`examples/`](./examples). Machine-readable contracts are under [`schemas/`](./schemas).
+To inspect the repository directly:
+
+- [`examples/`](./examples) contains complete runnable scenarios; start with [`getting-started`](./examples/getting-started);
+- [`schemas/`](./schemas) contains the machine-readable protocol contracts used by tools and integrations.

@@ -5,9 +5,11 @@ entrypoints:
 nodes:
   - id: prepare
     kind: action
+    reasonCode: route.review.prepare
     action: actions/prepare.yaml
   - id: approve
     kind: gate
+    reasonCode: route.review.approval-required
     gate:
       id: result-review
       prompt: Review the prepared result.

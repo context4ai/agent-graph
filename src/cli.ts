@@ -21,15 +21,15 @@ import {
   inspectProvider,
   loadProvider,
   loadRun,
+  locateCode,
   locateResource,
   materializeResource,
   publicSchemaRoot,
   readProviderRegistry,
-  readSkillLocator,
   readStructuredFile,
   recordOutcome,
   resolveRoute,
-  resolveSkillManifest,
+  resolveSkillBinding,
   resumeRun,
   runEvaluationInput,
   runGraphTests,
@@ -40,7 +40,7 @@ import {
   updateRunFacts,
   writeJsonAtomic,
 } from "./index.js";
-import type { EvaluationInput, JsonValue, LoadedProvider, Outcome } from "./types.js";
+import type { ErrorEnvelope, EvaluationInput, JsonValue, LoadedProvider, Outcome, ResolvedSkillBinding } from "./types.js";
 
 const VERSION = packageMetadata.version;
 
@@ -60,12 +60,49 @@ function output(command: Command, value: unknown, lines?: string[]): void {
   else process.stdout.write(`${(lines ?? [JSON.stringify(value, null, 2)]).join("\n")}\n`);
 }
 
-async function providerFor(command: Command): Promise<LoadedProvider> {
+interface ProviderContext {
+  provider: LoadedProvider;
+  binding?: ResolvedSkillBinding;
+}
+
+async function providerContext(command: Command): Promise<ProviderContext> {
   const options = globals(command);
   let manifest = resolve(options.manifest);
   const registry = options.registry ? await readProviderRegistry(options.registry) : undefined;
-  if (options.skill) manifest = (await resolveSkillManifest(options.skill, { registry })).manifestPath;
-  return loadProvider(manifest);
+  const binding = options.skill ? await resolveSkillBinding(options.skill, { registry }) : undefined;
+  if (binding) manifest = binding.manifestPath;
+  return {
+    provider: await loadProvider(manifest),
+    ...(binding ? { binding } : {}),
+  };
+}
+
+async function providerFor(command: Command): Promise<LoadedProvider> {
+  return (await providerContext(command)).provider;
+}
+
+function selectedGraph(
+  context: ProviderContext,
+  graph: string | undefined,
+  entry: string | undefined,
+): { graph: string; entry: string } {
+  if (context.binding) {
+    if (graph !== undefined && graph !== context.binding.graph) {
+      throw new AgentGraphError(
+        "skill-graph-conflict",
+        `Skill selects Graph ${context.binding.graph}; explicit Graph ${graph} is not allowed`,
+      );
+    }
+    if (entry !== undefined && entry !== context.binding.entry) {
+      throw new AgentGraphError(
+        "skill-entry-conflict",
+        `Skill selects Entry ${context.binding.entry}; explicit Entry ${entry} is not allowed`,
+      );
+    }
+    return { graph: context.binding.graph, entry: context.binding.entry };
+  }
+  if (!graph) throw new AgentGraphError("graph-selection-missing", "Graph is required when no --skill binding is active");
+  return { graph, entry: entry ?? "default" };
 }
 
 async function jsonArgument(value: string): Promise<JsonValue> {
@@ -121,7 +158,7 @@ async function evaluationInput(options: { state?: string; facts?: string; outcom
 
 function addEvaluationOptions(command: Command): Command {
   return command
-    .option("--entry <name>", "graph entrypoint", "default")
+    .option("--entry <name>", "graph entrypoint; defaults to the Skill binding or default")
     .option("--state <path>", "explicit run state file")
     .option("--facts <json>", "facts as JSON or @file")
     .option("--outcomes <json>", "explicit node outcomes as JSON or @file")
@@ -133,7 +170,7 @@ const program = new Command()
   .description("Model-free work-contract graphs for Agent Skills")
   .version(VERSION)
   .option("-m, --manifest <path>", "provider or bundle manifest", "provider.yaml")
-  .option("--skill <path>", "resolve the provider through metadata.agent-graph in a SKILL.md")
+  .option("--skill <path>", "resolve Provider, Graph, and Entry through namespaced metadata in a SKILL.md")
   .option("--registry <path>", "host provider registry for provider: locators")
   .option("--format <format>", "output format: human or json", "human")
   .hook("preAction", (_root, action) => {
@@ -186,7 +223,7 @@ program.command("validate")
     const inspection = inspectProvider(provider);
     output(command, { state: "valid", ...inspection }, [
       `Valid provider ${provider.manifest.id}@${provider.manifest.version}`,
-      `${provider.graphs.size} graph(s), ${provider.actions.size} action(s), ${provider.resources.size} resource(s)`,
+      `${provider.graphs.size} graph(s), ${provider.actions.size} action(s), ${provider.resources.size} resource(s), ${provider.codeCatalog?.entries.size ?? 0} code(s)`,
     ]);
   });
 
@@ -221,7 +258,7 @@ inspectCommand.command("provider")
     const inspection = inspectProvider(await providerFor(command));
     output(command, inspection, [
       `${inspection.provider.id}@${inspection.provider.version}`,
-      `${inspection.counts.graphs} graph(s), ${inspection.counts.actions} action(s), ${inspection.counts.resources} resource(s)`,
+      `${inspection.counts.graphs} graph(s), ${inspection.counts.actions} action(s), ${inspection.counts.resources} resource(s), ${inspection.counts.codes} code(s)`,
       ...inspection.graphs.map((graph) => `- ${graph.id} [${Object.keys(graph.entrypoints).join(", ")}] ${graph.nodes.length} node(s)`),
     ]);
   });
@@ -231,48 +268,65 @@ inspectCommand.command("skill")
   .action(async (skill: string, _options: object, command: Command) => {
     const options = globals(command);
     const registry = options.registry ? await readProviderRegistry(options.registry) : undefined;
-    const locator = await readSkillLocator(skill);
-    const resolution = await resolveSkillManifest(skill, { registry });
+    const resolution = await resolveSkillBinding(skill, { registry });
     const provider = await loadProvider(resolution.manifestPath);
-    output(command, { skill: resolve(skill), locator, provider: inspectProvider(provider) }, [
-      `Locator: ${locator}`,
+    output(command, { binding: resolution, provider: inspectProvider(provider) }, [
+      `Locator: ${resolution.locator}`,
       `Provider: ${provider.manifest.id}@${provider.manifest.version}`,
+      `Graph: ${resolution.graph}#${resolution.entry}`,
     ]);
   });
 
 addEvaluationOptions(program.command("evaluate")
   .description("evaluate current facts and outcomes without executing an action")
-  .argument("<graph>", "graph id"))
-  .action(async (graph: string, options: { entry: string; state?: string; facts?: string; outcomes?: string; authority?: string[] }, command: Command) => {
-    const provider = await providerFor(command);
+  .argument("[graph]", "graph id; omit when --skill supplies the binding"))
+  .action(async (graph: string | undefined, options: { entry?: string; state?: string; facts?: string; outcomes?: string; authority?: string[] }, command: Command) => {
+    const context = await providerContext(command);
+    const selected = selectedGraph(context, graph, options.entry);
     const input = await evaluationInput(options);
-    const result = evaluateGraph(provider, graph, options.entry, input).evaluation;
+    const result = evaluateGraph(context.provider, selected.graph, selected.entry, input).evaluation;
     output(command, result, [
       `State: ${result.statusCode}`,
-      ...(result.primaryRoute ? [`Next: ${result.primaryRoute.node} (${result.primaryRoute.availability})`, `Route: ${result.primaryRoute.routeId}`] : []),
+      ...(result.primaryRoute ? [
+        `Next: ${result.primaryRoute.node} (${result.primaryRoute.availability})`,
+        `Reason: ${result.primaryRoute.reasonCode}`,
+        `Route: ${result.primaryRoute.routeId}`,
+      ] : []),
       ...result.diagnostics.map((diagnostic) => `${diagnostic.severity.toUpperCase()} ${diagnostic.code}: ${diagnostic.message}`),
     ]);
   });
 
 addEvaluationOptions(program.command("route")
   .description("resolve one evaluated route into commands, resources, gates, and the recording contract")
-  .argument("<graph>", "graph id")
-  .argument("[route-id]", "route id; defaults to the current primary route")
+  .argument("[targets...]", "without --skill: <graph> [route-id]; with --skill: [route-id]")
   .option("--revision <digest>", "bind resolution to the revision returned by evaluate"))
   .action(async (
-    graph: string,
-    routeId: string | undefined,
-    options: { entry: string; state?: string; facts?: string; outcomes?: string; authority?: string[]; revision?: string },
+    targets: string[],
+    options: { entry?: string; state?: string; facts?: string; outcomes?: string; authority?: string[]; revision?: string },
     command: Command,
   ) => {
-    const provider = await providerFor(command);
+    const context = await providerContext(command);
+    const graphArgument = context.binding ? undefined : targets[0];
+    const routeId = context.binding ? targets[0] : targets[1];
+    if ((context.binding && targets.length > 1) || (!context.binding && targets.length > 2)) {
+      throw new AgentGraphError("route-arguments-invalid", "Too many route arguments");
+    }
+    const selectedGraphEntry = selectedGraph(context, graphArgument, options.entry);
     const input = await evaluationInput(options);
-    const evaluated = evaluateGraph(provider, graph, options.entry, input).evaluation;
+    const evaluated = evaluateGraph(context.provider, selectedGraphEntry.graph, selectedGraphEntry.entry, input).evaluation;
     const selected = routeId ?? evaluated.primaryRoute?.routeId;
-    if (!selected) throw new AgentGraphError("route-unavailable", `Graph ${graph} has no available route`);
-    const route = await resolveRoute(provider, graph, options.entry, selected, input, options.revision);
+    if (!selected) throw new AgentGraphError("route-unavailable", `Graph ${selectedGraphEntry.graph} has no available route`);
+    const route = await resolveRoute(
+      context.provider,
+      selectedGraphEntry.graph,
+      selectedGraphEntry.entry,
+      selected,
+      input,
+      options.revision,
+    );
     output(command, route, [
       `Next: ${route.node} (${route.availability})`,
+      `Reason: ${route.reasonCode}`,
       ...route.commandPlan.flatMap((item) => [
         item.command ? `Command: ${item.command}` : `Host handler: ${item.handler}`,
         `Working directory: ${item.workingDirectory}`,
@@ -287,19 +341,20 @@ addEvaluationOptions(program.command("route")
 const runCommand = program.command("run").description("manage an explicit, host-owned run state file");
 
 runCommand.command("start")
-  .argument("<graph>", "graph id")
+  .argument("[graph]", "graph id; omit when --skill supplies the binding")
   .requiredOption("--state <path>", "run state file")
-  .option("--entry <name>", "graph entrypoint", "default")
+  .option("--entry <name>", "graph entrypoint; defaults to the Skill binding or default")
   .option("--workspace <path>", "workspace used by routed actions", ".")
   .option("--facts <json>", "initial facts as JSON or @file")
   .option("--authority <id...>", "session-scoped delegated authorities")
-  .action(async (graph: string, options: { state: string; entry: string; workspace: string; facts?: string; authority?: string[] }, command: Command) => {
-    const provider = await providerFor(command);
+  .action(async (graph: string | undefined, options: { state: string; entry?: string; workspace: string; facts?: string; authority?: string[] }, command: Command) => {
+    const context = await providerContext(command);
+    const selected = selectedGraph(context, graph, options.entry);
     const facts = options.facts ? objectValue(await jsonArgument(options.facts), "facts") : {};
     const run = await createRun(options.state, {
-      provider: provider.manifest.id,
-      graph,
-      entry: options.entry,
+      provider: context.provider.manifest.id,
+      graph: selected.graph,
+      entry: selected.entry,
       workspace: options.workspace,
       facts,
       authorities: options.authority,
@@ -317,7 +372,11 @@ runCommand.command("status")
     output(command, { run: { id: run.id, state: resolve(options.state), updatedAt: run.updatedAt }, evaluation }, [
       `Run: ${run.id}`,
       `State: ${evaluation.statusCode}`,
-      ...(evaluation.primaryRoute ? [`Next: ${evaluation.primaryRoute.node}`, `Route: ${evaluation.primaryRoute.routeId}`] : []),
+      ...(evaluation.primaryRoute ? [
+        `Next: ${evaluation.primaryRoute.node}`,
+        `Reason: ${evaluation.primaryRoute.reasonCode}`,
+        `Route: ${evaluation.primaryRoute.routeId}`,
+      ] : []),
     ]);
   });
 
@@ -382,6 +441,28 @@ resourceCommand.command("locate")
     output(command, location, [location.filePath ?? `Dynamic resource ${location.id}; run resource materialize explicitly.`]);
   });
 
+const codeCommand = program.command("code").description("discover stable Provider reason and diagnostic codes");
+codeCommand.command("list")
+  .action(async (_options: object, command: Command) => {
+    const provider = await providerFor(command);
+    const codes = provider.codeCatalog?.definition.codes ?? [];
+    output(command, {
+      provider: provider.manifest.id,
+      catalog: provider.codeCatalog?.path,
+      codes,
+    }, codes.map((entry) => `${entry.code} [${entry.kind}] ${entry.summary}`));
+  });
+codeCommand.command("locate")
+  .argument("<code>", "route reason or diagnostic code")
+  .action(async (code: string, _options: object, command: Command) => {
+    const location = await locateCode(await providerFor(command), code);
+    output(command, location, [
+      `${location.code} [${location.kind}]`,
+      location.summary,
+      ...(location.document?.filePath ? [`Document: ${location.document.filePath}`] : []),
+    ]);
+  });
+
 resourceCommand.command("materialize")
   .argument("<resource>", "dynamic resource id or provider-relative path")
   .requiredOption("--cache <directory>", "host-selected cache directory")
@@ -444,7 +525,12 @@ export async function runCli(argv = process.argv): Promise<void> {
       ? error
       : new AgentGraphError("unexpected-error", error instanceof Error ? error.message : String(error));
     if (options.format === "json") {
-      process.stderr.write(`${JSON.stringify({ state: "error", error: { code: known.code, message: known.message, diagnostics: known.diagnostics } })}\n`);
+      const envelope: ErrorEnvelope = {
+        schema: "agent-graph.error.v1",
+        state: "error",
+        error: { code: known.code, message: known.message, diagnostics: known.diagnostics },
+      };
+      process.stderr.write(`${JSON.stringify(envelope)}\n`);
     } else {
       process.stderr.write(`ERROR ${known.code}: ${known.message}\n`);
       for (const diagnostic of known.diagnostics) process.stderr.write(`${diagnostic.severity.toUpperCase()} ${diagnostic.code}: ${diagnostic.message}\n`);

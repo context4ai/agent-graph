@@ -27,6 +27,8 @@ Provider Manifest 列出 Graph 文件；Graph 引用 Action 和 Resource；Actio
 
 `priority` 只对同时合法的路线排序，不判断语义适配度。应使用 `requiresFacts` 或显式前置 Action，让可观察状态决定哪些选项合法。`join: all` 要求所有入边满足，`join: any` 接受任一匹配入边。
 
+Action 和 Gate Node 必须声明以 `route.` 开头的稳定 `reasonCode`，解释为何当前 Route 可用，但不参与条件判断。Code Catalog 是可选能力；声明后，Route Reason 会成为带文档的闭集。Graph 拓扑保持静态；当前目标和其他运行参数放入 Facts，Host Action 可以解析这些 Facts，不需要为每个目标生成节点。
+
 ## Outcome 与 Edge
 
 Edge 根据显式 Outcome 匹配；省略 `outcomes` 等价于 `[completed]`。
@@ -76,6 +78,7 @@ satisfiedBy:
 
 ```yaml
 kind: gate
+reasonCode: route.review.required
 gate:
   id: result-review
   prompt: Review the prepared result.
@@ -115,4 +118,4 @@ Route 返回原生目标文件，同时 Provider 仍拥有类型化的 Resource 
 
 ## Subgraph
 
-Subgraph 用于一个 Provider 内的控制组合。父 Graph 声明子 Graph 和 Entry，子 Route 带调用路径返回，Terminal Outcome 再流回父图。静态和运行时递归检查会阻止子图调用祖先。v0.1 有意不支持跨 Provider Subgraph。
+Subgraph 用于一个 Provider 内的控制组合。父 Graph 声明子 Graph 和 Entry，子 Route 带调用路径返回，Terminal Outcome 再流回父图。静态和运行时递归检查会阻止子图调用祖先。v1 有意不支持跨 Provider Subgraph。

@@ -5,6 +5,7 @@ entrypoints:
 nodes:
   - id: prepare
     kind: action
+    reasonCode: route.main.prepare
     description: Prepare the requested result
     action: actions/prepare.yaml
     resources:

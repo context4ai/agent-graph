@@ -6,21 +6,24 @@ import type {
   EvaluationInput,
   EvaluationStatus,
   FactCheck,
-  GraphNode,
   LoadedGraph,
   LoadedProvider,
   Outcome,
   OutcomeRecord,
+  RoutableGraphNode,
   RouteSummary,
+  TerminalGraphNode,
 } from "./types.js";
 
 export interface RouteCandidate {
   routeId: string;
   graph: LoadedGraph;
-  node: GraphNode;
+  node: RoutableGraphNode;
   callPath: string[];
   stateKey: string;
   statusCode: EvaluationStatus;
+  reasonCode: string;
+  hint?: string;
   availability: RouteSummary["availability"];
   diagnostics: Diagnostic[];
   gateResolution?: "user" | "session-authority";
@@ -83,7 +86,7 @@ function routeId(revision: string, graph: string, node: string, callPath: string
 function routeCandidate(
   ctx: EvaluationContext,
   graph: LoadedGraph,
-  node: GraphNode,
+  node: RoutableGraphNode,
   callPath: string[],
   statusCode: EvaluationStatus,
   availability: RouteSummary["availability"],
@@ -97,6 +100,10 @@ function routeCandidate(
     callPath,
     stateKey: nodeStateKey(graph.definition.id, node.id, callPath),
     statusCode,
+    reasonCode: node.reasonCode,
+    ...(ctx.provider.codeCatalog?.entries.get(node.reasonCode)?.summary
+      ? { hint: ctx.provider.codeCatalog.entries.get(node.reasonCode)!.summary }
+      : {}),
     availability,
     diagnostics,
     gateResolution,
@@ -109,6 +116,8 @@ function routeSummary(candidate: RouteCandidate): RouteSummary {
     graph: candidate.graph.definition.id,
     node: candidate.node.id,
     statusCode: candidate.statusCode,
+    reasonCode: candidate.reasonCode,
+    ...(candidate.hint ? { hint: candidate.hint } : {}),
     availability: candidate.availability,
     label: candidate.node.description ?? candidate.node.id,
   };
@@ -125,12 +134,17 @@ function compareCandidates(left: RouteCandidate, right: RouteCandidate): number 
   return a[0] - b[0] || a[1] - b[1] || a[2].localeCompare(b[2]);
 }
 
-function outcomeForSimpleNode(ctx: EvaluationContext, graph: LoadedGraph, node: GraphNode, callPath: string[]): Outcome {
+function outcomeForSimpleNode(
+  ctx: EvaluationContext,
+  graph: LoadedGraph,
+  node: RoutableGraphNode | TerminalGraphNode,
+  callPath: string[],
+): Outcome {
   const recorded = recordedOutcome(ctx.input.outcomes, graph.definition.id, node.id, callPath);
-  if (node.satisfiedBy && allFactsMatch(ctx.input.facts, node.satisfiedBy)) return "completed";
-  if (node.satisfiedBy && recorded === "completed") return "unverified";
+  if (node.kind !== "terminal" && node.satisfiedBy && allFactsMatch(ctx.input.facts, node.satisfiedBy)) return "completed";
+  if (node.kind !== "terminal" && node.satisfiedBy && recorded === "completed") return "unverified";
   if (recorded) return recorded;
-  if (node.kind === "terminal") return node.terminalOutcome!;
+  if (node.kind === "terminal") return node.terminalOutcome;
   return "pending";
 }
 

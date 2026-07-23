@@ -16,8 +16,8 @@
     "materialize": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["resourcePath"],
-      "properties": { "resourcePath": { "type": "string", "minLength": 1 } }
+      "required": ["resourceId"],
+      "properties": { "resourceId": { "type": "string", "minLength": 1 } }
     }
   },
   "oneOf": [

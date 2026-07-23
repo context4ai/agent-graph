@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/code-location.schema.json",
+  "title": "Agent Graph Code Location",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "provider", "code", "kind", "summary"],
+  "properties": {
+    "schema": { "const": "agent-graph.code-location.v1" },
+    "provider": { "type": "string", "minLength": 1 },
+    "code": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["route-reason", "diagnostic"] },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "severity": { "enum": ["info", "warning", "error"] },
+    "document": { "$ref": "resource-location.schema.json" }
+  }
+}

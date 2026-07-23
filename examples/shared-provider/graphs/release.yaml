@@ -5,11 +5,13 @@ entrypoints:
 nodes:
   - id: inspect
     kind: action
+    reasonCode: route.release.inspect
     action: actions/inspect.yaml
     resources:
       recommended: [resources/checklist.md]
   - id: approval
     kind: gate
+    reasonCode: route.release.approval-required
     gate:
       id: release-approval
       prompt: Approve publishing the inspected artifact?
@@ -17,6 +19,7 @@ nodes:
       delegatable: true
   - id: publish
     kind: action
+    reasonCode: route.release.publish
     action: actions/publish.yaml
   - id: done
     kind: terminal

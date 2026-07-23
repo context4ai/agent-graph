@@ -6,8 +6,8 @@ All modes run the same bundled CLI:
 
 ```bash
 agent-graph ...                    # installed binary
-npx @c4a/agent-graph@0.1.1 ...    # npm one-shot
-bunx @c4a/agent-graph@0.1.1 ...   # Bun one-shot
+npx @c4a/agent-graph@0.2.0 ...    # npm one-shot
+bunx @c4a/agent-graph@0.2.0 ...   # Bun one-shot
 node ./agent-graph.mjs ...         # single file shipped by a Provider
 ```
 
@@ -18,17 +18,17 @@ The single file is built for Node.js 20+. Repository source development uses Bun
 | Option | Meaning |
 |---|---|
 | `--manifest <path>` | Source Provider manifest or built bundle manifest; default `provider.yaml` |
-| `--skill <path>` | Resolve Provider through this Skill's `metadata.agent-graph` |
+| `--skill <path>` | Resolve Provider, Graph, and Entry through the Skill's `agent-graph*` metadata |
 | `--registry <path>` | Registry used for `provider:` Skill locators |
 | `--format human|json` | Concise terminal output or structured JSON |
 
-When `--skill` is present, its locator selects the Provider. Use compact one-line JSON output for Agent and automation consumption; use `human` or pipe JSON through a formatter for manual inspection.
+When `--skill` is present, its complete binding selects Provider, Graph, and Entry. An explicit conflicting Graph or Entry is rejected. Use compact one-line JSON output for Agent and automation consumption; use `human` or pipe JSON through a formatter for manual inspection.
 
 ## Authoring
 
 ### `init [directory] --id <id>`
 
-Creates a minimal Provider, agent action, bound Skill, procedure example, and route test. It refuses to replace any path it would generate, even when `provider.yaml` does not exist yet.
+Creates a minimal Provider, agent action, bound Skill, procedure example, Code Catalog, and route test. It refuses to replace any path it would generate, even when `provider.yaml` does not exist yet.
 
 ### `import skill <SKILL.md> --into <provider-root> [--graph <id>]`
 
@@ -68,7 +68,7 @@ Lists Graphs, entries, node counts, dependencies, Actions, Resources, and paths.
 
 ### `inspect skill <SKILL.md>`
 
-Shows the locator and resolved Provider. Supply `--registry` for a `provider:` locator.
+Shows the complete binding and resolved Provider. Supply `--registry` for a `provider:` locator.
 
 ### `schema list`, `schema path <name>`, and `schema extract <name> --output <path>`
 
@@ -76,7 +76,7 @@ Discover JSON Schema files in an npm installation. Validation schemas are embedd
 
 ## Agent routing
 
-### `evaluate <graph>`
+### `evaluate [graph]`
 
 Options:
 
@@ -88,7 +88,9 @@ Options:
 
 `--state` supplies facts, outcomes, and authorities from a Run. Direct values are merged over the Run for the current invocation. Without a Run, use string Outcome values such as `--outcomes '{"release/inspect":"completed"}'`.
 
-### `route <graph> [route-id]`
+With `--skill`, omit `graph`; the complete Skill binding is authoritative.
+
+### `route <graph> [route-id]` or `--skill <SKILL.md> route [route-id]`
 
 Uses the same evaluation options. Without `route-id`, resolves the current primary route. Agents should pass `--revision <digest>` from the preceding Evaluation; a changed revision then returns `route-revision-stale`. An unavailable ID returns `route-stale`. Route resolution locates files but never executes commands or materializers.
 
@@ -125,6 +127,16 @@ Additional options:
 
 Pass the revision from the Route that selected the context view. Only a read-effect command or script materializer is accepted. The process inherits a minimal environment, not every host variable. Limits terminate runaway materializers before a cache receipt is written. The resulting filename is content-addressed, and the returned location and receipt preserve the selecting revision so a host can reject stale context. Read effect is a contract, not a sandbox.
 
+## Stable codes
+
+### `code list`
+
+Lists the Provider's optional Code Catalog. Route reasons use `kind: route-reason`; product diagnostics use `kind: diagnostic`.
+
+### `code locate <code>`
+
+Returns the stable code, short summary, and optional static document location. It never prints the document body. Agents branch on the code and read the returned file only when the explanation is needed.
+
 ## Tests and build
 
 ### `test [file-or-directory]`
@@ -141,6 +153,7 @@ With `--format json`, failures are written to stderr:
 
 ```json
 {
+  "schema": "agent-graph.error.v1",
   "state": "error",
   "error": {
     "code": "route-stale",
