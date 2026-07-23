@@ -8,6 +8,8 @@ Agents usually have enough knowledge. The harder problem is knowing which part a
 
 > Context should be discovered, not accumulated. The plan is explicit; the path is selected from current reality.
 
+> **When to use it:** Not every Skill needs a Graph; keep a short, single-session task in `SKILL.md`. Adopt Agent Graph when a host can supply trustworthy external facts and the work truly needs verifiable completion, cross-session recovery, or testable routing and human gates.
+
 [简体中文](./README.zh-CN.md) · [User manual](./docs/en/README.md) · [Graph Engineering](./docs/en/graph-engineering.md) · [Development](./DEVELOPMENT.md)
 
 ## A simple example
@@ -42,7 +44,14 @@ Only four ideas matter in this first example:
 
 Real workflows can add required files, human Gates, explicit Outcomes, choices, and recovery paths without changing this loop. See the [technical tutorial](./docs/en/getting-started.md) for the actual files behind a runnable example.
 
-## Two feedback loops
+## What it solves
+
+- **Large knowledge without a giant prompt.** Procedures, schemas, manuals, and generated context stay file resources, loaded only when a selected route needs them.
+- **Long tasks that survive session boundaries.** Facts and explicit Outcomes reconstruct where the work is; an optional Run adds events, checkpoints, and resumable state.
+- **Plans that react without drifting.** The Graph fixes the legal choices and stop conditions; current evidence decides the actual path through them.
+- **Testing before model behavior.** Authors can validate references, cycles, resource boundaries, and expected routes without asking a model to run the whole workflow first.
+
+## How it keeps work moving
 
 The Graph records the planned boundaries—actions, dependencies, choices, gates, evidence, and recovery paths—without forcing every run through one static pipeline. Each evaluation selects a route from observable facts and prior Outcomes, and exposes only the resources that route needs:
 
@@ -54,13 +63,6 @@ The Graph records the planned boundaries—actions, dependencies, choices, gates
 Agent Graph does not silently rewrite its own plan. Runtime routing follows the evidence; the Graph itself is improved by people and engineering processes from observable results.
 
 > Progress should be proven by facts, not remembered from conversation.
-
-## What it solves
-
-- **Large knowledge without a giant prompt.** Procedures, schemas, manuals, and generated context stay file resources, loaded only when a selected route needs them.
-- **Long tasks that survive session boundaries.** Facts and explicit Outcomes reconstruct where the work is; an optional Run adds events, checkpoints, and resumable state.
-- **Plans that react without drifting.** The Graph fixes the legal choices and stop conditions; current evidence decides the actual path through them.
-- **Testing before model behavior.** Authors can validate references, cycles, resource boundaries, and expected routes without asking a model to run the whole workflow first.
 
 ## What the project provides
 
