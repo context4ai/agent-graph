@@ -96,6 +96,33 @@ materializer: actions/work.yaml
     await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({ code: "materializer-effect-invalid" });
   });
 
+  test("requires a Gate resolution Action to be capable of changing observable state", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-gate-resolution-"));
+    directories.push(directory);
+    await initProvider(directory, "gate-resolution");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: approval }
+nodes:
+  - id: approval
+    kind: gate
+    reasonCode: route.approval
+    gate: { id: approval, prompt: Approve? }
+    resolutionAction: actions/work.yaml
+  - { id: done, kind: terminal, terminalOutcome: completed }
+edges: [{ from: approval, to: done, outcomes: [completed] }]
+`);
+    await writeTextAtomic(resolve(directory, "actions/work.yaml"), `schema: agent-graph.action.v1
+id: work
+runner: command
+effect: read
+command: inspect-only
+`);
+    await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({
+      code: "gate-resolution-effect-invalid",
+    });
+  });
+
   test("scopes routing revisions to the selected graph dependency closure", async () => {
     const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-revision-scope-"));
     directories.push(directory);

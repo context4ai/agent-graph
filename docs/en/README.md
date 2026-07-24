@@ -26,8 +26,8 @@ An Agent consuming an already integrated Agent Graph capability needs only this 
 3. Select the primary route unless the user or task requires an alternative.
 4. Run `route` for that exact route ID and Evaluation revision.
 5. Read every required resource; read recommended resources only when useful.
-6. Do not execute a user gate until it is resolved.
-7. Execute only the returned command or host action.
+6. Do not execute a user Gate's separately returned resolution Action until the user confirms it.
+7. Execute only the returned command or Host Action.
 8. Record its explicit outcome and update observable facts where appropriate.
 9. Evaluate again. Never continue from memory alone.
 

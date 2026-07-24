@@ -54,6 +54,9 @@ export async function runGraphTests(provider: LoadedProvider, path: string): Pro
       test.expect.requiredResources,
       test.expect.recommendedResources,
       test.expect.gateResolution,
+      test.expect.resolutionCommand,
+      test.expect.resolutionHandler,
+      test.expect.resolutionInputSchema,
       test.expect.recordNode,
     ].some((value) => value !== undefined);
     if (routeExpectations) {
@@ -84,6 +87,16 @@ export async function runGraphTests(provider: LoadedProvider, path: string): Pro
         }
         if (test.expect.gateResolution !== undefined && route.gate?.resolution !== test.expect.gateResolution) {
           failures.push(`gateResolution: expected ${test.expect.gateResolution}, received ${route.gate?.resolution ?? "<none>"}`);
+        }
+        const resolution = route.gate?.resolutionAction;
+        if (test.expect.resolutionCommand !== undefined && resolution?.commandPlan[0]?.command !== test.expect.resolutionCommand) {
+          failures.push(`resolutionCommand: expected ${test.expect.resolutionCommand}, received ${resolution?.commandPlan[0]?.command ?? "<none>"}`);
+        }
+        if (test.expect.resolutionHandler !== undefined && resolution?.commandPlan[0]?.handler !== test.expect.resolutionHandler) {
+          failures.push(`resolutionHandler: expected ${test.expect.resolutionHandler}, received ${resolution?.commandPlan[0]?.handler ?? "<none>"}`);
+        }
+        if (test.expect.resolutionInputSchema !== undefined && resolution?.action.inputSchema?.id !== test.expect.resolutionInputSchema) {
+          failures.push(`resolutionInputSchema: expected ${test.expect.resolutionInputSchema}, received ${resolution?.action.inputSchema?.id ?? "<none>"}`);
         }
         if (test.expect.recordNode !== undefined && route.afterAction.recordNode !== test.expect.recordNode) {
           failures.push(`recordNode: expected ${test.expect.recordNode}, received ${route.afterAction.recordNode ?? "<none>"}`);

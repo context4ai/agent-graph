@@ -74,7 +74,7 @@ Agent Graph 是一套 Skills 原生的文件规范，并附带参考 SDK 与 CLI
 - 命名空间 Skill 绑定与 Provider Code Catalog，用于稳定表达路由原因；
 - 模板与导入器，用于起新项目，或把已有 Skill、脚本和依赖工作流转成草案。
 
-它不会主动调用模型。CLI 只暴露当前合法路线、所需文件、命令计划、门禁和结果记录契约，由 Agent 或宿主决定如何完成。
+它不会主动调用模型。CLI 只暴露当前合法路线、所需文件、命令计划、Gate、可选的确认后 Resolution Action 和结果记录契约，由 Agent 或宿主决定如何完成。
 
 ## 我该怎么接入
 

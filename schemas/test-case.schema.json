@@ -42,6 +42,9 @@
         "requiredResources": { "type": "array", "items": { "type": "string" } },
         "recommendedResources": { "type": "array", "items": { "type": "string" } },
         "gateResolution": { "enum": ["user", "session-authority"] },
+        "resolutionCommand": { "type": "string", "minLength": 1 },
+        "resolutionHandler": { "type": "string", "minLength": 1 },
+        "resolutionInputSchema": { "type": "string", "minLength": 1 },
         "recordNode": { "type": "string", "minLength": 1 },
         "outcome": { "$ref": "#/$defs/outcome" },
         "diagnosticsInclude": { "type": "array", "items": { "type": "string" } }

@@ -74,7 +74,7 @@ Agent Graph is a Skills-native file specification with a reference SDK and CLI:
 - namespaced Skill bindings and Provider code catalogs for stable routing reasons;
 - templates and importers for starting new projects or drafting from existing Skills, scripts, and dependency workflows.
 
-It never calls a model. The CLI exposes the current legal route, required files, command plan, gate, and recording contract; an Agent or host decides how to carry it out.
+It never calls a model. The CLI exposes the current legal route, required files, command plan, Gate, optional post-confirmation resolution Action, and recording contract; an Agent or host decides how to carry it out.
 
 ## How to adopt it
 

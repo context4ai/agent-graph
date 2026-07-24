@@ -26,8 +26,8 @@ Agent 消费已经完成接入的 Agent Graph 能力时，只需遵循以下循�
 3. 默认选择 primary route；仅当用户或任务需要时选择 alternative。
 4. 使用精确 route ID 和 Evaluation revision 执行 `route`。
 5. 完整读取所有 required 资源；recommended 资源按需读取。
-6. 用户门禁未解析前，不执行门禁后的动作。
-7. 只执行 Route 返回的命令或宿主动作。
+6. 用户确认前，不执行 Gate 单独返回的 Resolution Action。
+7. 只执行 Route 返回的命令或 Host Action。
 8. 记录显式 Outcome，并在适用时更新可观察事实。
 9. 再次 evaluate；不得仅凭会话记忆继续。
 

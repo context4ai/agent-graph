@@ -9,9 +9,11 @@ import type {
   DynamicResourceDefinition,
   EvaluationInput,
   LoadedProvider,
+  LoadedAction,
   LoadedResource,
   ResourceLocation,
   Route,
+  RouteAction,
   StaticResourceMetadata,
 } from "./types.js";
 
@@ -71,6 +73,42 @@ async function locateSkill(provider: LoadedProvider, reference: string): Promise
   };
 }
 
+async function locateActionSchema(
+  provider: LoadedProvider,
+  action: ActionDefinition,
+  direction: "input" | "output",
+): Promise<ResourceLocation | undefined> {
+  const reference = direction === "input" ? action.inputSchema : action.outputSchema;
+  if (!reference) return undefined;
+  const path = resolveContainedPath(provider.root, reference, `${direction} schema reference`);
+  return staticLocation(path, {
+    id: `schema.${action.id}.${direction}`,
+    kind: "schema",
+    mediaType: "application/schema+json",
+  });
+}
+
+async function routeAction(provider: LoadedProvider, action: ActionDefinition): Promise<RouteAction> {
+  const inputSchema = await locateActionSchema(provider, action, "input");
+  const outputSchema = await locateActionSchema(provider, action, "output");
+  return {
+    id: action.id,
+    runner: action.runner,
+    effect: action.effect,
+    ...(inputSchema ? { inputSchema } : {}),
+    ...(outputSchema ? { outputSchema } : {}),
+  };
+}
+
+function actionForCandidate(provider: LoadedProvider, candidate: RouteCandidate): LoadedAction | undefined {
+  const reference = candidate.node.kind === "action"
+    ? candidate.node.action
+    : candidate.node.resolutionAction;
+  return reference
+    ? provider.actions.get(resolveContainedPath(provider.root, reference, "action reference"))
+    : undefined;
+}
+
 export async function locateResource(provider: LoadedProvider, referenceOrId: string, revision?: string): Promise<ResourceLocation> {
   const byId = [...provider.resources.values()].find((resource) => resource.metadata.id === referenceOrId);
   if (byId) return locateLoadedResource(byId, revision);
@@ -99,9 +137,7 @@ export async function locateCode(provider: LoadedProvider, code: string): Promis
 async function resourcesForCandidate(provider: LoadedProvider, candidate: RouteCandidate, revision: string) {
   const requiredReferences = [...(candidate.node.resources?.required ?? [])];
   const recommendedReferences = [...(candidate.node.resources?.recommended ?? [])];
-  const action = candidate.node.kind === "action"
-    ? provider.actions.get(resolveContainedPath(provider.root, candidate.node.action, "action reference"))
-    : undefined;
+  const action = actionForCandidate(provider, candidate);
   const required = await Promise.all(requiredReferences.map((reference) => locateResource(provider, reference, revision)));
   const recommended = await Promise.all(recommendedReferences.map((reference) => locateResource(provider, reference, revision)));
   if (action?.definition.runner === "agent" && action.definition.skill) {
@@ -148,9 +184,9 @@ export async function resolveRoute(
     throw new AgentGraphError("route-stale", `Route ${routeId} is not available at revision ${evaluation.revision}`);
   }
   const resources = await resourcesForCandidate(provider, candidate, evaluation.revision);
-  const action = candidate.node.kind === "action"
-    ? provider.actions.get(resolveContainedPath(provider.root, candidate.node.action, "action reference"))
-    : undefined;
+  const action = candidate.node.kind === "action" ? actionForCandidate(provider, candidate) : undefined;
+  const resolutionAction = candidate.node.kind === "gate" ? actionForCandidate(provider, candidate) : undefined;
+  const workspace = input.workspace ?? process.cwd();
   return {
     schema: "agent-graph.route.v1",
     provider: provider.manifest.id,
@@ -164,18 +200,20 @@ export async function resolveRoute(
     availability: candidate.availability,
     callPath: candidate.callPath,
     ...(action ? {
-      action: {
-        id: action.definition.id,
-        runner: action.definition.runner,
-        effect: action.definition.effect,
-      },
+      action: await routeAction(provider, action.definition),
     } : {}),
-    commandPlan: action ? planForAction(provider, action.definition, input.workspace ?? process.cwd()) : [],
+    commandPlan: action ? planForAction(provider, action.definition, workspace) : [],
     resources,
     ...(candidate.node.kind === "gate" ? {
       gate: {
         ...candidate.node.gate,
         resolution: candidate.gateResolution ?? "user",
+        ...(resolutionAction ? {
+          resolutionAction: {
+            action: await routeAction(provider, resolutionAction.definition),
+            commandPlan: planForAction(provider, resolutionAction.definition, workspace),
+          },
+        } : {}),
       },
     } : {}),
     diagnostics: candidate.diagnostics,

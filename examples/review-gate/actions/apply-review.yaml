@@ -1,0 +1,7 @@
+schema: agent-graph.action.v1
+id: apply-review
+description: Persist the user's review decision.
+runner: host
+effect: write
+handler: review.apply-decision
+inputSchema: schemas/review-decision.schema.json

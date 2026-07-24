@@ -8,3 +8,7 @@ state:
 expect:
   statusCode: waiting-user
   primaryNode: approve
+  availability: requires-user
+  gateResolution: user
+  resolutionHandler: review.apply-decision
+  resolutionInputSchema: schema.apply-review.input

@@ -40,6 +40,32 @@ describe("deterministic provider builds", () => {
     expect(outputSchema?.filePath).toBe(resolve(directory, "first/schemas/draft-output.schema.json"));
     expect(JSON.parse(await readFile(outputSchema!.filePath!, "utf8"))).toEqual(expect.objectContaining({ type: "object" }));
 
+    const gateSource = await loadProvider(resolve(import.meta.dir, "../../examples/review-gate/provider.yaml"));
+    const gateBundleManifest = await buildProviderBundle(gateSource, resolve(directory, "gate"));
+    expect(gateBundleManifest.actions).toContainEqual(expect.objectContaining({
+      id: "apply-review",
+      path: "actions/apply-review.yaml",
+    }));
+    expect(gateBundleManifest.schemas).toContainEqual(expect.objectContaining({
+      id: "schemas/review-decision.schema.json",
+      path: "schemas/review-decision.schema.json",
+    }));
+    const gateBundle = await loadProvider(resolve(directory, "gate/manifest.json"));
+    const gateEvaluation = evaluateGraph(gateBundle, "review", "default", {
+      outcomes: { "review/prepare": "completed" },
+    }).evaluation;
+    const gateRoute = await resolveRoute(
+      gateBundle,
+      "review",
+      "default",
+      gateEvaluation.primaryRoute!.routeId,
+      { outcomes: { "review/prepare": "completed" } },
+      gateEvaluation.revision,
+    );
+    expect(gateRoute.gate?.resolutionAction?.action.inputSchema?.filePath).toBe(
+      resolve(directory, "gate/schemas/review-decision.schema.json"),
+    );
+
     const catalogSource = await loadProvider(resolve(import.meta.dir, "../../examples/shared-provider/provider.yaml"));
     await buildProviderBundle(catalogSource, resolve(directory, "catalog"));
     const catalogBundle = await loadProvider(resolve(directory, "catalog/manifest.json"));

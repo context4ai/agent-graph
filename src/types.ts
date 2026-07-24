@@ -69,6 +69,7 @@ export interface GateGraphNode extends GraphNodeBase {
   kind: "gate";
   reasonCode: string;
   gate: GateDefinition;
+  resolutionAction?: string;
   satisfiedBy?: FactCheck[];
   resources?: NodeResources;
 }
@@ -292,6 +293,14 @@ export interface CommandPlanItem {
   workingDirectory: string;
 }
 
+export interface RouteAction {
+  id: string;
+  runner: ActionDefinition["runner"];
+  effect: ActionDefinition["effect"];
+  inputSchema?: ResourceLocation;
+  outputSchema?: ResourceLocation;
+}
+
 export interface Route {
   schema: "agent-graph.route.v1";
   provider: string;
@@ -304,17 +313,19 @@ export interface Route {
   hint?: string;
   availability: "immediate" | "requires-user" | "blocked";
   callPath: string[];
-  action?: {
-    id: string;
-    runner: ActionDefinition["runner"];
-    effect: ActionDefinition["effect"];
-  };
+  action?: RouteAction;
   commandPlan: CommandPlanItem[];
   resources: {
     required: ResourceLocation[];
     recommended: ResourceLocation[];
   };
-  gate?: GateDefinition & { resolution: "user" | "session-authority" };
+  gate?: GateDefinition & {
+    resolution: "user" | "session-authority";
+    resolutionAction?: {
+      action: RouteAction;
+      commandPlan: CommandPlanItem[];
+    };
+  };
   diagnostics: Diagnostic[];
   afterAction: {
     evaluate: true;
@@ -365,6 +376,9 @@ export interface AgentGraphTestCase {
     requiredResources?: string[];
     recommendedResources?: string[];
     gateResolution?: "user" | "session-authority";
+    resolutionCommand?: string;
+    resolutionHandler?: string;
+    resolutionInputSchema?: string;
     recordNode?: string;
     outcome?: Outcome;
     diagnosticsInclude?: string[];

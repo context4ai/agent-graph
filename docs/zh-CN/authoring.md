@@ -84,9 +84,12 @@ gate:
   prompt: Review the prepared result.
   authority: review
   delegatable: true
+resolutionAction: actions/apply-review.yaml
 ```
 
 没有 `review` Authority 时，Route 要求用户参与；当前 Evaluation 或 Run 携带该 Authority 时，Route 立即可执行，并标记由 `session-authority` 解析。Authority 属于宿主选择的会话状态，不会写回 Provider，也不能证明下游事实。
+
+如果仅确认还不够，宿主还需要保存决定或应用结构化用户输入，可声明 `resolutionAction`。Gate Prompt 保持简短，输入契约通过 Action 的 `inputSchema` 提供。等待中的 Route 会单独暴露这份 Action，但用户确认前它仍是条件计划。示例见 [`examples/review-gate`](../../examples/review-gate)。
 
 ## Resource
 

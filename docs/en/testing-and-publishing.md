@@ -17,7 +17,7 @@ expect:
   primaryNode: verify-artifact
 ```
 
-Assertions may cover `statusCode`, primary and alternative nodes, `primaryReasonCode`, availability, command or host handler, selected Resources, Gate resolution, recording key, terminal `outcome`, and required diagnostic codes. They do not execute commands or call an Agent, so they remain fast and deterministic.
+Assertions may cover `statusCode`, primary and alternative nodes, `primaryReasonCode`, availability, command or host handler, selected Resources, Gate resolution, Gate resolution command/handler/input Schema, recording key, terminal `outcome`, and required diagnostic codes. They do not execute commands or call an Agent, so they remain fast and deterministic.
 An empty or missing test path is an error rather than a vacuous pass.
 
 ## Recommended case matrix
@@ -83,7 +83,7 @@ Provider projects may instead depend on `agent-graph` and publish their built bu
 For reproducible automation, pin the one-shot version:
 
 ```bash
-npx @c4a/agent-graph@0.2.0 --manifest ./provider.yaml validate
+npx @c4a/agent-graph@0.2.1 --manifest ./provider.yaml validate
 ```
 
 ## Package audit checklist

@@ -84,9 +84,12 @@ gate:
   prompt: Review the prepared result.
   authority: review
   delegatable: true
+resolutionAction: actions/apply-review.yaml
 ```
 
 Without `review` authority, the route requires the user. With that authority in the current evaluation or Run, the route is immediate and identifies `session-authority` as its resolution. Authority belongs to the host-selected session state; it is not written into the Provider and does not prove downstream facts.
+
+Use an optional `resolutionAction` when confirmation alone is not enough and the host must persist a decision or apply structured user input. Keep the Gate prompt short; put the input contract on the Action with `inputSchema`. The waiting Route exposes this Action separately, but it remains conditional until the user confirms. See [`examples/review-gate`](../../examples/review-gate).
 
 ## Resources
 

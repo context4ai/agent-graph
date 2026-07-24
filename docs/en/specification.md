@@ -1,6 +1,6 @@
 # Agent Graph specification v1
 
-This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.2.0`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
+This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.2.1`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
 
 ## 1. Provider
 
@@ -114,9 +114,14 @@ gate:
   prompt: Approve this release?
   authority: release.approve
   delegatable: true
+resolutionAction: actions/apply-approval.yaml
 ```
 
-Without matching authority, the route is `waiting-user` and contains no executable command. If and only if `delegatable` is true and the current evaluation supplies the named authority, the gate becomes actionable with `resolution: session-authority`.
+Without matching authority, the route is `waiting-user`. Its ordinary `commandPlan` stays empty. If and only if `delegatable` is true and the current evaluation supplies the named authority, the gate becomes actionable with `resolution: session-authority`.
+
+`resolutionAction` is optional. It references a normal Provider Action that records or applies the decision after the user confirms it. The resolved Route exposes this separately as `gate.resolutionAction`, including its command or Host Handler and any input/output Schema locations. A host must not execute that plan while the Route is `requires-user`; after explicit confirmation, it validates runtime input, executes the action, refreshes observable Facts, and evaluates again. Dynamic decision data belongs in Action input, never in generated Graph nodes.
+
+A resolution Action must have `effect: write` or `external`, because a read-only action cannot resolve the Gate's observable state. A Gate without `resolutionAction` remains valid when the host records its Outcome directly. The Action itself does not grant authority and cannot make a non-delegatable Gate automatic.
 
 Authorities belong to the current input or Run. A Provider definition never permanently enables managed or unattended operation. Authority does not satisfy facts or bypass validation.
 
@@ -183,7 +188,7 @@ Runner contracts:
 
 Runner-specific execution fields are mutually exclusive; a command cannot also declare a Skill or script entry, for example. This prevents a host from choosing a different interpretation of the same Action.
 
-`cwd` is `workspace` by default or `provider`. `inputSchema` and `outputSchema` include schemas in the bundle. `files` includes additional runtime files used by the action. Script and Skill references are validated and packaged. A Skill in a dedicated directory carries that directory; a Provider-root `SKILL.md` carries only itself, so its supporting files must be explicit.
+`cwd` is `workspace` by default or `provider`. `inputSchema` and `outputSchema` include schemas in the bundle and their installed locations are exposed on the resolved Route Action. `files` includes additional runtime files used by the action. Script and Skill references are validated and packaged. A Skill in a dedicated directory carries that directory; a Provider-root `SKILL.md` carries only itself, so its supporting files must be explicit.
 
 Agent Graph resolves actions but does not automatically execute them. A product host may build an executor around the same Route contract. For a Host Action, the integration uses the same Facts that produced the Evaluation to resolve current parameters, invokes the stable Handler, refreshes Facts, and evaluates again.
 
@@ -283,7 +288,7 @@ Evaluation is read-only. Same definitions and routing inputs produce the same re
 - current `revision` and revision-bound `routeId`;
 - target Graph, node, and Subgraph call path;
 - generic `statusCode`, stable `reasonCode`, and optional short `hint`;
-- availability and optional gate resolution;
+- availability, optional Gate resolution, and optional Gate resolution Action;
 - action identity and effect;
 - command plan or host handler;
 - resolved working directory plus its `workspace` or `provider` semantic origin;
@@ -309,7 +314,7 @@ The protocol defines no default global or project directory for mutable state.
 
 ## 8. Graph tests
 
-`agent-graph.test.v1` declares an input state and expected status, primary and alternative nodes, reason code, availability, command or handler, selected Resources, Gate resolution, recording key, terminal Outcome, or diagnostic codes. It does not execute actions or call a model. Test cases are deterministic routing fixtures suitable for CI.
+`agent-graph.test.v1` declares an input state and expected status, primary and alternative nodes, reason code, availability, command or handler, selected Resources, Gate resolution, Gate resolution command/handler/input Schema, recording key, terminal Outcome, or diagnostic codes. It does not execute actions or call a model. Test cases are deterministic routing fixtures suitable for CI.
 
 ## 9. Build bundle
 

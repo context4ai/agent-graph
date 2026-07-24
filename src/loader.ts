@@ -263,6 +263,32 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
   const resourceIds = new Map<string, string>();
   let codeCatalog: LoadedCodeCatalog | undefined;
 
+  const includeAction = async (
+    reference: string,
+    directFiles: Set<string>,
+    label = "action referenced file",
+  ): Promise<LoadedAction> => {
+    const actionPath = resolveContainedPath(root, reference, "action reference");
+    let action = actions.get(actionPath);
+    if (!action) {
+      action = await loadAction(root, reference);
+      const existing = actionIds.get(action.definition.id);
+      if (existing && existing !== action.path) {
+        throw new AgentGraphError(
+          "action-id-duplicate",
+          `Action id ${action.definition.id} is declared by both ${existing} and ${action.path}`,
+        );
+      }
+      actionIds.set(action.definition.id, action.path);
+      actions.set(action.path, action);
+    }
+    for (const file of await actionFiles(root, action, label)) {
+      files.add(file);
+      directFiles.add(file);
+    }
+    return action;
+  };
+
   if (manifest.catalogs?.codes) {
     const catalogPath = resolveContainedPath(root, manifest.catalogs.codes, "code catalog reference");
     await ensureContainedFile(root, catalogPath, "code catalog");
@@ -329,20 +355,19 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
         dependencies.add(childId);
       }
       if (node.kind === "action") {
-        const actionReference = node.action!;
-        const actionPath = resolveContainedPath(root, actionReference, "action reference");
-        if (!actions.has(actionPath)) {
-          const action = await loadAction(root, actionReference);
-          const existing = actionIds.get(action.definition.id);
-          if (existing && existing !== action.path) {
-            throw new AgentGraphError("action-id-duplicate", `Action id ${action.definition.id} is declared by both ${existing} and ${action.path}`);
-          }
-          actionIds.set(action.definition.id, action.path);
-          actions.set(action.path, action);
-        }
-        for (const file of await actionFiles(root, actions.get(actionPath)!, "action referenced file")) {
-          files.add(file);
-          directFiles.add(file);
+        await includeAction(node.action, directFiles);
+      }
+      if (node.kind === "gate" && node.resolutionAction) {
+        const resolution = await includeAction(
+          node.resolutionAction,
+          directFiles,
+          "gate resolution action referenced file",
+        );
+        if (resolution.definition.effect === "read") {
+          throw new AgentGraphError(
+            "gate-resolution-effect-invalid",
+            `Gate ${graphId}/${node.id} resolution Action ${resolution.definition.id} must use effect: write or external`,
+          );
         }
       }
       const nodeResources = node.kind === "action" || node.kind === "gate" ? node.resources : undefined;

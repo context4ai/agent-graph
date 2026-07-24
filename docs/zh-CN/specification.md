@@ -1,6 +1,6 @@
 # Agent Graph v1 协议规范
 
-本文定义 `@c4a/agent-graph@0.2.0` 实现的 `agent-graph.*.v1` 对象。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
+本文定义 `@c4a/agent-graph@0.2.1` 实现的 `agent-graph.*.v1` 对象。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
 
 ## 1. Provider
 
@@ -114,9 +114,14 @@ gate:
   prompt: Approve this release?
   authority: release.approve
   delegatable: true
+resolutionAction: actions/apply-approval.yaml
 ```
 
-没有匹配授权时，Route 状态为 `waiting-user`，且不包含可执行命令。只有 `delegatable` 为 true 且当前 Evaluation 显式提供对应 authority 时，门禁才变为 actionable，并标记 `resolution: session-authority`。
+没有匹配授权时，Route 状态为 `waiting-user`，其普通 `commandPlan` 保持为空。只有 `delegatable` 为 true 且当前 Evaluation 显式提供对应 authority 时，门禁才变为 actionable，并标记 `resolution: session-authority`。
+
+`resolutionAction` 是可选字段，引用一个普通 Provider Action，用于在用户确认后记录或应用决定。解析后的 Route 会把它单独暴露为 `gate.resolutionAction`，其中包含 Command 或 Host Handler，以及输入/输出 Schema 的安装位置。Route 为 `requires-user` 时宿主不得执行这份计划；用户明确确认后，宿主校验本次输入、执行 Action、刷新可观察 Facts，再重新求值。动态决定数据属于 Action Input，不能通过生成 Graph Node 表达。
+
+Resolution Action 必须使用 `effect: write` 或 `external`，因为只读 Action 无法改变 Gate 的可观察状态。没有 `resolutionAction` 的 Gate 仍然合法，此时由宿主直接记录其 Outcome。这个 Action 本身不会授予 Authority，也不能把不可委托 Gate 变成自动门禁。
 
 Authority 属于当前输入或 Run。Provider 定义不能永久开启全托管或无人值守；授权也不能满足事实或绕过校验。
 
@@ -183,7 +188,7 @@ Runner 契约：
 
 不同 Runner 的执行字段互斥；例如 Command 不能同时声明 Skill 或 Script Entry，以免不同宿主对同一 Action 产生不同解释。
 
-`cwd` 默认为 `workspace`，也可设为 `provider`。`inputSchema`、`outputSchema` 会将 Schema 纳入 Bundle；`files` 声明 Action 使用的其他运行文件。脚本和 Skill 引用会被校验并打包。独立目录内的 Skill 会携带该目录；Provider 根目录的 `SKILL.md` 只携带自身，因此支持文件必须显式声明。
+`cwd` 默认为 `workspace`，也可设为 `provider`。`inputSchema`、`outputSchema` 会将 Schema 纳入 Bundle，并在解析后的 Route Action 上暴露安装位置；`files` 声明 Action 使用的其他运行文件。脚本和 Skill 引用会被校验并打包。独立目录内的 Skill 会携带该目录；Provider 根目录的 `SKILL.md` 只携带自身，因此支持文件必须显式声明。
 
 Agent Graph 只解析 Action，不自动执行；产品宿主可以基于相同 Route 契约实现执行器。对于 Host Action，集成使用产生当前 Evaluation 的同一份 Facts 解析本次参数，调用稳定 Handler，刷新 Facts 后再次 evaluate。
 
@@ -283,7 +288,7 @@ Evaluation 是只读操作。相同定义与路由输入必须得到相同 Revis
 - 当前 `revision` 和绑定该 Revision 的 `routeId`；
 - 目标 Graph、node 和 Subgraph call path；
 - 通用 `statusCode`、稳定 `reasonCode` 和可选短 `hint`；
-- Availability 与可选 Gate Resolution；
+- Availability、可选 Gate Resolution 与可选 Gate Resolution Action；
 - Action 身份和 effect；
 - Command Plan 或 Host Handler；
 - 解析后的工作目录，以及其 `workspace` 或 `provider` 语义来源；
@@ -309,7 +314,7 @@ Checkpoint 是经过校验且已移除会话 Authority 的 Run 副本；Resume �
 
 ## 8. Graph 测试
 
-`agent-graph.test.v1` 声明输入状态，以及预期状态码、primary/alternative node、reason code、availability、command 或 handler、选中 Resource、Gate resolution、记录键、终态 Outcome 或诊断码。它不执行 Action、不调用模型，是适合 CI 的确定性路由 Fixture。
+`agent-graph.test.v1` 声明输入状态，以及预期状态码、primary/alternative node、reason code、availability、command 或 handler、选中 Resource、Gate resolution、Gate resolution command/handler/input Schema、记录键、终态 Outcome 或诊断码。它不执行 Action、不调用模型，是适合 CI 的确定性路由 Fixture。
 
 ## 9. 构建 Bundle
 

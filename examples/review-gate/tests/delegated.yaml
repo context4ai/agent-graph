@@ -9,3 +9,6 @@ state:
 expect:
   statusCode: actionable
   primaryNode: approve
+  availability: immediate
+  gateResolution: session-authority
+  resolutionHandler: review.apply-decision
