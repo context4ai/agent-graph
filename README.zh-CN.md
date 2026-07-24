@@ -1,5 +1,10 @@
 # Agent Graph
 
+[![CI](https://github.com/context4ai/agent-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/context4ai/agent-graph/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@c4a/agent-graph.svg)](https://www.npmjs.com/package/@c4a/agent-graph)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-339933?logo=node.js&logoColor=white)](./package.json)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
 Agent Graph 是面向 Agent Skills 的工作契约层。你把一套流程写成一张步骤图，运行时它根据当前事实告诉 Agent 下一步该做什么、要读哪几个文件、怎样才算做完。它自己从不调用模型。
 
 Agent Graph 只协调工作本身：它不调用模型，不分配 Agent 身份，不传输共享可变状态，也不调度并行 Worker。这些由已有的 Agent 和宿主完成——它们消费 Agent Graph 基于事实给出的 Route，并守住执行边界。
@@ -10,7 +15,7 @@ Agent 很多时候并不缺知识。更难的是判断：现在该读哪一部�
 
 > **什么时候该用：** 不是每个 Skill 都需要 Graph；单轮、短流程，靠一份 `SKILL.md` 就能完成时，保持简单。只有当宿主能提供可信的外部事实，并且任务确实需要可验证完成、跨会话恢复，或可测试的路由与人工门禁时，再引入 Agent Graph。
 
-[English](./README.md) · [用户手册](./docs/zh-CN/README.md) · [Graph Engineering](./docs/zh-CN/graph-engineering.md) · [开发指南](./DEVELOPMENT.md)
+[English](./README.md) · [用户手册](./docs/zh-CN/README.md) · [Graph Engineering](./docs/zh-CN/graph-engineering.md) · [贡献指南](./CONTRIBUTING.md) · [开发指南](./DEVELOPMENT.md)
 
 ## 先看一个最简单的例子
 

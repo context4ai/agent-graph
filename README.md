@@ -1,5 +1,10 @@
 # Agent Graph
 
+[![CI](https://github.com/context4ai/agent-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/context4ai/agent-graph/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@c4a/agent-graph.svg)](https://www.npmjs.com/package/@c4a/agent-graph)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-339933?logo=node.js&logoColor=white)](./package.json)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
 Agent Graph is a work-contract layer for Agent Skills. You describe a workflow as a small graph of steps; at runtime it reads the current facts and tells an Agent what to do next, which files to read for that step, and what proves the step is done. It never calls a model itself.
 
 Agent Graph coordinates the work, not the Agents. It does not invoke models, assign Agent identities, transport shared mutable state, or schedule parallel workers. Existing Agents and hosts consume its fact-grounded Routes and hold the execution boundary.
@@ -10,7 +15,7 @@ Agents usually have enough knowledge. The harder problem is knowing which part a
 
 > **When to use it:** Not every Skill needs a Graph; keep a short, single-session task in `SKILL.md`. Adopt Agent Graph when a host can supply trustworthy external facts and the work truly needs verifiable completion, cross-session recovery, or testable routing and human gates.
 
-[简体中文](./README.zh-CN.md) · [User manual](./docs/en/README.md) · [Graph Engineering](./docs/en/graph-engineering.md) · [Development](./DEVELOPMENT.md)
+[简体中文](./README.zh-CN.md) · [User manual](./docs/en/README.md) · [Graph Engineering](./docs/en/graph-engineering.md) · [Contributing](./CONTRIBUTING.md) · [Development](./DEVELOPMENT.md)
 
 ## A simple example
 

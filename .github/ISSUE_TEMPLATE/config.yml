@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and integration help
+    url: https://github.com/context4ai/agent-graph/discussions/categories/q-a
+    about: Ask how to author, integrate, or adopt Agent Graph.
+  - name: Security vulnerability
+    url: https://github.com/context4ai/agent-graph/security/advisories/new
+    about: Report a vulnerability privately.
