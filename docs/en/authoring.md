@@ -29,6 +29,8 @@ Four node kinds keep control semantics explicit:
 
 Action and Gate nodes require a stable `reasonCode` beginning with `route.`. It explains why the route is available; it is not a condition. A Code Catalog is optional, but declaring one turns route reasons into a closed, documented set. Keep Graph topology stable and put current targets and other run parameters in Facts. A Host Action can resolve those Facts without creating one node per target.
 
+Skills are loaded at the action that uses them. A primary Agent Action exposes its Skill with the current route resources; a Gate inspection or resolution Agent Action keeps its Skill on that nested action until that phase is selected. This preserves progressive disclosure instead of preloading every possible instruction set.
+
 ## Outcomes and edges
 
 An edge matches an explicit outcome. Omitting `outcomes` means `[completed]`.
@@ -84,10 +86,13 @@ gate:
   prompt: Review the prepared result.
   authority: review
   delegatable: true
+inspectionAction: actions/inspect-review.yaml
 resolutionAction: actions/apply-review.yaml
 ```
 
 Without `review` authority, the route requires the user. With that authority in the current evaluation or Run, the route is immediate and identifies `session-authority` as its resolution. Authority belongs to the host-selected session state; it is not written into the Provider and does not prove downstream facts.
+
+Use an optional read-only `inspectionAction` when the host must prepare a report, open a review UI, or fetch decision evidence before asking the user. It is exposed separately from the Gate's ordinary empty `commandPlan` and remains safe to run before confirmation.
 
 Use an optional `resolutionAction` when confirmation alone is not enough and the host must persist a decision or apply structured user input. Keep the Gate prompt short; put the input contract on the Action with `inputSchema`. The waiting Route exposes this Action separately, but it remains conditional until the user confirms. See [`examples/review-gate`](../../examples/review-gate).
 

@@ -17,7 +17,7 @@ expect:
   primaryNode: verify-artifact
 ```
 
-可断言 `statusCode`、Primary/Alternative Node、`primaryReasonCode`、Availability、Command 或 Host Handler、选中 Resource、Gate Resolution、Gate Resolution Command/Handler/Input Schema、记录键、终态 `outcome` 和必须存在的诊断码。测试不会执行命令或调用 Agent，因此快速且确定。
+可断言 `statusCode`、Primary/Alternative Node、`primaryReasonCode`、Availability、Command 或 Host Handler、选中 Resource、Gate Resolution、Gate Inspection/Resolution 的 Command、Handler、Skill 与 Input Schema、记录键、终态 `outcome` 和必须存在的诊断码。测试不会执行命令或调用 Agent，因此快速且确定。
 测试路径不存在或不含 Case 时会报错，不会把空集合当成通过。
 
 ## 推荐 Case 矩阵
@@ -83,7 +83,7 @@ Provider 项目可以依赖 `agent-graph`，并在自己的包里发布 Provider
 自动化临时执行时应固定版本：
 
 ```bash
-npx @c4a/agent-graph@0.2.1 --manifest ./provider.yaml validate
+npx @c4a/agent-graph@0.2.2 --manifest ./provider.yaml validate
 ```
 
 ## 包审计清单

@@ -69,6 +69,7 @@ export interface GateGraphNode extends GraphNodeBase {
   kind: "gate";
   reasonCode: string;
   gate: GateDefinition;
+  inspectionAction?: string;
   resolutionAction?: string;
   satisfiedBy?: FactCheck[];
   resources?: NodeResources;
@@ -297,6 +298,7 @@ export interface RouteAction {
   id: string;
   runner: ActionDefinition["runner"];
   effect: ActionDefinition["effect"];
+  skill?: ResourceLocation;
   inputSchema?: ResourceLocation;
   outputSchema?: ResourceLocation;
 }
@@ -321,6 +323,10 @@ export interface Route {
   };
   gate?: GateDefinition & {
     resolution: "user" | "session-authority";
+    inspectionAction?: {
+      action: RouteAction;
+      commandPlan: CommandPlanItem[];
+    };
     resolutionAction?: {
       action: RouteAction;
       commandPlan: CommandPlanItem[];
@@ -376,8 +382,13 @@ export interface AgentGraphTestCase {
     requiredResources?: string[];
     recommendedResources?: string[];
     gateResolution?: "user" | "session-authority";
+    inspectionCommand?: string;
+    inspectionHandler?: string;
+    inspectionSkill?: string;
+    inspectionInputSchema?: string;
     resolutionCommand?: string;
     resolutionHandler?: string;
+    resolutionSkill?: string;
     resolutionInputSchema?: string;
     recordNode?: string;
     outcome?: Outcome;

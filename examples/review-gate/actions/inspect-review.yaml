@@ -1,0 +1,6 @@
+schema: agent-graph.action.v1
+id: inspect-review
+description: Open or render the prepared result before the user decides.
+runner: host
+effect: read
+handler: review.inspect-result

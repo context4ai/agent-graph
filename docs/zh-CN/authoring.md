@@ -29,6 +29,8 @@ Provider Manifest 列出 Graph 文件；Graph 引用 Action 和 Resource；Actio
 
 Action 和 Gate Node 必须声明以 `route.` 开头的稳定 `reasonCode`，解释为何当前 Route 可用，但不参与条件判断。Code Catalog 是可选能力；声明后，Route Reason 会成为带文档的闭集。Graph 拓扑保持静态；当前目标和其他运行参数放入 Facts，Host Action 可以解析这些 Facts，不需要为每个目标生成节点。
 
+Skill 在使用它的 Action 阶段按需加载。Primary Agent Action 的 Skill 随当前 Route Resource 暴露；Gate Inspection 或 Resolution Agent Action 的 Skill 则保留在对应的嵌套 Action 上，直到该阶段被选中。这样不会提前加载所有可能用到的指令集。
+
 ## Outcome 与 Edge
 
 Edge 根据显式 Outcome 匹配；省略 `outcomes` 等价于 `[completed]`。
@@ -84,10 +86,13 @@ gate:
   prompt: Review the prepared result.
   authority: review
   delegatable: true
+inspectionAction: actions/inspect-review.yaml
 resolutionAction: actions/apply-review.yaml
 ```
 
 没有 `review` Authority 时，Route 要求用户参与；当前 Evaluation 或 Run 携带该 Authority 时，Route 立即可执行，并标记由 `session-authority` 解析。Authority 属于宿主选择的会话状态，不会写回 Provider，也不能证明下游事实。
+
+如果宿主需要在提问前准备报告、打开审核页面或读取决策证据，可声明只读 `inspectionAction`。它与 Gate 默认的空 `commandPlan` 分开暴露，用户确认前即可安全执行。
 
 如果仅确认还不够，宿主还需要保存决定或应用结构化用户输入，可声明 `resolutionAction`。Gate Prompt 保持简短，输入契约通过 Action 的 `inputSchema` 提供。等待中的 Route 会单独暴露这份 Action，但用户确认前它仍是条件计划。示例见 [`examples/review-gate`](../../examples/review-gate)。
 

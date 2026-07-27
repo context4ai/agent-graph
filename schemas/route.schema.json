@@ -42,6 +42,15 @@
         "authority": { "type": "string", "minLength": 1 },
         "delegatable": { "type": "boolean" },
         "resolution": { "enum": ["user", "session-authority"] },
+        "inspectionAction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "commandPlan"],
+          "properties": {
+            "action": { "$ref": "#/$defs/action" },
+            "commandPlan": { "type": "array", "items": { "$ref": "#/$defs/command" } }
+          }
+        },
         "resolutionAction": {
           "type": "object",
           "additionalProperties": false,
@@ -73,6 +82,7 @@
         "id": { "type": "string", "minLength": 1 },
         "runner": { "enum": ["command", "script", "agent", "host"] },
         "effect": { "enum": ["read", "write", "external"] },
+        "skill": { "$ref": "#/$defs/resource" },
         "inputSchema": { "$ref": "#/$defs/resource" },
         "outputSchema": { "$ref": "#/$defs/resource" }
       }

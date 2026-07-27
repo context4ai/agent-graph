@@ -10,5 +10,6 @@ expect:
   primaryNode: approve
   availability: requires-user
   gateResolution: user
+  inspectionHandler: review.inspect-result
   resolutionHandler: review.apply-decision
   resolutionInputSchema: schema.apply-review.input

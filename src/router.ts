@@ -89,21 +89,25 @@ async function locateActionSchema(
 }
 
 async function routeAction(provider: LoadedProvider, action: ActionDefinition): Promise<RouteAction> {
+  const skill = action.runner === "agent" && action.skill
+    ? await locateSkill(provider, action.skill)
+    : undefined;
   const inputSchema = await locateActionSchema(provider, action, "input");
   const outputSchema = await locateActionSchema(provider, action, "output");
   return {
     id: action.id,
     runner: action.runner,
     effect: action.effect,
+    ...(skill ? { skill } : {}),
     ...(inputSchema ? { inputSchema } : {}),
     ...(outputSchema ? { outputSchema } : {}),
   };
 }
 
-function actionForCandidate(provider: LoadedProvider, candidate: RouteCandidate): LoadedAction | undefined {
-  const reference = candidate.node.kind === "action"
-    ? candidate.node.action
-    : candidate.node.resolutionAction;
+function referencedAction(
+  provider: LoadedProvider,
+  reference: string | undefined,
+): LoadedAction | undefined {
   return reference
     ? provider.actions.get(resolveContainedPath(provider.root, reference, "action reference"))
     : undefined;
@@ -137,7 +141,9 @@ export async function locateCode(provider: LoadedProvider, code: string): Promis
 async function resourcesForCandidate(provider: LoadedProvider, candidate: RouteCandidate, revision: string) {
   const requiredReferences = [...(candidate.node.resources?.required ?? [])];
   const recommendedReferences = [...(candidate.node.resources?.recommended ?? [])];
-  const action = actionForCandidate(provider, candidate);
+  const action = candidate.node.kind === "action"
+    ? referencedAction(provider, candidate.node.action)
+    : undefined;
   const required = await Promise.all(requiredReferences.map((reference) => locateResource(provider, reference, revision)));
   const recommended = await Promise.all(recommendedReferences.map((reference) => locateResource(provider, reference, revision)));
   if (action?.definition.runner === "agent" && action.definition.skill) {
@@ -184,8 +190,15 @@ export async function resolveRoute(
     throw new AgentGraphError("route-stale", `Route ${routeId} is not available at revision ${evaluation.revision}`);
   }
   const resources = await resourcesForCandidate(provider, candidate, evaluation.revision);
-  const action = candidate.node.kind === "action" ? actionForCandidate(provider, candidate) : undefined;
-  const resolutionAction = candidate.node.kind === "gate" ? actionForCandidate(provider, candidate) : undefined;
+  const action = candidate.node.kind === "action"
+    ? referencedAction(provider, candidate.node.action)
+    : undefined;
+  const inspectionAction = candidate.node.kind === "gate"
+    ? referencedAction(provider, candidate.node.inspectionAction)
+    : undefined;
+  const resolutionAction = candidate.node.kind === "gate"
+    ? referencedAction(provider, candidate.node.resolutionAction)
+    : undefined;
   const workspace = input.workspace ?? process.cwd();
   return {
     schema: "agent-graph.route.v1",
@@ -208,6 +221,12 @@ export async function resolveRoute(
       gate: {
         ...candidate.node.gate,
         resolution: candidate.gateResolution ?? "user",
+        ...(inspectionAction ? {
+          inspectionAction: {
+            action: await routeAction(provider, inspectionAction.definition),
+            commandPlan: planForAction(provider, inspectionAction.definition, workspace),
+          },
+        } : {}),
         ...(resolutionAction ? {
           resolutionAction: {
             action: await routeAction(provider, resolutionAction.definition),

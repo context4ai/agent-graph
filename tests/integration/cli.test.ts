@@ -23,7 +23,7 @@ describe("built CLI", () => {
   test("runs as a Node executable and as a standalone copied file", async () => {
     const version = execute("node", ["dist/agent-graph.mjs", "--version"]);
     expect(version.status).toBe(0);
-    expect(version.stdout.trim()).toBe("0.2.1");
+    expect(version.stdout.trim()).toBe("0.2.2");
     const standalone = resolve(directory, "agent-graph.mjs");
     await Bun.write(standalone, Bun.file(resolve(root, "dist/agent-graph.mjs")));
     await chmod(standalone, 0o755);
@@ -32,7 +32,7 @@ describe("built CLI", () => {
     expect(JSON.parse(validate.stdout).state).toBe("valid");
     const bunVersion = execute(process.execPath, [standalone, "--version"], directory);
     expect(bunVersion.status).toBe(0);
-    expect(bunVersion.stdout.trim()).toBe("0.2.1");
+    expect(bunVersion.stdout.trim()).toBe("0.2.2");
     const extracted = resolve(directory, "graph.schema.json");
     const schema = execute("node", [standalone, "schema", "extract", "graph", "--output", extracted, "--format", "json"], directory);
     expect(schema.status).toBe(0);

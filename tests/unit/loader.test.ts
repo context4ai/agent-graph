@@ -123,6 +123,33 @@ command: inspect-only
     });
   });
 
+  test("requires a Gate inspection Action to be read-only", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-gate-inspection-"));
+    directories.push(directory);
+    await initProvider(directory, "gate-inspection");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: approval }
+nodes:
+  - id: approval
+    kind: gate
+    reasonCode: route.approval
+    gate: { id: approval, prompt: Approve? }
+    inspectionAction: actions/work.yaml
+  - { id: done, kind: terminal, terminalOutcome: completed }
+edges: [{ from: approval, to: done, outcomes: [completed] }]
+`);
+    await writeTextAtomic(resolve(directory, "actions/work.yaml"), `schema: agent-graph.action.v1
+id: work
+runner: command
+effect: write
+command: mutate
+`);
+    await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({
+      code: "gate-inspection-effect-invalid",
+    });
+  });
+
   test("scopes routing revisions to the selected graph dependency closure", async () => {
     const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-revision-scope-"));
     directories.push(directory);

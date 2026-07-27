@@ -357,6 +357,19 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
       if (node.kind === "action") {
         await includeAction(node.action, directFiles);
       }
+      if (node.kind === "gate" && node.inspectionAction) {
+        const inspection = await includeAction(
+          node.inspectionAction,
+          directFiles,
+          "gate inspection action referenced file",
+        );
+        if (inspection.definition.effect !== "read") {
+          throw new AgentGraphError(
+            "gate-inspection-effect-invalid",
+            `Gate ${graphId}/${node.id} inspection Action ${inspection.definition.id} must use effect: read`,
+          );
+        }
+      }
       if (node.kind === "gate" && node.resolutionAction) {
         const resolution = await includeAction(
           node.resolutionAction,

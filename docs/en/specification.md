@@ -1,6 +1,6 @@
 # Agent Graph specification v1
 
-This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.2.1`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
+This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.2.2`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
 
 ## 1. Provider
 
@@ -114,12 +114,15 @@ gate:
   prompt: Approve this release?
   authority: release.approve
   delegatable: true
+inspectionAction: actions/inspect-release.yaml
 resolutionAction: actions/apply-approval.yaml
 ```
 
 Without matching authority, the route is `waiting-user`. Its ordinary `commandPlan` stays empty. If and only if `delegatable` is true and the current evaluation supplies the named authority, the gate becomes actionable with `resolution: session-authority`.
 
-`resolutionAction` is optional. It references a normal Provider Action that records or applies the decision after the user confirms it. The resolved Route exposes this separately as `gate.resolutionAction`, including its command or Host Handler and any input/output Schema locations. A host must not execute that plan while the Route is `requires-user`; after explicit confirmation, it validates runtime input, executes the action, refreshes observable Facts, and evaluates again. Dynamic decision data belongs in Action input, never in generated Graph nodes.
+`inspectionAction` is optional. It references a read-only Provider Action that prepares or opens the evidence needed for the decision. The resolved Route exposes it separately as `gate.inspectionAction`; it remains available while the Gate waits for the user and does not grant authority or resolve the Gate. An inspection Action must use `effect: read`. If it uses the `agent` runner, its Skill is exposed on `gate.inspectionAction.action.skill` instead of being preloaded into the Gate's ordinary `resources.required`.
+
+`resolutionAction` is optional. It references a normal Provider Action that records or applies the decision after the user confirms it. The resolved Route exposes this separately as `gate.resolutionAction`, including its command or Host Handler, Agent Skill, and any input/output Schema locations. A host must not execute or load that conditional work while the Route is `requires-user`; after explicit confirmation, it validates runtime input, loads the Action's Skill when present, executes the action, refreshes observable Facts, and evaluates again. Dynamic decision data belongs in Action input, never in generated Graph nodes.
 
 A resolution Action must have `effect: write` or `external`, because a read-only action cannot resolve the Gate's observable state. A Gate without `resolutionAction` remains valid when the host records its Outcome directly. The Action itself does not grant authority and cannot make a non-delegatable Gate automatic.
 

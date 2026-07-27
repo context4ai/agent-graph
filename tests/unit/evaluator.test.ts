@@ -52,6 +52,67 @@ describe("graph evaluation", () => {
     expect(route.action?.runner).toBe("agent");
   });
 
+  test("keeps Gate Action Skills attached to their execution phase", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-gate-skills-"));
+    directories.push(directory);
+    await initProvider(directory, "gate-skills");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: review }
+nodes:
+  - id: review
+    kind: gate
+    reasonCode: route.main.work
+    gate: { id: review, prompt: Review the result. }
+    inspectionAction: actions/inspect.yaml
+    resolutionAction: actions/apply.yaml
+  - { id: done, kind: terminal, terminalOutcome: completed }
+edges: [{ from: review, to: done, outcomes: [completed] }]
+`);
+    await writeTextAtomic(resolve(directory, "actions/inspect.yaml"), `schema: agent-graph.action.v1
+id: inspect
+runner: agent
+effect: read
+skill: skills/inspect/SKILL.md
+`);
+    await writeTextAtomic(resolve(directory, "actions/apply.yaml"), `schema: agent-graph.action.v1
+id: apply
+runner: agent
+effect: write
+skill: skills/apply/SKILL.md
+`);
+    await writeTextAtomic(resolve(directory, "skills/inspect/SKILL.md"), `---
+name: inspect-result
+description: Inspect the result before review.
+---
+
+# Inspect
+`);
+    await writeTextAtomic(resolve(directory, "skills/apply/SKILL.md"), `---
+name: apply-review
+description: Apply the confirmed review.
+---
+
+# Apply
+`);
+    const provider = await loadProvider(resolve(directory, "provider.yaml"));
+    const evaluation = evaluateGraph(provider, "main").evaluation;
+    const route = await resolveRoute(
+      provider,
+      "main",
+      "default",
+      evaluation.primaryRoute!.routeId,
+    );
+    await validateSchema("route", route, "gate skill route");
+    expect(route.resources.required).toEqual([]);
+    expect(route.gate?.inspectionAction?.action.skill?.id).toBe(
+      "skill.inspect-result",
+    );
+    expect(route.gate?.resolutionAction?.action.skill?.id).toBe(
+      "skill.apply-review",
+    );
+  });
+
   test("exposes a child graph action through a parent route", async () => {
     const provider = await loadProvider(example("subgraphs"));
     const result = evaluateGraph(provider, "main").evaluation;

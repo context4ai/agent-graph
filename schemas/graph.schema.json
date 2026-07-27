@@ -95,6 +95,7 @@
             "delegatable": { "type": "boolean", "default": false }
           }
         },
+        "inspectionAction": { "$ref": "#/$defs/relativePath" },
         "resolutionAction": { "$ref": "#/$defs/relativePath" },
         "terminalOutcome": { "$ref": "#/$defs/outcome" },
         "requiresFacts": { "type": "array", "items": { "$ref": "#/$defs/factCheck" } },
@@ -105,7 +106,7 @@
         {
           "properties": { "kind": { "const": "action" } },
           "required": ["action", "reasonCode"],
-          "not": { "anyOf": [{ "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["resolutionAction"] }, { "required": ["terminalOutcome"] }] }
+          "not": { "anyOf": [{ "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["inspectionAction"] }, { "required": ["resolutionAction"] }, { "required": ["terminalOutcome"] }] }
         },
         {
           "properties": { "kind": { "const": "gate" } },
@@ -115,12 +116,12 @@
         {
           "properties": { "kind": { "const": "subgraph" } },
           "required": ["graph", "entry"],
-          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["gate"] }, { "required": ["resolutionAction"] }, { "required": ["reasonCode"] }, { "required": ["terminalOutcome"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
+          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["gate"] }, { "required": ["inspectionAction"] }, { "required": ["resolutionAction"] }, { "required": ["reasonCode"] }, { "required": ["terminalOutcome"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
         },
         {
           "properties": { "kind": { "const": "terminal" } },
           "required": ["terminalOutcome"],
-          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["resolutionAction"] }, { "required": ["reasonCode"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
+          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["inspectionAction"] }, { "required": ["resolutionAction"] }, { "required": ["reasonCode"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
         }
       ]
     },

@@ -4,6 +4,13 @@ All notable changes to Agent Graph are documented here. The project follows [Sem
 
 ## Unreleased
 
+## 0.2.2 - 2026-07-27
+
+- Added read-only Gate inspection Actions for evidence preparation before a decision.
+- Exposed inspection plans separately from post-confirmation resolution plans.
+- Kept Gate Action Skills attached to their execution phase for progressive disclosure.
+- Added schema, loader, route, example, and graph-test coverage for Gate inspection.
+
 ## 0.2.1 - 2026-07-24
 
 - Added explicit gate resolution Actions.

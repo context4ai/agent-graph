@@ -15,6 +15,7 @@ nodes:
       prompt: Review the prepared result.
       authority: review
       delegatable: true
+    inspectionAction: actions/inspect-review.yaml
     resolutionAction: actions/apply-review.yaml
   - id: done
     kind: terminal

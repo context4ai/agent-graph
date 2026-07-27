@@ -6,8 +6,8 @@
 
 ```bash
 agent-graph ...                    # 已安装命令
-npx @c4a/agent-graph@0.2.1 ...    # npm 临时运行
-bunx @c4a/agent-graph@0.2.1 ...   # Bun 临时运行
+npx @c4a/agent-graph@0.2.2 ...    # npm 临时运行
+bunx @c4a/agent-graph@0.2.2 ...   # Bun 临时运行
 node ./agent-graph.mjs ...         # Provider 随包携带的单文件
 ```
 
@@ -92,7 +92,7 @@ Dependency 转为 Edge，fan-in 使用默认 `all`。Importer 不会编造门禁
 
 ### `route <graph> [route-id]` 或 `--skill <SKILL.md> route [route-id]`
 
-使用同样的 Evaluation 选项。省略 route ID 时解析当前 primary route。Agent 应传入上一次 Evaluation 的 `--revision <digest>`；Revision 已变化时会返回 `route-revision-stale`。不可用 ID 返回 `route-stale`。Route 解析只定位文件，不执行命令或 Materializer。等待中的 Gate 可以单独暴露 `gate.resolutionAction`；它是用户确认后的计划，不是可立即执行的普通 `commandPlan`。
+使用同样的 Evaluation 选项。省略 route ID 时解析当前 primary route。Agent 应传入上一次 Evaluation 的 `--revision <digest>`；Revision 已变化时会返回 `route-revision-stale`。不可用 ID 返回 `route-stale`。Route 解析只定位文件，不执行命令或 Materializer。等待中的 Gate 可以暴露用于决定前证据准备的只读 `gate.inspectionAction`，以及用于用户确认后工作的 `gate.resolutionAction`；二者都不会混入 Gate 的普通 `commandPlan`。
 
 ## 显式 Run 管理
 

@@ -1,6 +1,6 @@
 # Agent Graph v1 协议规范
 
-本文定义 `@c4a/agent-graph@0.2.1` 实现的 `agent-graph.*.v1` 对象。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
+本文定义 `@c4a/agent-graph@0.2.2` 实现的 `agent-graph.*.v1` 对象。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
 
 ## 1. Provider
 
@@ -114,12 +114,15 @@ gate:
   prompt: Approve this release?
   authority: release.approve
   delegatable: true
+inspectionAction: actions/inspect-release.yaml
 resolutionAction: actions/apply-approval.yaml
 ```
 
 没有匹配授权时，Route 状态为 `waiting-user`，其普通 `commandPlan` 保持为空。只有 `delegatable` 为 true 且当前 Evaluation 显式提供对应 authority 时，门禁才变为 actionable，并标记 `resolution: session-authority`。
 
-`resolutionAction` 是可选字段，引用一个普通 Provider Action，用于在用户确认后记录或应用决定。解析后的 Route 会把它单独暴露为 `gate.resolutionAction`，其中包含 Command 或 Host Handler，以及输入/输出 Schema 的安装位置。Route 为 `requires-user` 时宿主不得执行这份计划；用户明确确认后，宿主校验本次输入、执行 Action、刷新可观察 Facts，再重新求值。动态决定数据属于 Action Input，不能通过生成 Graph Node 表达。
+`inspectionAction` 是可选字段，引用一个只读 Provider Action，用于在决定前准备或打开所需证据。解析后的 Route 会把它单独暴露为 `gate.inspectionAction`；Gate 等待用户时即可执行，但它不会授予 Authority，也不会解析 Gate。Inspection Action 必须使用 `effect: read`。如果它使用 `agent` runner，对应 Skill 会出现在 `gate.inspectionAction.action.skill`，不会被提前混入 Gate 的普通 `resources.required`。
+
+`resolutionAction` 是可选字段，引用一个普通 Provider Action，用于在用户确认后记录或应用决定。解析后的 Route 会把它单独暴露为 `gate.resolutionAction`，其中包含 Command、Host Handler 或 Agent Skill，以及输入/输出 Schema 的安装位置。Route 为 `requires-user` 时宿主不得执行或加载这份条件工作；用户明确确认后，宿主校验本次输入、按需加载 Action Skill、执行 Action、刷新可观察 Facts，再重新求值。动态决定数据属于 Action Input，不能通过生成 Graph Node 表达。
 
 Resolution Action 必须使用 `effect: write` 或 `external`，因为只读 Action 无法改变 Gate 的可观察状态。没有 `resolutionAction` 的 Gate 仍然合法，此时由宿主直接记录其 Outcome。这个 Action 本身不会授予 Authority，也不能把不可委托 Gate 变成自动门禁。
 
