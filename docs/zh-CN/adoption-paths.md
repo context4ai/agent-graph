@@ -61,7 +61,7 @@ Importer 可以复制已有 Skill 并生成合法的 Provider 起点，但无法
 | Skill | 说明能力何时适用，并绑定 Provider、Graph 与 Entry |
 | Provider Bundle | 定义静态合法工作、Resource、Gate、原因码和 Route 测试 |
 | 宿主 | 解析 Bundle、采集 Facts、持久化状态、物化动态 Resource、执行 Host Action、落实 Gate 并刷新观察 |
-| Agent | 消费选中的 Route、读取 Required Resource、完成被委托的工作并报告显式 Outcome |
+| Agent | 消费选中的 Route、读取标记为 `read-required` 的 Required Resource、完成被委托的工作并报告显式 Outcome |
 | Agent Graph | 校验契约，并确定性地求值和解析 Route |
 
 开发阶段，将 Provider 源文件放在拥有它的产品或 Plugin 附近。构建阶段生成可迁移 Bundle，并纳入该产品原有的资源打包流程。运行阶段，宿主通过 Skill Binding 或 Registry ID 定位已安装 Bundle。
@@ -98,7 +98,7 @@ Node.js 宿主可以进程内使用 SDK；其他运行时或需要进程边界�
 消费 Route 的 Agent 只需遵循：
 
 - 按机器 Code 分支，不依赖偶然文案；
-- 完整读取每个 Required Resource；
+- 完整读取每个标记为 `read-required` 的 Required Resource；
 - 将 Recommended Resource 视为可选内容；
 - 在未解析用户 Gate 前停止；
 - 只执行选中的 Action；

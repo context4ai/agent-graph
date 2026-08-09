@@ -1,6 +1,6 @@
 # Agent Graph v1 协议规范
 
-本文定义 `@c4a/agent-graph@0.2.2` 实现的 `agent-graph.*.v1` 对象。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
+本文定义 `@c4a/agent-graph@0.2.3` 实现的 `agent-graph.*.v1` 对象。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
 
 ## 1. Provider
 
@@ -243,7 +243,40 @@ Materializer 进程可读取 `AGENT_GRAPH_PROVIDER_ROOT`、`AGENT_GRAPH_WORKSPAC
 
 参考实现默认限制为 30 秒、10 MiB stdout 与 1 MiB stderr；SDK 选项和 CLI 参数可以收紧或放宽。超限时终止进程，返回结构化错误，并且不写 Cache Receipt。`effect: read` 是供检查和宿主策略使用的声明契约，不是操作系统沙箱；宿主仍负责信任或隔离 Materializer 代码。
 
-### 4.3 Code Catalog
+### 4.3 当前会话资源读取收据
+
+Route 解析可以接收可选的 `agent-graph.resource-read-receipts.v1` 输入：
+
+```json
+{
+  "schema": "agent-graph.resource-read-receipts.v1",
+  "provider": "company/release",
+  "receipts": [
+    {
+      "id": "release.checklist",
+      "digest": "sha256:<content-digest>"
+    },
+    {
+      "id": "workspace.status",
+      "digest": "sha256:<materialized-content-digest>",
+      "revision": "sha256:<selecting-route-revision>"
+    }
+  ]
+}
+```
+
+每个收据集合只属于一个 Provider，用于解析其他 Provider 时会被拒绝。只有当 Agent 确实读过该精确内容，且内容在当前会话中仍可使用时，宿主才能签发收据。收据是临时的消费元信息，不是 Fact、Outcome、Authority、完成证据或持久 Run 状态，也不影响 Evaluation Revision、Route 身份或 Action 合法性。
+
+Route 解析返回的每个 Resource Location（包括 Action Skill 与 Schema）都带有 `readState`：
+
+- `current`：存在精确匹配的当前会话收据；
+- `read-required`：没有匹配收据，Agent 必须在执行前读取 Required Resource。
+
+静态 Resource 按 Resource ID 与精确内容 Digest 匹配。动态 Context View 按 Resource ID 与选择它的 Route Revision 匹配；收据 Digest 标识宿主此前提供给 Agent 的物化内容。工作流 Revision 变化后，动态收据不再匹配。没有收据、Route 解析以外产生的 Location 缺少 `readState`，或格式正确但已过期的收据，都按 `read-required` 处理。
+
+宿主只能在仍包含该资源的会话内携带收据；Checkpoint 和 Run 文件不会持久化它们。这样既能避免反复加载未变化的 Procedure，又能保留生成式上下文的刷新边界。
+
+### 4.4 Code Catalog
 
 Provider 可以声明一个 `agent-graph.code-catalog.v1` 文件：
 
@@ -296,6 +329,7 @@ Evaluation 是只读操作。相同定义与路由输入必须得到相同 Revis
 - Command Plan 或 Host Handler；
 - 解析后的工作目录，以及其 `workspace` 或 `provider` 语义来源；
 - required 与 recommended Resource Location；
+- 每个 Route Resource 的 `readState`，用于区分当前会话已读内容与必须加载的内容；
 - `afterAction.recordNode` 和重新 evaluate 的要求。
 
 只有在当前输入下仍可用的 route ID 才能解析。调用方还可绑定 Evaluation revision；不匹配时会在返回 Command Plan 前被拒绝。长文档正文不会内联；动态资源返回绑定 Revision 的物化引用，不会自动执行。

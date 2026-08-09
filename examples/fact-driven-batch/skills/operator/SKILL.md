@@ -9,6 +9,6 @@ metadata:
 
 # Fact-driven batch
 
-Evaluate the bound graph, resolve its primary route, read required resources, and
+Evaluate the bound graph, resolve its primary route, read required resources marked `read-required`, and
 delegate host handlers to the integration host. The host owns target selection and
 refreshes Facts after every action.

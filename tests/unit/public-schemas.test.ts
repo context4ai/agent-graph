@@ -48,6 +48,7 @@ describe("public output schemas", () => {
       "provider",
       "resource",
       "resource-location",
+      "resource-read-receipts",
       "route",
       "run",
       "skill-binding",
@@ -60,6 +61,11 @@ describe("public output schemas", () => {
     await validateSchema("route", route, "route");
     const resource = await locateResource(provider, "procedure.drafting");
     await validateSchema("resource-location", resource, "resource-location");
+    await validateSchema("resource-read-receipts", {
+      schema: "agent-graph.resource-read-receipts.v1",
+      provider: provider.manifest.id,
+      receipts: [{ id: resource.id, digest: resource.digest }],
+    }, "resource-read-receipts");
     const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-schema-"));
     directories.push(directory);
     const bundle = await buildProviderBundle(provider, resolve(directory, "bundle"));

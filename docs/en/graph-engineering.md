@@ -94,7 +94,7 @@ Traditional progressive disclosure is often described as “put details in anoth
 5. dynamic context is materialized explicitly as data;
 6. recommended resources are optional, while required resources are contractual.
 
-This reduces repeated context loading and prevents a large CLI JSON response from becoming an accidental prompt. It also lets an Agent cache already-read resources by digest.
+This reduces repeated context loading and prevents a large CLI JSON response from becoming an accidental prompt. A host can attest already-read current-conversation resources by digest and, for dynamic views, by route revision; the route then marks only stale or unseen resources as `read-required`.
 
 ## Observability without a mandatory runtime
 

@@ -1,6 +1,6 @@
 # Agent Graph specification v1
 
-This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.2.2`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
+This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.2.3`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
 
 ## 1. Provider
 
@@ -243,7 +243,40 @@ Materializer processes receive `AGENT_GRAPH_PROVIDER_ROOT`, `AGENT_GRAPH_WORKSPA
 
 The reference implementation applies a 30-second timeout, a 10 MiB stdout limit, and a 1 MiB stderr limit by default. SDK options and CLI flags can lower or raise those limits. Exceeding one terminates the process and produces a structured error without writing a cache receipt. `effect: read` is a declared contract for inspection and host policy, not an operating-system sandbox; hosts remain responsible for trusting or isolating materializer code.
 
-### 4.3 Code Catalog
+### 4.3 Current-conversation read receipts
+
+Route resolution accepts an optional `agent-graph.resource-read-receipts.v1` input:
+
+```json
+{
+  "schema": "agent-graph.resource-read-receipts.v1",
+  "provider": "company/release",
+  "receipts": [
+    {
+      "id": "release.checklist",
+      "digest": "sha256:<content-digest>"
+    },
+    {
+      "id": "workspace.status",
+      "digest": "sha256:<materialized-content-digest>",
+      "revision": "sha256:<selecting-route-revision>"
+    }
+  ]
+}
+```
+
+A receipt set is scoped to one Provider and is rejected when used to resolve another Provider. A host may issue a receipt only after the Agent has actually read that exact content and the content remains available in the current conversation. Receipts are ephemeral consumption metadata. They are not Facts, Outcomes, Authorities, completion evidence, or durable Run state, and they do not affect Evaluation revision, Route identity, or Action legality.
+
+Every Resource Location returned by Route resolution, including Action Skills and Schemas, has a `readState`:
+
+- `current`: an exact current-conversation receipt matches;
+- `read-required`: no receipt matches, so the Agent must read a required resource before acting.
+
+For a static Resource, a receipt matches the Resource ID and exact content digest. For a dynamic Context View, it matches the Resource ID and selecting Route revision; the receipt digest identifies the materialized content that the host previously exposed. If the workflow revision changes, the dynamic receipt no longer matches. Missing receipts, absent `readState` on a location produced outside Route resolution, or a well-formed but stale receipt all mean `read-required`.
+
+The host is responsible for carrying receipts only within the conversation that still contains the resource. Checkpoint and Run files do not persist them. This avoids repeatedly loading unchanged procedures while preserving refresh boundaries for generated context.
+
+### 4.4 Code Catalog
 
 A Provider may declare one `agent-graph.code-catalog.v1` file:
 
@@ -296,6 +329,7 @@ Evaluation is read-only. Same definitions and routing inputs produce the same re
 - command plan or host handler;
 - resolved working directory plus its `workspace` or `provider` semantic origin;
 - required and recommended resource locations;
+- `readState` on each Route Resource, distinguishing current-conversation content from content that must be loaded;
 - `afterAction.recordNode` and the requirement to evaluate again.
 
 A route ID is only accepted if it is still available under the supplied state. A caller can bind resolution to the Evaluation revision; a mismatch is rejected before returning a command plan. Long document bodies are never embedded. Dynamic resources return a revision-bound materialization reference rather than running automatically.

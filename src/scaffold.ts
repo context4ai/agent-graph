@@ -100,7 +100,7 @@ metadata:
 
 # Getting started
 
-Follow the resolved route. Read required resources before acting, then record an explicit outcome.
+Follow the resolved route. Read every required resource marked \`read-required\` before acting, then record an explicit outcome.
 `);
   await writeTextAtomic(targets[4]!, `---
 id: procedure.start

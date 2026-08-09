@@ -9,4 +9,4 @@ metadata:
 
 # Operator
 
-Evaluate the graph, resolve one current route, read its required resources, execute only that route, record an explicit outcome, and evaluate again.
+Evaluate the graph, resolve one current route, read its required resources marked `read-required`, execute only that route, record an explicit outcome, and evaluate again.

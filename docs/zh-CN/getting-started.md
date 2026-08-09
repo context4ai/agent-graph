@@ -5,7 +5,7 @@
 ## 1. 创建 Provider
 
 ```bash
-npx @c4a/agent-graph@0.2.2 init ./example-provider --id example-provider
+npx @c4a/agent-graph@0.2.3 init ./example-provider --id example-provider
 cd example-provider
 ```
 
@@ -14,8 +14,8 @@ cd example-provider
 ## 2. 校验和测试
 
 ```bash
-npx @c4a/agent-graph@0.2.2 validate --format json
-npx @c4a/agent-graph@0.2.2 test tests --format json
+npx @c4a/agent-graph@0.2.3 validate --format json
+npx @c4a/agent-graph@0.2.3 test tests --format json
 ```
 
 校验范围包括 JSON Schema、相对路径边界、ID、引用、Graph Entry、显式 Terminal、Edge 端点、Subgraph 调用、跨 Graph 递归、动态 Resource Materializer 和重复身份。校验不会执行 Action。
@@ -23,7 +23,7 @@ npx @c4a/agent-graph@0.2.2 test tests --format json
 ## 3. 发现当前路线
 
 ```bash
-npx @c4a/agent-graph@0.2.2 evaluate main --format json
+npx @c4a/agent-graph@0.2.3 evaluate main --format json
 ```
 
 结果包含稳定状态码、Revision 摘要、主路线、备选路线和简洁诊断。每个 Route Summary 都有稳定 `reasonCode`；可选 Code Catalog 可以补充短提示和文件化解释。结果不会内联 Skill 或 Procedure 正文。
@@ -31,7 +31,7 @@ npx @c4a/agent-graph@0.2.2 evaluate main --format json
 解析选中的路线：
 
 ```bash
-npx @c4a/agent-graph@0.2.2 route main <route-id> --revision <revision> --format json
+npx @c4a/agent-graph@0.2.3 route main <route-id> --revision <revision> --format json
 ```
 
 两个值都应取自同一次 Evaluation。若求值和解析之间的 Graph 输入或相关 Provider 文件发生变化，CLI 会拒绝过期 Revision，而不是返回不匹配的执行计划。
@@ -46,10 +46,21 @@ Route 包含：
 
 静态资源以带内容摘要的文件返回。动态 Context View 返回物化描述，必须显式执行 Materialize。
 
+如果宿主没有提供匹配的当前会话收据，每个 Route Resource 都带有 `readState: read-required`：
+
+```bash
+npx @c4a/agent-graph@0.2.3 route main <route-id> \
+  --revision <revision> \
+  --resource-receipts @resource-read-receipts.json \
+  --format json
+```
+
+只有在 Agent 已读取精确资源后才能记录收据。静态收据在 Digest 不变时继续有效；动态 View 收据还必须匹配当前 Route Revision。示例见 [`examples/dynamic-resource/resource-read-receipts.example.json`](../../examples/dynamic-resource/resource-read-receipts.example.json)。
+
 生成的 Skill 已完整绑定 Provider、Graph 与 Entry，因此同一次求值可以省略 Graph：
 
 ```bash
-npx @c4a/agent-graph@0.2.2 \
+npx @c4a/agent-graph@0.2.3 \
   --skill ./skills/getting-started/SKILL.md \
   evaluate --format json
 ```
@@ -57,11 +68,11 @@ npx @c4a/agent-graph@0.2.2 \
 ## 4. 用 Run 承载长任务
 
 ```bash
-npx @c4a/agent-graph@0.2.2 run start main \
+npx @c4a/agent-graph@0.2.3 run start main \
   --state ./runtime/run.json \
   --workspace "$PWD"
 
-npx @c4a/agent-graph@0.2.2 run status \
+npx @c4a/agent-graph@0.2.3 run status \
   --manifest ./provider.yaml \
   --state ./runtime/run.json \
   --format json
@@ -70,7 +81,7 @@ npx @c4a/agent-graph@0.2.2 run status \
 完成路线后，使用 `afterAction.recordNode` 返回的准确 State Key：
 
 ```bash
-npx @c4a/agent-graph@0.2.2 run record main/work completed \
+npx @c4a/agent-graph@0.2.3 run record main/work completed \
   --state ./runtime/run.json
 ```
 
@@ -79,7 +90,7 @@ npx @c4a/agent-graph@0.2.2 run record main/work completed \
 ## 5. 构建可迁移 Bundle
 
 ```bash
-npx @c4a/agent-graph@0.2.2 build ./dist/provider --format json
+npx @c4a/agent-graph@0.2.3 build ./dist/provider --format json
 node ./path/to/agent-graph.mjs --manifest ./dist/provider/manifest.json validate
 ```
 

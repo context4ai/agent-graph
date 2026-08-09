@@ -4,6 +4,13 @@ All notable changes to Agent Graph are documented here. The project follows [Sem
 
 ## Unreleased
 
+## 0.2.3 - 2026-08-09
+
+- Added current-conversation resource read receipts for progressive context reuse.
+- Marked routed resources as `current` or `read-required` without changing route evaluation.
+- Invalidated dynamic context-view receipts when their selecting workflow revision changes.
+- Added the public receipt schema, CLI input, examples, documentation, and regression coverage.
+
 ## 0.2.2 - 2026-07-27
 
 - Added read-only Gate inspection Actions for evidence preparation before a decision.

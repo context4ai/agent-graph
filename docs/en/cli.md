@@ -6,8 +6,8 @@ All modes run the same bundled CLI:
 
 ```bash
 agent-graph ...                    # installed binary
-npx @c4a/agent-graph@0.2.2 ...    # npm one-shot
-bunx @c4a/agent-graph@0.2.2 ...   # Bun one-shot
+npx @c4a/agent-graph@0.2.3 ...    # npm one-shot
+bunx @c4a/agent-graph@0.2.3 ...   # Bun one-shot
 node ./agent-graph.mjs ...         # single file shipped by a Provider
 ```
 
@@ -93,6 +93,8 @@ With `--skill`, omit `graph`; the complete Skill binding is authoritative.
 ### `route <graph> [route-id]` or `--skill <SKILL.md> route [route-id]`
 
 Uses the same evaluation options. Without `route-id`, resolves the current primary route. Agents should pass `--revision <digest>` from the preceding Evaluation; a changed revision then returns `route-revision-stale`. An unavailable ID returns `route-stale`. Route resolution locates files but never executes commands or materializers. A waiting Gate may expose a read-only `gate.inspectionAction` for pre-decision evidence and a separate `gate.resolutionAction` for post-confirmation work; neither is folded into the Gate's ordinary `commandPlan`.
+
+`--resource-receipts '<json>'` or `--resource-receipts @receipts.json` supplies an `agent-graph.resource-read-receipts.v1` document maintained by the host for the current conversation. Route resources are marked `current` only when the exact static digest matches, or when a dynamic Context View matches the current Route revision. All other resources are marked `read-required`. Receipts do not change route selection and are not stored in a Run.
 
 ## Explicit Run management
 

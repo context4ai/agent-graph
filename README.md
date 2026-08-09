@@ -122,7 +122,7 @@ metadata:
 # Draft workflow
 
 1. Resolve this binding and evaluate the selected Graph and Entry.
-2. Resolve the current Route and read all of its required resources.
+2. Resolve the current Route and read each required resource marked `read-required`.
 3. Stop at any unresolved human Gate.
 4. Execute only the selected Action, record an explicit Outcome, and evaluate again.
 ```
@@ -136,6 +136,8 @@ metadata:
 All three fields are required and validated together. `path:` always resolves relative to the current `SKILL.md`, not the process working directory. A host can instead register a shared Provider and use `provider:<id>`.
 
 The Skill body keeps only this bootstrap and consumption contract. Phase-specific procedures, schemas, and context remain Route resources and are loaded on demand instead of being copied into the Skill. The binding selects a stable workflow; current modules, batches, and dates are runtime Facts. See [Skills and Providers](./docs/en/skills-and-providers.md) for the complete contract.
+
+A host may attach current-conversation resource read receipts when resolving a Route. Exact static digests can then remain `current` across steps, while revision-bound dynamic views become `read-required` after the workflow revision changes. Receipts reduce repeated reading; they never prove that an Action completed.
 
 ## Documentation and reference
 

@@ -19,7 +19,7 @@ Skill 正文只保留 Bootstrap 契约：
 
 1. 任何生命周期动作前先 evaluate 已绑定的 Graph 与 Entry；
 2. 解析选中的 Route；
-3. 完整读取 Route 的 required 资源；
+3. 完整读取 Route 中标记为 `read-required` 的 required 资源；
 4. 将 recommended 资源作为可选上下文；
 5. 遇到未解析用户门禁时停止；
 6. 记录显式 Outcome 并再次 evaluate。

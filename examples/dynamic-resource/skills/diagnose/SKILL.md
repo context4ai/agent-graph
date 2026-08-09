@@ -9,4 +9,4 @@ metadata:
 
 # Diagnose from context
 
-Materialize and read the required context view before drawing conclusions.
+Materialize and read the required context view when it is marked `read-required` before drawing conclusions.

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/resource-read-receipts.schema.json",
+  "title": "Agent Graph Resource Read Receipts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "provider", "receipts"],
+  "properties": {
+    "schema": { "const": "agent-graph.resource-read-receipts.v1" },
+    "provider": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$", "maxLength": 160 },
+    "receipts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "digest"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$", "maxLength": 160 },
+          "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+          "revision": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+        }
+      }
+    }
+  }
+}

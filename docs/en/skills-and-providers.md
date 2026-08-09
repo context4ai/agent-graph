@@ -19,7 +19,7 @@ The Skill body should contain only the bootstrap contract:
 
 1. evaluate the bound Graph and Entry before taking lifecycle action;
 2. resolve the selected Route;
-3. read required route resources completely;
+3. read required route resources marked `read-required` completely;
 4. treat recommended resources as optional context;
 5. stop for unresolved user gates;
 6. record the explicit Outcome and evaluate again.

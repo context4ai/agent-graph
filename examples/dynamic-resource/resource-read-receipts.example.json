@@ -1,0 +1,15 @@
+{
+  "schema": "agent-graph.resource-read-receipts.v1",
+  "provider": "example.dynamic-resource",
+  "receipts": [
+    {
+      "id": "context.current",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "revision": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    {
+      "id": "diagnosis.procedure",
+      "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  ]
+}

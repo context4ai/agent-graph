@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { AgentGraphError } from "./errors.js";
 import { evaluateGraph, type RouteCandidate } from "./evaluator.js";
 import { digestFile, parseFrontmatter, readText, resolveContainedPath } from "./io.js";
+import { validateSchema } from "./schema.js";
 import type {
   ActionDefinition,
   CodeLocation,
@@ -12,6 +13,7 @@ import type {
   LoadedAction,
   LoadedResource,
   ResourceLocation,
+  ResourceReadReceiptSet,
   Route,
   RouteAction,
   StaticResourceMetadata,
@@ -88,7 +90,11 @@ async function locateActionSchema(
   });
 }
 
-async function routeAction(provider: LoadedProvider, action: ActionDefinition): Promise<RouteAction> {
+async function routeAction(
+  provider: LoadedProvider,
+  action: ActionDefinition,
+  receiptSet?: ResourceReadReceiptSet,
+): Promise<RouteAction> {
   const skill = action.runner === "agent" && action.skill
     ? await locateSkill(provider, action.skill)
     : undefined;
@@ -98,9 +104,9 @@ async function routeAction(provider: LoadedProvider, action: ActionDefinition): 
     id: action.id,
     runner: action.runner,
     effect: action.effect,
-    ...(skill ? { skill } : {}),
-    ...(inputSchema ? { inputSchema } : {}),
-    ...(outputSchema ? { outputSchema } : {}),
+    ...(skill ? { skill: annotateReadState([skill], receiptSet)[0]! } : {}),
+    ...(inputSchema ? { inputSchema: annotateReadState([inputSchema], receiptSet)[0]! } : {}),
+    ...(outputSchema ? { outputSchema: annotateReadState([outputSchema], receiptSet)[0]! } : {}),
   };
 }
 
@@ -152,6 +158,27 @@ async function resourcesForCandidate(provider: LoadedProvider, candidate: RouteC
   return { required, recommended };
 }
 
+function hasCurrentReceipt(location: ResourceLocation, receiptSet: ResourceReadReceiptSet | undefined): boolean {
+  if (!receiptSet) return false;
+  return receiptSet.receipts.some((receipt) => {
+    if (receipt.id !== location.id) return false;
+    if (location.materialize) {
+      return location.revision !== undefined && receipt.revision === location.revision;
+    }
+    return location.digest !== undefined && receipt.digest === location.digest;
+  });
+}
+
+function annotateReadState(
+  locations: ResourceLocation[],
+  receiptSet: ResourceReadReceiptSet | undefined,
+): ResourceLocation[] {
+  return locations.map((location) => ({
+    ...location,
+    readState: hasCurrentReceipt(location, receiptSet) ? "current" : "read-required",
+  }));
+}
+
 function planForAction(provider: LoadedProvider, action: ActionDefinition, workspace: string): Route["commandPlan"] {
   const cwd = action.cwd ?? "workspace";
   const workingDirectory = cwd === "provider" ? provider.root : resolve(workspace);
@@ -189,7 +216,20 @@ export async function resolveRoute(
   if (!candidate) {
     throw new AgentGraphError("route-stale", `Route ${routeId} is not available at revision ${evaluation.revision}`);
   }
-  const resources = await resourcesForCandidate(provider, candidate, evaluation.revision);
+  if (input.resourceReceipts) {
+    await validateSchema("resource-read-receipts", input.resourceReceipts, "resourceReceipts");
+    if (input.resourceReceipts.provider !== provider.manifest.id) {
+      throw new AgentGraphError(
+        "resource-receipts-provider-mismatch",
+        `Resource receipts target Provider ${input.resourceReceipts.provider}, current Provider is ${provider.manifest.id}`,
+      );
+    }
+  }
+  const locatedResources = await resourcesForCandidate(provider, candidate, evaluation.revision);
+  const resources = {
+    required: annotateReadState(locatedResources.required, input.resourceReceipts),
+    recommended: annotateReadState(locatedResources.recommended, input.resourceReceipts),
+  };
   const action = candidate.node.kind === "action"
     ? referencedAction(provider, candidate.node.action)
     : undefined;
@@ -213,7 +253,7 @@ export async function resolveRoute(
     availability: candidate.availability,
     callPath: candidate.callPath,
     ...(action ? {
-      action: await routeAction(provider, action.definition),
+      action: await routeAction(provider, action.definition, input.resourceReceipts),
     } : {}),
     commandPlan: action ? planForAction(provider, action.definition, workspace) : [],
     resources,
@@ -223,13 +263,13 @@ export async function resolveRoute(
         resolution: candidate.gateResolution ?? "user",
         ...(inspectionAction ? {
           inspectionAction: {
-            action: await routeAction(provider, inspectionAction.definition),
+            action: await routeAction(provider, inspectionAction.definition, input.resourceReceipts),
             commandPlan: planForAction(provider, inspectionAction.definition, workspace),
           },
         } : {}),
         ...(resolutionAction ? {
           resolutionAction: {
-            action: await routeAction(provider, resolutionAction.definition),
+            action: await routeAction(provider, resolutionAction.definition, input.resourceReceipts),
             commandPlan: planForAction(provider, resolutionAction.definition, workspace),
           },
         } : {}),

@@ -245,8 +245,21 @@ export interface EvaluationInput {
   facts?: Record<string, JsonValue>;
   outcomes?: Record<string, Outcome | OutcomeRecord>;
   authorities?: string[];
+  resourceReceipts?: ResourceReadReceiptSet;
   runPath?: string;
   workspace?: string;
+}
+
+export interface ResourceReadReceipt {
+  id: string;
+  digest: string;
+  revision?: string;
+}
+
+export interface ResourceReadReceiptSet {
+  schema: "agent-graph.resource-read-receipts.v1";
+  provider: string;
+  receipts: ResourceReadReceipt[];
 }
 
 export interface RouteSummary {
@@ -280,6 +293,7 @@ export interface ResourceLocation {
   mediaType: string;
   revision?: string;
   digest?: string;
+  readState?: "read-required" | "current";
   filePath?: string;
   materialize?: {
     resourceId: string;

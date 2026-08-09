@@ -108,7 +108,9 @@ media-type: text/markdown
 ---
 ```
 
-Declare resources on the node that needs them. Required resources must be read before the action; recommended resources are optional. Keep routine CLI envelopes small by returning paths and digests rather than bodies.
+Declare resources on the node that needs them. Required resources with `readState: read-required` must be read before the action; `current` means the host has attested that the exact resource is already available in the current conversation. Recommended resources are optional. Keep routine CLI envelopes small by returning paths and digests rather than bodies.
+
+Resource read receipts are host input, not Provider authoring state. Do not encode them as Facts or persist them in a Graph. Static receipts match the exact resource digest; dynamic context-view receipts additionally match the selecting Route revision.
 
 For JSON Schema, native templates, or other non-Markdown files, reference the content through a descriptor:
 

@@ -94,7 +94,7 @@ CLI 不会把循环隐藏在内部 Daemon 中。每轮都是一条 Route，每�
 5. 动态 Context 只作为数据显式物化；
 6. Recommended Resource 可选，Required Resource 构成契约。
 
-这样可减少重复加载，也避免大型 CLI JSON 意外变成长提示词。Agent 还可以按 Digest 复用已经完整读取的资源。
+这样可减少重复加载，也避免大型 CLI JSON 意外变成长提示词。宿主可以按 Digest 为当前会话已读资源提供收据，动态视图还需绑定 Route Revision；Route 只把过期或未读资源标为 `read-required`。
 
 ## 无需强制 Runtime 的可观察性
 

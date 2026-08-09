@@ -9,4 +9,4 @@ metadata:
 
 # Operator
 
-Read the required route resources, prepare the result, record the route outcome, and evaluate again.
+Read the required route resources marked `read-required`, prepare the result, record the route outcome, and evaluate again.

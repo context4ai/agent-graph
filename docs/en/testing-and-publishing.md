@@ -83,7 +83,7 @@ Provider projects may instead depend on `agent-graph` and publish their built bu
 For reproducible automation, pin the one-shot version:
 
 ```bash
-npx @c4a/agent-graph@0.2.2 --manifest ./provider.yaml validate
+npx @c4a/agent-graph@0.2.3 --manifest ./provider.yaml validate
 ```
 
 ## Package audit checklist

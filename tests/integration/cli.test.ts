@@ -23,7 +23,7 @@ describe("built CLI", () => {
   test("runs as a Node executable and as a standalone copied file", async () => {
     const version = execute("node", ["dist/agent-graph.mjs", "--version"]);
     expect(version.status).toBe(0);
-    expect(version.stdout.trim()).toBe("0.2.2");
+    expect(version.stdout.trim()).toBe("0.2.3");
     const standalone = resolve(directory, "agent-graph.mjs");
     await Bun.write(standalone, Bun.file(resolve(root, "dist/agent-graph.mjs")));
     await chmod(standalone, 0o755);
@@ -32,7 +32,7 @@ describe("built CLI", () => {
     expect(JSON.parse(validate.stdout).state).toBe("valid");
     const bunVersion = execute(process.execPath, [standalone, "--version"], directory);
     expect(bunVersion.status).toBe(0);
-    expect(bunVersion.stdout.trim()).toBe("0.2.2");
+    expect(bunVersion.stdout.trim()).toBe("0.2.3");
     const extracted = resolve(directory, "graph.schema.json");
     const schema = execute("node", [standalone, "schema", "extract", "graph", "--output", extracted, "--format", "json"], directory);
     expect(schema.status).toBe(0);
@@ -53,7 +53,33 @@ describe("built CLI", () => {
     expect(execute("node", [cli, "--manifest", manifest, "run", "start", "main", "--state", state, "--workspace", providerRoot, "--format", "json"]).status).toBe(0);
     const route = execute("node", [cli, "--manifest", manifest, "route", "main", "--state", state, "--format", "json"]);
     expect(route.status).toBe(0);
-    const recordNode = JSON.parse(route.stdout).afterAction.recordNode as string;
+    const routePayload = JSON.parse(route.stdout) as {
+      revision: string;
+      routeId: string;
+      afterAction: { recordNode: string };
+      resources: { required: Array<{ id: string; digest: string; readState: string }> };
+    };
+    expect(routePayload.resources.required.every((resource) => resource.readState === "read-required")).toBe(true);
+    const receipts = resolve(directory, "resource-read-receipts.json");
+    await Bun.write(receipts, JSON.stringify({
+      schema: "agent-graph.resource-read-receipts.v1",
+      provider: "cli-test",
+      receipts: routePayload.resources.required.map((resource) => ({ id: resource.id, digest: resource.digest })),
+    }));
+    const reused = execute("node", [
+      cli,
+      "--manifest", manifest,
+      "route", "main", routePayload.routeId,
+      "--state", state,
+      "--revision", routePayload.revision,
+      "--resource-receipts", `@${receipts}`,
+      "--format", "json",
+    ]);
+    expect(reused.status).toBe(0);
+    expect(JSON.parse(reused.stdout).resources.required.every(
+      (resource: { readState: string }) => resource.readState === "current",
+    )).toBe(true);
+    const recordNode = routePayload.afterAction.recordNode;
     expect(execute("node", [cli, "run", "record", recordNode, "completed", "--state", state, "--format", "json"]).status).toBe(0);
     expect(execute("node", [cli, "run", "checkpoint", "--state", state, "--to", checkpoint, "--format", "json"]).status).toBe(0);
     expect(execute("node", [cli, "run", "resume", checkpoint, "--state", resumed, "--format", "json"]).status).toBe(0);

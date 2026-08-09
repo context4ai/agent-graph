@@ -122,7 +122,7 @@ metadata:
 # Draft workflow
 
 1. 解析以上绑定，并对选中的 Graph 和 Entry 求值。
-2. 解析当前 Route，完整读取它要求的资源。
+2. 解析当前 Route，完整读取其中标记为 `read-required` 的必需资源。
 3. 遇到尚未解决的人工 Gate 时停止。
 4. 只执行当前 Route 选择的 Action，记录显式 Outcome，再次求值。
 ```
@@ -136,6 +136,8 @@ metadata:
 三个字段缺一不可，并由 Loader 一次校验。`path:` 始终相对当前 `SKILL.md` 解析，而不是相对进程工作目录；宿主也可以注册共享 Provider，改用 `provider:<id>`。
 
 Skill 正文只保留这段启动与消费规则。各阶段的操作说明、Schema 和上下文继续作为 Route 资源按需加载，不复制进 Skill。绑定只选择稳定工作流；当前模块、批次或日期属于运行时 Facts。完整规则参见 [Skill 与 Provider](./docs/zh-CN/skills-and-providers.md)。
+
+宿主解析 Route 时可以附带当前会话的资源读取收据。内容摘要未变的静态资源可在后续步骤保持 `current`，绑定 Revision 的动态视图则会在工作流 Revision 变化后重新变成 `read-required`。收据只减少重复读取，不能证明 Action 已完成。
 
 ## 文档与参考
 

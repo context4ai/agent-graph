@@ -9,4 +9,4 @@ metadata:
 
 # Draft artifact
 
-Read the required route resources, produce the artifact, and report an explicit outcome.
+Read the required route resources marked `read-required`, produce the artifact, and report an explicit outcome.

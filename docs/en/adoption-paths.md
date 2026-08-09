@@ -61,7 +61,7 @@ The responsibilities are deliberately split:
 | Skill | Advertise when the capability applies and bind Provider, Graph, and Entry |
 | Provider bundle | Define static legal work, Resources, gates, reason codes, and route tests |
 | Host | Resolve bundles, collect Facts, persist state, materialize dynamic Resources, execute Host Actions, enforce Gates, and refresh observations |
-| Agent | Consume the selected Route, read required Resources, perform delegated work, and report an explicit Outcome |
+| Agent | Consume the selected Route, read required Resources marked `read-required`, perform delegated work, and report an explicit Outcome |
 | Agent Graph | Validate contracts and deterministically evaluate and resolve Routes |
 
 During development, keep source Provider files beside the product or plugin that owns them. At build time, produce a relocatable bundle and include it in that product's normal resource packaging. At runtime, the host resolves a Skill binding or registry ID to the installed bundle.
@@ -98,7 +98,7 @@ The end user or Agent normally invokes the Skill through that host. The host res
 The consuming Agent needs only the route loop:
 
 - branch on machine codes, not incidental prose;
-- read every required Resource;
+- read every required Resource marked `read-required`;
 - treat recommended Resources as optional;
 - stop at unresolved user Gates;
 - perform only the selected Action;

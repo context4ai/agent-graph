@@ -38,9 +38,18 @@ import {
   schemaTypes,
   updateRunAuthorities,
   updateRunFacts,
+  validateSchema,
   writeJsonAtomic,
 } from "./index.js";
-import type { ErrorEnvelope, EvaluationInput, JsonValue, LoadedProvider, Outcome, ResolvedSkillBinding } from "./types.js";
+import type {
+  ErrorEnvelope,
+  EvaluationInput,
+  JsonValue,
+  LoadedProvider,
+  Outcome,
+  ResolvedSkillBinding,
+  ResourceReadReceiptSet,
+} from "./types.js";
 
 const VERSION = packageMetadata.version;
 
@@ -141,9 +150,24 @@ function positiveIntegerOption(value: string): number {
   return parsed;
 }
 
-async function evaluationInput(options: { state?: string; facts?: string; outcomes?: string; authority?: string[] }): Promise<EvaluationInput> {
+async function resourceReadReceiptsValue(value: string): Promise<ResourceReadReceiptSet> {
+  const parsed = await jsonArgument(value);
+  await validateSchema("resource-read-receipts", parsed, "resourceReceipts");
+  return parsed as unknown as ResourceReadReceiptSet;
+}
+
+async function evaluationInput(options: {
+  state?: string;
+  facts?: string;
+  outcomes?: string;
+  authority?: string[];
+  resourceReceipts?: string;
+}): Promise<EvaluationInput> {
   const directFacts = options.facts ? objectValue(await jsonArgument(options.facts), "facts") : {};
   const directOutcomes = options.outcomes ? outcomeValues(await jsonArgument(options.outcomes)) : {};
+  const resourceReceipts = options.resourceReceipts
+    ? await resourceReadReceiptsValue(options.resourceReceipts)
+    : undefined;
   if (options.state) {
     const stored = runEvaluationInput(await loadRun(options.state));
     return {
@@ -151,9 +175,15 @@ async function evaluationInput(options: { state?: string; facts?: string; outcom
       facts: { ...stored.facts, ...directFacts },
       outcomes: { ...stored.outcomes, ...directOutcomes },
       authorities: [...new Set([...(stored.authorities ?? []), ...(options.authority ?? [])])].sort(),
+      ...(resourceReceipts ? { resourceReceipts } : {}),
     };
   }
-  return { facts: directFacts, outcomes: directOutcomes, authorities: options.authority ?? [] };
+  return {
+    facts: directFacts,
+    outcomes: directOutcomes,
+    authorities: options.authority ?? [],
+    ...(resourceReceipts ? { resourceReceipts } : {}),
+  };
 }
 
 function addEvaluationOptions(command: Command): Command {
@@ -299,10 +329,19 @@ addEvaluationOptions(program.command("evaluate")
 addEvaluationOptions(program.command("route")
   .description("resolve one evaluated route into commands, resources, gates, and the recording contract")
   .argument("[targets...]", "without --skill: <graph> [route-id]; with --skill: [route-id]")
-  .option("--revision <digest>", "bind resolution to the revision returned by evaluate"))
+  .option("--revision <digest>", "bind resolution to the revision returned by evaluate")
+  .option("--resource-receipts <json>", "current-conversation resource read receipts as JSON or @file"))
   .action(async (
     targets: string[],
-    options: { entry?: string; state?: string; facts?: string; outcomes?: string; authority?: string[]; revision?: string },
+    options: {
+      entry?: string;
+      state?: string;
+      facts?: string;
+      outcomes?: string;
+      authority?: string[];
+      revision?: string;
+      resourceReceipts?: string;
+    },
     command: Command,
   ) => {
     const context = await providerContext(command);
@@ -331,8 +370,8 @@ addEvaluationOptions(program.command("route")
         item.command ? `Command: ${item.command}` : `Host handler: ${item.handler}`,
         `Working directory: ${item.workingDirectory}`,
       ]),
-      ...route.resources.required.map((resource) => `Required: ${resource.filePath ?? `materialize ${resource.id}`}`),
-      ...route.resources.recommended.map((resource) => `Recommended: ${resource.filePath ?? `materialize ${resource.id}`}`),
+      ...route.resources.required.map((resource) => `Required [${resource.readState}]: ${resource.filePath ?? `materialize ${resource.id}`}`),
+      ...route.resources.recommended.map((resource) => `Recommended [${resource.readState}]: ${resource.filePath ?? `materialize ${resource.id}`}`),
       ...(route.gate ? [`Gate: ${route.gate.prompt}`] : []),
       `After action: record ${route.afterAction.recordNode ?? route.node}, then evaluate again`,
     ]);

@@ -12,6 +12,7 @@ import graphSchema from "../schemas/graph.schema.json" with { type: "json" };
 import providerSchema from "../schemas/provider.schema.json" with { type: "json" };
 import resourceSchema from "../schemas/resource.schema.json" with { type: "json" };
 import resourceLocationSchema from "../schemas/resource-location.schema.json" with { type: "json" };
+import resourceReadReceiptsSchema from "../schemas/resource-read-receipts.schema.json" with { type: "json" };
 import routeSchema from "../schemas/route.schema.json" with { type: "json" };
 import runSchema from "../schemas/run.schema.json" with { type: "json" };
 import skillBindingSchema from "../schemas/skill-binding.schema.json" with { type: "json" };
@@ -33,6 +34,7 @@ export type SchemaName =
   | "evaluation"
   | "route"
   | "resource-location"
+  | "resource-read-receipts"
   | "skill-binding";
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
@@ -50,6 +52,7 @@ const schemas: Record<SchemaName, object> = {
   provider: providerSchema,
   resource: resourceSchema,
   "resource-location": resourceLocationSchema,
+  "resource-read-receipts": resourceReadReceiptsSchema,
   route: routeSchema,
   run: runSchema,
   "skill-binding": skillBindingSchema,

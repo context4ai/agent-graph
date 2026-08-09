@@ -108,7 +108,9 @@ media-type: text/markdown
 ---
 ```
 
-只在真正需要它的 Node 上声明 Resource。Required Resource 必须在 Action 前读取；Recommended Resource 可以按需读取。常规 CLI Envelope 只返回路径和摘要，不返回正文。
+只在真正需要它的 Node 上声明 Resource。`readState: read-required` 的 Required Resource 必须在 Action 前读取；`current` 表示宿主确认该精确资源在当前会话中仍可供 Agent 使用。Recommended Resource 可以按需读取。常规 CLI Envelope 只返回路径和摘要，不返回正文。
+
+资源读取收据是宿主输入，不属于 Provider 编写状态；不要把它建模为 Fact 或持久化进 Graph。静态收据匹配资源的精确 Digest，动态 Context View 收据还要匹配选择它的 Route Revision。
 
 JSON Schema、原生 Template 或其他非 Markdown 文件通过描述文件引用内容：
 
