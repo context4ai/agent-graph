@@ -66,6 +66,8 @@ describe("Context case study replay", () => {
 
     expect(html).toContain('<details open><summary id="command-summary">CLI invocation</summary>');
     expect(html).toContain('<details open><summary id="technical-summary">Protocol fields</summary>');
+    expect(html).toContain('href="./styles.css?v=4"');
+    expect(html).toContain('src="./replay.js?v=4"');
     expect(script).toContain('const commands = {');
     expect(script).toContain('"capture-next": "context --workflow-managed');
     expect(script).toContain('byId("command-value").textContent = commands[step.node];');
