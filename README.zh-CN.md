@@ -69,6 +69,14 @@ Agent Graph 不会在后台擅自重写自己的计划。运行时路由随证�
 
 > 进展应由事实证明，而不是依赖对话记忆。
 
+## 真实实践：Context
+
+[Context](https://github.com/context4ai/context) 在两个薄 Skill 之下使用 Agent Graph，协调来源采集、代码提取、文档结构、审核 Gate、验证与知识包输出。它的调试记录可以回放每一条 Route、循环、门禁和最终结果。
+
+[观看交互式回放](https://context4ai.github.io/agent-graph/case-studies/context/) · [阅读完整案例](./docs/zh-CN/case-studies/context.md)
+
+![运行在 Agent Graph 上的 Context](./docs/zh-CN/assets/context-agent-graph.svg)
+
 ## 项目提供什么
 
 Agent Graph 是一套 Skills 原生的文件规范，并附带参考 SDK 与 CLI：
@@ -151,6 +159,7 @@ Skill 正文只保留这段启动与消费规则。各阶段的操作说明、Sc
 - [迁移已有工作流](./docs/zh-CN/migration.md)
 - [接入场景详解](./docs/zh-CN/adoption-paths.md)
 - [Graph Engineering：概念与实现](./docs/zh-CN/graph-engineering.md)
+- [实践案例：Context 知识工作流](./docs/zh-CN/case-studies/context.md)
 
 想直接查看仓库内容：
 

@@ -16,6 +16,7 @@ This guide is for Provider authors, Skill authors, Agent-host integrators, and A
 - Test and publish a bundle: [Testing and publishing](./testing-and-publishing.md)
 - Convert an existing Skill or script workflow: [Migration](./migration.md)
 - Understand the design philosophy: [Graph Engineering](./graph-engineering.md)
+- See a production integration from two thin Skills through replayable Routes: [Context case study](./case-studies/context.md)
 
 ## The consumption contract
 

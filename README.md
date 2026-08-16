@@ -69,6 +69,14 @@ Agent Graph does not silently rewrite its own plan. Runtime routing follows the 
 
 > Progress should be proven by facts, not remembered from conversation.
 
+## A real-world case: Context
+
+[Context](https://github.com/context4ai/context) uses Agent Graph beneath two thin Skills to coordinate source capture, code extraction, document structuring, review Gates, verification, and package output. Its debug recording makes every selected Route, loop, Gate, and outcome replayable.
+
+[Watch the interactive replay](https://context4ai.github.io/agent-graph/case-studies/context/) · [Read the case study](./docs/en/case-studies/context.md)
+
+![Context on Agent Graph](./docs/en/assets/context-agent-graph.svg)
+
 ## What the project provides
 
 Agent Graph is a Skills-native file specification with a reference SDK and CLI:
@@ -151,6 +159,7 @@ A host may attach current-conversation resource read receipts when resolving a R
 - [Migrating existing workflows](./docs/en/migration.md)
 - [Adoption paths in depth](./docs/en/adoption-paths.md)
 - [Graph Engineering: concept and implementation](./docs/en/graph-engineering.md)
+- [Case study: Context knowledge workflows](./docs/en/case-studies/context.md)
 
 To inspect the repository directly:
 

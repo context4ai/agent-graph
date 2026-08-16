@@ -16,6 +16,17 @@ export default tseslint.config(
     },
   },
   {
+    files: ["case-studies/**/*.js"],
+    languageOptions: {
+      globals: {
+        clearTimeout: "readonly",
+        document: "readonly",
+        fetch: "readonly",
+        setTimeout: "readonly",
+      },
+    },
+  },
+  {
     files: ["**/*.ts"],
     rules: {
       "@typescript-eslint/consistent-type-imports": "error",

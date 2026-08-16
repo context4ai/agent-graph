@@ -16,6 +16,7 @@
 - 测试并发布 Bundle：[测试与发布](./testing-and-publishing.md)
 - 转换已有 Skill 或脚本工作流：[迁移指南](./migration.md)
 - 理解设计理念：[Graph Engineering](./graph-engineering.md)
+- 查看两个薄 Skill 如何支撑可回放的实际产品工作流：[Context 实践案例](./case-studies/context.md)
 
 ## Agent 消费契约
 

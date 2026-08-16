@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Context 使用 Agent Graph 编排真实知识工作流的双语回放。A bilingual replay of Context routing a real knowledge workflow with Agent Graph.">
+  <title>Context · Agent Graph 实践案例</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" id="brand-link" href="../" aria-label="Agent Graph 实践案例">
+        <img src="./assets/logo.svg" alt="C4A">
+        <span><b>Graph Engineering</b><strong id="page-title">Context 工作图回放</strong></span>
+      </a>
+      <div class="top-actions">
+        <a id="case-link" href="https://github.com/context4ai/agent-graph/blob/main/docs/zh-CN/case-studies/context.md">案例说明</a>
+        <button id="language" type="button">EN</button>
+        <button id="theme" type="button" aria-label="切换主题">◐</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="rail">
+        <div class="rail-head"><strong id="rail-title">决策旅程</strong><span id="rail-count"></span></div>
+        <div id="event-list" class="event-list"></div>
+      </aside>
+
+      <section class="stage">
+        <div class="controls left">
+          <button id="previous" type="button" aria-label="上一步">←</button>
+          <button id="play" type="button">▶ 播放</button>
+          <button id="next" type="button" aria-label="下一步">→</button>
+        </div>
+        <div class="controls right">
+          <select id="speed" aria-label="播放速度">
+            <option value="1500">0.5×</option>
+            <option value="850" selected>1×</option>
+            <option value="420">2×</option>
+            <option value="220">4×</option>
+          </select>
+        </div>
+        <div class="canvas-time"><span id="step-count"></span><span id="event-time"></span></div>
+        <svg id="graph" viewBox="0 0 1100 650" role="img" aria-label="Context 工作图"></svg>
+        <div class="progress"><span id="progress-fill"></span><input id="scrubber" type="range" min="0" value="0" aria-label="回放步骤"></div>
+      </section>
+
+      <aside class="inspector">
+        <div class="inspector-head"><span id="explainer-label">路线说明</span><strong id="inspector-title">这一步发生了什么</strong></div>
+        <div class="inspector-body">
+          <dl>
+            <div><dt id="state-label">当前状态</dt><dd id="state-value"></dd></div>
+            <div><dt id="why-label">为什么走到这里</dt><dd id="why-value"></dd></div>
+            <div><dt id="action-label">下一步行动</dt><dd id="action-value"></dd></div>
+            <div><dt id="evidence-label">完成证据</dt><dd id="evidence-value"></dd></div>
+            <div><dt id="time-label">相对时间</dt><dd id="sequence-value"></dd></div>
+          </dl>
+          <details><summary id="technical-summary">协议字段</summary><pre id="technical-value"></pre></details>
+          <p class="provenance" id="provenance"></p>
+        </div>
+      </aside>
+    </main>
+  </div>
+  <script src="./replay.js" type="module"></script>
+</body>
+</html>

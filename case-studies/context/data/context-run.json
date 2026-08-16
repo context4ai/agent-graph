@@ -1,0 +1,42 @@
+{
+  "schema": "agent-graph.case-study.replay.v1",
+  "caseStudy": "context-knowledge-workflow",
+  "source": {
+    "kind": "sanitized-recording",
+    "graph": "workspace",
+    "entry": "continue",
+    "recordedSteps": 26,
+    "note": {
+      "en": "Route changes and relative timing are preserved from a real Context run; private source data and opaque identifiers are excluded.",
+      "zh-CN": "路由变化和相对时间来自一次真实 Context 运行；私有来源数据和不透明标识已经排除。"
+    }
+  },
+  "steps": [
+    { "elapsed": 0, "node": "choose-source-boundary", "status": "waiting-user", "reasonCode": "route.source.boundary-required" },
+    { "elapsed": 204, "node": "configure-document-capture", "status": "actionable", "reasonCode": "route.capture.configuration-required" },
+    { "elapsed": 258, "node": "authorize-document-capture", "status": "waiting-user", "reasonCode": "route.capture.permission-required" },
+    { "elapsed": 295, "node": "capture-next", "status": "actionable", "reasonCode": "route.capture.pending-target", "iteration": 1, "iterations": 2 },
+    { "elapsed": 329, "node": "capture-next", "status": "actionable", "reasonCode": "route.capture.pending-target", "iteration": 2, "iterations": 2 },
+    { "elapsed": 461, "node": "configure-code-extraction", "status": "actionable", "reasonCode": "route.extract.configuration-required" },
+    { "elapsed": 497, "node": "extract-next", "status": "actionable", "reasonCode": "route.extract.pending-target", "iteration": 1, "iterations": 2 },
+    { "elapsed": 530, "node": "extract-next", "status": "actionable", "reasonCode": "route.extract.pending-target", "iteration": 2, "iterations": 2 },
+    { "elapsed": 543, "node": "apply-managed-review", "status": "actionable", "reasonCode": "route.review.apply-managed" },
+    { "elapsed": 579, "node": "close-approved-knowledge", "status": "actionable", "reasonCode": "route.close.projection-stale", "checkpoint": 1, "checkpoints": 2 },
+    { "elapsed": 620, "node": "configure-prose-lifecycle", "status": "actionable", "reasonCode": "route.prose.configuration-required" },
+    { "elapsed": 757, "node": "align-next", "status": "actionable", "reasonCode": "route.structure.pending-target" },
+    { "elapsed": 1354, "node": "compile-next", "status": "actionable", "reasonCode": "route.compile.pending-target", "iteration": 1, "iterations": 8 },
+    { "elapsed": 1405, "node": "compile-next", "status": "actionable", "reasonCode": "route.compile.pending-target", "iteration": 2, "iterations": 8 },
+    { "elapsed": 1428, "node": "compile-next", "status": "actionable", "reasonCode": "route.compile.pending-target", "iteration": 3, "iterations": 8 },
+    { "elapsed": 1437, "node": "compile-next", "status": "actionable", "reasonCode": "route.compile.pending-target", "iteration": 4, "iterations": 8 },
+    { "elapsed": 1446, "node": "compile-next", "status": "actionable", "reasonCode": "route.compile.pending-target", "iteration": 5, "iterations": 8 },
+    { "elapsed": 1454, "node": "compile-next", "status": "actionable", "reasonCode": "route.compile.pending-target", "iteration": 6, "iterations": 8 },
+    { "elapsed": 1463, "node": "compile-next", "status": "actionable", "reasonCode": "route.compile.pending-target", "iteration": 7, "iterations": 8 },
+    { "elapsed": 1472, "node": "compile-next", "status": "actionable", "reasonCode": "route.compile.pending-target", "iteration": 8, "iterations": 8 },
+    { "elapsed": 1481, "node": "apply-resumed-review", "status": "actionable", "reasonCode": "route.review.apply-managed" },
+    { "elapsed": 1575, "node": "close-approved-knowledge", "status": "actionable", "reasonCode": "route.close.projection-stale", "checkpoint": 2, "checkpoints": 2 },
+    { "elapsed": 1624, "node": "configure-package-output", "status": "actionable", "reasonCode": "route.package.configuration-required" },
+    { "elapsed": 1679, "node": "review-package-template", "status": "waiting-user", "reasonCode": "route.package.template-review-required" },
+    { "elapsed": 1731, "node": "build-next", "status": "actionable", "reasonCode": "route.build.package-stale" },
+    { "elapsed": 1779, "node": "complete", "status": "complete", "reasonCode": "workflow.complete" }
+  ]
+}
