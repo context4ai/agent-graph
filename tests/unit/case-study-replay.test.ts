@@ -57,6 +57,7 @@ describe("Context case study replay", () => {
     expect(script).toContain('className.includes("current") ? "url(#arrow-active)"');
     expect(styles).toContain(".edge.current { stroke: var(--accent);");
     expect(styles).toContain(".arrow-active { fill: var(--accent); }");
+    expect(styles).not.toContain("marker-end: url(#arrow)");
   });
 
   test("defaults to English and keeps documentation replay links language-specific", async () => {

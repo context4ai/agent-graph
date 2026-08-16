@@ -86,7 +86,7 @@ select { padding: 0 8px; font-size: 10px; }
 .progress span { position: absolute; left: 0; bottom: 0; width: 0; height: 3px; background: var(--accent); transition: width .16s ease-out; }
 .progress input { position: absolute; inset: 0; width: 100%; height: 14px; margin: 0; opacity: 0; cursor: pointer; }
 
-.edge { fill: none; stroke: var(--border); stroke-width: 1.6; opacity: .46; marker-end: url(#arrow); transition: .22s; }
+.edge { fill: none; stroke: var(--border); stroke-width: 1.6; opacity: .46; transition: .22s; }
 .edge.visited { stroke: var(--faint); opacity: .72; }
 .edge.current { stroke: var(--accent); stroke-width: 2.4; opacity: 1; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 52%, transparent)); }
 .arrow-default { fill: var(--border); }
