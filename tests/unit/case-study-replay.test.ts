@@ -60,6 +60,18 @@ describe("Context case study replay", () => {
     expect(styles).not.toContain("marker-end: url(#arrow)");
   });
 
+  test("shows sanitized CLI evidence and protocol fields by default", async () => {
+    const html = await readFile(resolve(caseStudyRoot, "index.html"), "utf8");
+    const script = await readFile(resolve(caseStudyRoot, "replay.js"), "utf8");
+
+    expect(html).toContain('<details open><summary id="command-summary">CLI invocation</summary>');
+    expect(html).toContain('<details open><summary id="technical-summary">Protocol fields</summary>');
+    expect(script).toContain('const commands = {');
+    expect(script).toContain('"capture-next": "context --workflow-managed');
+    expect(script).toContain('byId("command-value").textContent = commands[step.node];');
+    expect(script).toContain('command: "CLI 调用"');
+  });
+
   test("defaults to English and keeps documentation replay links language-specific", async () => {
     const script = await readFile(resolve(caseStudyRoot, "replay.js"), "utf8");
     const english = await readFile(resolve(process.cwd(), "docs/en/case-studies/context.md"), "utf8");

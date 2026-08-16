@@ -33,6 +33,7 @@ const copy = {
     action: "下一步行动",
     evidence: "完成证据",
     time: "相对时间",
+    command: "CLI 调用",
     protocol: "协议字段",
     steps: "步",
     actionable: "可执行",
@@ -63,6 +64,7 @@ const copy = {
     action: "Next action",
     evidence: "Completion evidence",
     time: "Relative time",
+    command: "CLI invocation",
     protocol: "Protocol fields",
     steps: "steps",
     actionable: "Actionable",
@@ -157,6 +159,25 @@ const nodes = {
     zh: ["目标完成", "所有声明目标均已满足，没有待处理门禁或陈旧产物。", "停止执行并保留可恢复记录。", "最终状态由外部事实与构建证据证明。"],
     en: ["Goal complete", "Every declared target is satisfied with no pending gate or stale artifact.", "Stop execution and preserve the recoverable record.", "External facts and build evidence prove the final state."]
   }
+};
+
+const commands = {
+  "choose-source-boundary": "context --workflow-managed source add batch --input <source-batch> --format json",
+  "configure-document-capture": "context status --managed --format json",
+  "authorize-document-capture": "context run --managed --authority context.source-read --until blocked-or-complete --format json",
+  "capture-next": "context --workflow-managed --workflow-authority context.source-read run capture:document-source --format json",
+  "configure-code-extraction": "context status --managed --format json",
+  "extract-next": "context --workflow-managed run extract:module-source:codegraph --format json",
+  "apply-managed-review": "context --workflow-managed review approve-all codegraph --managed --format json",
+  "close-approved-knowledge": "context --workflow-managed close --format json",
+  "configure-prose-lifecycle": "context status --managed --format json",
+  "align-next": "context --workflow-managed run align:document-source:collection --view read-plan --format json",
+  "compile-next": "context --workflow-managed run compile:document-source:collection --stage --format json",
+  "apply-resumed-review": "context --workflow-managed review approve-all --all --managed --format json",
+  "configure-package-output": "context status --managed --format json",
+  "review-package-template": "context package template accept --all --format json",
+  "build-next": "context build --format json",
+  complete: "context status --managed --format json"
 };
 
 const positions = [
@@ -345,6 +366,7 @@ function renderInspector() {
   byId("action-value").textContent = text[2];
   byId("evidence-value").textContent = text[3];
   byId("sequence-value").textContent = elapsed(step.elapsed);
+  byId("command-value").textContent = commands[step.node];
   byId("technical-value").textContent = `statusCode: ${step.status}\nreasonCode: ${step.reasonCode}\nnode: ${step.node}`;
 }
 
@@ -388,6 +410,7 @@ function applyLanguage() {
   byId("action-label").textContent = c.action;
   byId("evidence-label").textContent = c.evidence;
   byId("time-label").textContent = c.time;
+  byId("command-summary").textContent = c.command;
   byId("technical-summary").textContent = c.protocol;
   byId("provenance").textContent = c.provenance;
   svg.setAttribute("aria-label", language === "zh" ? "Context 工作图" : "Context work graph");
