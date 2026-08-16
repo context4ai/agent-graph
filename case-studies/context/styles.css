@@ -70,9 +70,8 @@ select { padding: 0 8px; font-size: 10px; }
 .event-item.active::before { content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 2px; background: var(--accent); }
 .event-step { color: var(--faint); font: 9px/1.3 var(--mono); }
 .event-copy { min-width: 0; }
-.event-title, .event-sub { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.event-title { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .event-title { font-size: 11px; line-height: 1.3; font-weight: 500; }
-.event-sub { margin-top: 2px; color: var(--muted); font-size: 10px; }
 
 .stage { position: relative; min-width: 0; min-height: 0; overflow: hidden; background-color: var(--canvas); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; }
 .controls { position: absolute; top: 12px; z-index: 4; display: flex; gap: 5px; }
@@ -90,6 +89,9 @@ select { padding: 0 8px; font-size: 10px; }
 .edge { fill: none; stroke: var(--border); stroke-width: 1.6; opacity: .46; marker-end: url(#arrow); transition: .22s; }
 .edge.visited { stroke: var(--faint); opacity: .72; }
 .edge.current { stroke: var(--accent); stroke-width: 2.4; opacity: 1; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 52%, transparent)); }
+.arrow-default { fill: var(--border); }
+.arrow-visited { fill: var(--faint); }
+.arrow-active { fill: var(--accent); }
 .field { fill: none; stroke: var(--border); stroke-dasharray: 3 10; opacity: .45; }
 .field-label { fill: var(--faint); font: 9px var(--mono); }
 .node rect { fill: var(--node); stroke: var(--border); stroke-width: 1.2; transition: .22s; }

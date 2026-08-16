@@ -47,4 +47,26 @@ describe("Context case study replay", () => {
     ];
     for (const pattern of forbidden) expect(text).not.toMatch(pattern);
   });
+
+  test("keeps the active transition and arrowhead on the accent state", async () => {
+    const script = await readFile(resolve(caseStudyRoot, "replay.js"), "utf8");
+    const styles = await readFile(resolve(caseStudyRoot, "styles.css"), "utf8");
+
+    expect(script).toContain('index === currentInstance - 1 ? "edge current"');
+    expect(script).toContain('["arrow-active", "arrow-active"]');
+    expect(script).toContain('className.includes("current") ? "url(#arrow-active)"');
+    expect(styles).toContain(".edge.current { stroke: var(--accent);");
+    expect(styles).toContain(".arrow-active { fill: var(--accent); }");
+  });
+
+  test("defaults to English and keeps documentation replay links language-specific", async () => {
+    const script = await readFile(resolve(caseStudyRoot, "replay.js"), "utf8");
+    const english = await readFile(resolve(process.cwd(), "docs/en/case-studies/context.md"), "utf8");
+    const chinese = await readFile(resolve(process.cwd(), "docs/zh-CN/case-studies/context.md"), "utf8");
+
+    expect(script).toContain('let language = requestedLanguage === "zh" ? "zh" : "en";');
+    expect(script).not.toContain('sub.className = "event-sub"');
+    expect(english).toContain("/case-studies/context/?lang=en");
+    expect(chinese).toContain("/case-studies/context/?lang=zh");
+  });
 });

@@ -73,7 +73,7 @@ Agent Graph does not silently rewrite its own plan. Runtime routing follows the 
 
 [Context](https://github.com/context4ai/context) uses Agent Graph beneath two thin Skills to coordinate source capture, code extraction, document structuring, review Gates, verification, and package output. Its debug recording makes every selected Route, loop, Gate, and outcome replayable.
 
-[Watch the interactive replay](https://context4ai.github.io/agent-graph/case-studies/context/) · [Read the case study](./docs/en/case-studies/context.md)
+[Watch the interactive replay](https://context4ai.github.io/agent-graph/case-studies/context/?lang=en) · [Read the case study](./docs/en/case-studies/context.md)
 
 ![Context on Agent Graph](./docs/en/assets/context-agent-graph.svg)
 

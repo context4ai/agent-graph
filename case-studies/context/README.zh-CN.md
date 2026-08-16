@@ -8,7 +8,7 @@
 
 请通过静态 HTTP 服务打开 `index.html`。GitHub Pages 发布地址为：
 
-<https://context4ai.github.io/agent-graph/case-studies/context/>
+<https://context4ai.github.io/agent-graph/case-studies/context/?lang=zh>
 
 本页面有意不进入 npm 包。它用于说明一项实际接入，不属于 Agent Graph 运行时代码。
 

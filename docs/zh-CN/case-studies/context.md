@@ -1,6 +1,6 @@
 # 实践案例：Context 知识工作流
 
-[English](../../en/case-studies/context.md) · [交互式回放](https://context4ai.github.io/agent-graph/case-studies/context/)
+[English](../../en/case-studies/context.md) · [交互式回放](https://context4ai.github.io/agent-graph/case-studies/context/?lang=zh)
 
 Context 是一套知识管理工具：把代码仓库和文档转成经过审核、可以归因的知识包。它的生命周期足够长，也足够真实——来源要先界定和采集，代码与文档走不同的生产路径，人工门禁可能暂停流程，批准知识还要经过关闭、验证和构建。
 
@@ -61,7 +61,7 @@ Context 开启 debug 后，宿主会记录 CLI 调用边界和 Agent Graph 求�
 - 哪个 reason code 解释了这次流转；
 - 最终如何到达知识包完成状态。
 
-[交互式实践回放](https://context4ai.github.io/agent-graph/case-studies/context/)来自一次真实运行的脱敏投影。它保留路由顺序、重复求值、状态、reason code 和相对时间，但不包含来源正文、本机路径、凭证、不透明 ID 或组织相关名称。
+[交互式实践回放](https://context4ai.github.io/agent-graph/case-studies/context/?lang=zh)来自一次真实运行的脱敏投影。它保留路由顺序、重复求值、状态、reason code 和相对时间，但不包含来源正文、本机路径、凭证、不透明 ID 或组织相关名称。
 
 这不只是一个展示页面。路由记录能暴露无效循环、重复资源读取、不完整的恢复路径，以及错误的状态优先级；这些观察再进入确定性路由测试和 Graph 修改，形成 Graph Engineering 的反馈闭环。
 

@@ -1,6 +1,6 @@
 # Case study: Context knowledge workflows
 
-[简体中文](../../zh-CN/case-studies/context.md) · [Interactive replay](https://context4ai.github.io/agent-graph/case-studies/context/)
+[简体中文](../../zh-CN/case-studies/context.md) · [Interactive replay](https://context4ai.github.io/agent-graph/case-studies/context/?lang=en)
 
 Context is a knowledge-management tool that turns code repositories and documents into reviewed, attributable knowledge packages. Its lifecycle is long enough to need explicit routing: sources must be scoped and captured, code and prose follow different production paths, human gates may pause the run, and approved knowledge must be closed, verified, and built.
 
@@ -61,7 +61,7 @@ When Context debug mode is enabled, the host records CLI invocation boundaries a
 - which reason code justified the transition;
 - how the final package outcome was reached.
 
-The [interactive case-study replay](https://context4ai.github.io/agent-graph/case-studies/context/) is a sanitized projection of a real run. Route order, repeated evaluations, statuses, reason codes, and relative timing are preserved. Source content, local paths, credentials, opaque IDs, and organization-specific names are excluded.
+The [interactive case-study replay](https://context4ai.github.io/agent-graph/case-studies/context/?lang=en) is a sanitized projection of a real run. Route order, repeated evaluations, statuses, reason codes, and relative timing are preserved. Source content, local paths, credentials, opaque IDs, and organization-specific names are excluded.
 
 The recording is more than a presentation layer. Route traces expose inefficient loops, repeated resource reads, incomplete recovery paths, and misleading status priorities. Those observations become deterministic route tests and graph changes, closing the Graph Engineering feedback loop.
 

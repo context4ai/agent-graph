@@ -196,9 +196,9 @@ const boundary = (node, toward) => {
 };
 
 const defs = make("defs");
-for (const [id, color] of [["arrow", "var(--border)"], ["arrow-visited", "var(--faint)"], ["arrow-active", "var(--accent)"]]) {
+for (const [id, className] of [["arrow", "arrow-default"], ["arrow-visited", "arrow-visited"], ["arrow-active", "arrow-active"]]) {
   const marker = make("marker", { id, viewBox: "0 0 10 10", refX: 10, refY: 5, markerWidth: 4.5, markerHeight: 4.5, orient: "auto" });
-  marker.append(make("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: color }));
+  marker.append(make("path", { d: "M 0 0 L 10 5 L 0 10 z", class: className }));
   defs.append(marker);
 }
 svg.append(defs);
@@ -269,7 +269,8 @@ instances.forEach((instance, index) => {
   }
 });
 
-let language = "zh";
+const requestedLanguage = new URLSearchParams(window.location.search).get("lang");
+let language = requestedLanguage === "zh" ? "zh" : "en";
 const state = { index: 0, playing: false, timer: undefined };
 const localized = (node) => nodes[node][language === "zh" ? "zh" : "en"];
 const elapsed = (seconds) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
@@ -302,10 +303,7 @@ function renderList() {
     const title = document.createElement("span");
     title.className = "event-title";
     title.textContent = localized(step.node)[0];
-    const sub = document.createElement("span");
-    sub.className = "event-sub";
-    sub.textContent = step.iteration ? `${copy[language].loop} ${step.iteration} / ${step.iterations}` : statusText(step.status);
-    body.append(title, sub);
+    body.append(title);
     button.append(number, body);
     button.addEventListener("click", () => { pause(); state.index = index; render(); });
     fragment.append(button);
@@ -327,7 +325,7 @@ function renderGraph() {
     group.setAttribute("class", `node ${index > currentInstance ? "future" : "visited"}${index === currentInstance ? " current" : ""}${instance.node === "complete" && currentStep.node === "complete" ? " complete" : ""}`);
   });
   edges.forEach((edge, index) => {
-    const className = index < currentInstance ? "edge visited" : index === currentInstance - 1 ? "edge current" : "edge";
+    const className = index === currentInstance - 1 ? "edge current" : index < currentInstance - 1 ? "edge visited" : "edge";
     edge.setAttribute("class", className);
     edge.setAttribute("marker-end", className.includes("current") ? "url(#arrow-active)" : className.includes("visited") ? "url(#arrow-visited)" : "url(#arrow)");
   });
@@ -426,7 +424,13 @@ byId("next").addEventListener("click", () => { pause(); state.index = Math.min(s
 byId("scrubber").addEventListener("input", (event) => { pause(); state.index = Number(event.target.value); render(); });
 byId("speed").addEventListener("change", () => { if (state.playing) { clearTimeout(state.timer); state.timer = setTimeout(tick, Number(byId("speed").value)); } });
 byId("theme").addEventListener("click", () => { document.documentElement.dataset.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; });
-byId("language").addEventListener("click", () => { language = language === "zh" ? "en" : "zh"; applyLanguage(); });
+byId("language").addEventListener("click", () => {
+  language = language === "zh" ? "en" : "zh";
+  const url = new URL(window.location.href);
+  url.searchParams.set("lang", language);
+  window.history.replaceState({}, "", url);
+  applyLanguage();
+});
 document.addEventListener("keydown", (event) => {
   if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
   if (event.code === "Space") { event.preventDefault(); togglePlay(); }
