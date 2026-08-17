@@ -6,6 +6,8 @@
 
 回放使用一份经过字段白名单处理的真实 Context 调试记录。它保留路由顺序、重复求值、状态、原因码与相对时间，同时排除来源正文、本机路径、凭证、不透明标识和组织相关名称。
 
+每一步都会链接到 Context 已发布的 [Action 与 Resource 文件](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow)；“工作图”弹层则把路由变化背后的静态 [`workspace.yaml`](https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow/graphs/workspace.yaml) 契约可视化。
+
 请通过静态 HTTP 服务打开 `index.html`。GitHub Pages 发布地址为：
 
 <https://context4ai.github.io/agent-graph/case-studies/context/?lang=zh>

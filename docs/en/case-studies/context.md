@@ -19,6 +19,21 @@ They are intentionally thin. They identify the Provider, Graph, and Entry and te
 
 This prevents every invocation from loading the entire knowledge lifecycle into the prompt. A stable Skill shell remains easy to discover, while the CLI can evolve detailed workflow resources without making the Skill itself a large manual.
 
+## Inspect the integration itself
+
+The complete integration is public under [`context-workflow/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow). It is a concrete example of a thin Skill backed by a larger, independently testable work contract:
+
+- [`provider.yaml`](https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow/provider.yaml) binds the `workspace` Graph, code catalog, Actions, Resources, and entrypoint.
+- [`graphs/workspace.yaml`](https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow/graphs/workspace.yaml) is the static lifecycle: 32 Action, Gate, and terminal nodes plus the legal transitions between them.
+- [`actions/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow/actions) contains 25 executable contracts. An Action describes the host command, effect, authority boundary, and expected outcome; it does not carry the long-form manual.
+- [`resources/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow/resources) contains 57 addressable files. Procedures explain the current task, dialogue files explain a human decision, views materialize live workspace facts, semantic references guide judgment, diagnostics explain failures, and manuals document stable APIs.
+- [`codes.yaml`](https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow/codes.yaml) gives Route and diagnostic codes stable meaning without putting paragraphs into routine machine output.
+- [`tests/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow/tests) checks route selection from facts without running an Agent or model.
+
+`context status` is the host-facing observation boundary. It inspects the workspace, supplies Facts to Agent Graph, and returns `workflow.current`: the selected Route, reason code, command plan, Gate, and only the Resources needed now. Static files can be acknowledged by digest; dynamic views are tied to the workflow revision that selected them. A receipt proves delivery of a resource—it does not claim that the outside task is complete.
+
+This is how two small Skills can safely front a much larger body of instructions. The detailed material has not been removed or summarized away; it is separated, selected by the Graph, and made verifiable instead of being loaded on every turn.
+
 ## Responsibility boundary
 
 | Layer | Responsibility in Context |
@@ -30,7 +45,7 @@ This prevents every invocation from loading the entire knowledge lifecycle into 
 | Route | Expose one current action, its required resources, and its completion contract |
 | Facts and Outcomes | Prove what has actually happened; conversation claims are not completion evidence |
 
-At the time of this case study, the integration contains 32 graph nodes, 11 human or authority Gates, 25 Action descriptors, 57 addressable resources, and 34 route tests. These numbers describe one product integration, not protocol limits.
+At the time of this case study, the integration contains 32 graph nodes, 11 human or authority Gates, 25 Action descriptors, 57 addressable resources, and 34 route tests. These numbers describe one product integration, not protocol limits. The replay's **Workspace graph** control visualizes this static contract; each replay step links its selected Action and Resources back to the source files above.
 
 ## One graph, two knowledge paths
 

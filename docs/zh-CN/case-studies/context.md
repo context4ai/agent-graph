@@ -19,6 +19,21 @@ Context 插件对外只有两个 Skill：
 
 因此，每次调用不必把完整知识生命周期塞进 Prompt。Skill 外壳稳定、容易被发现，CLI 仍可以独立演进详细流程和资源，而不把 Skill 变成长篇手册。
 
+## 直接检查这套接入
+
+完整接入公开在 [`context-workflow/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow)。它展示了一个薄 Skill 如何连接一套更大、又能独立测试的工作契约：
+
+- [`provider.yaml`](https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow/provider.yaml) 绑定 `workspace` Graph、原因码目录、Action、Resource 和入口。
+- [`graphs/workspace.yaml`](https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow/graphs/workspace.yaml) 是静态生命周期：32 个 Action、Gate、Terminal 节点，以及它们之间允许发生的流转。
+- [`actions/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow/actions) 包含 25 份可执行契约。Action 描述宿主命令、副作用、权限边界和预期结果，不承载长篇手册。
+- [`resources/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow/resources) 包含 57 份可寻址文件：Procedure 说明当前任务，Dialogue 解释人工决定，View 物化实时工作区事实，Semantic Reference 指导判断，Diagnostic 解释错误，Manual 记录稳定 API。
+- [`codes.yaml`](https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow/codes.yaml) 用稳定状态码解释 Route 与诊断，避免把长段文字塞进日常机器输出。
+- [`tests/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow/tests) 直接用 Facts 验证路由，不需要启动 Agent 或模型。
+
+`context status` 是宿主侧的事实观察边界：它检查工作区、把 Facts 交给 Agent Graph，再返回 `workflow.current`——包括选中的 Route、原因码、命令计划、Gate，以及此刻真正需要的 Resources。静态文件可以按 digest 复用读取回执；动态 View 则绑定选中它的工作流 revision。回执只证明资源已经交付，不会把外部任务冒充成已完成。
+
+因此，两个小 Skill 可以安全承载远大于自身的操作知识。详细内容没有被删除，也没有被摘要替代，而是被分离、由 Graph 按需选择，并以可验证方式交付，不再每轮全部加载。
+
 ## 各层分别负责什么
 
 | 层 | 在 Context 中的职责 |
@@ -30,7 +45,7 @@ Context 插件对外只有两个 Skill：
 | Route | 只暴露当前动作、所需资源和完成契约 |
 | Facts 与 Outcomes | 证明实际发生了什么；对话里的“已经完成”不算证据 |
 
-在本案例记录时，这套接入包含 32 个 Graph 节点、11 个人工或权限 Gate、25 份 Action 描述、57 个可寻址资源和 34 条路由测试。这些数字描述的是一个实际产品接入，不是协议上限。
+在本案例记录时，这套接入包含 32 个 Graph 节点、11 个人工或权限 Gate、25 份 Action 描述、57 个可寻址资源和 34 条路由测试。这些数字描述的是一个实际产品接入，不是协议上限。回放页面的“工作图”按钮会把这份静态契约可视化；每一步右侧还会把当前 Action 和 Resources 链回上述真实源码。
 
 ## 一张工作图，两条知识路径
 

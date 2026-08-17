@@ -34,7 +34,19 @@ const copy = {
     evidence: "完成证据",
     time: "相对时间",
     command: "CLI 调用",
+    workflow: "Action 与按需资源",
     protocol: "协议字段",
+    graphMap: "工作图",
+    graphDialogLabel: "静态工作契约",
+    graphDialogTitle: "Context 工作区图",
+    graphDialogCopy: "这张图对应 Context 发布包中的 workspace.yaml。节点保持静态；运行时 Facts 决定当前 Route，Action 改变外部状态，Resources 只在被选中时交付给 Agent。",
+    workflowSource: "浏览完整工作流目录",
+    graphSource: "查看 workspace.yaml 源文件",
+    actionFile: "Action",
+    resourceFiles: "Resources",
+    terminalNode: "Terminal（无需 Action）",
+    gateContract: "Gate（由宿主提供授权或决策）",
+    close: "关闭",
     steps: "步",
     actionable: "可执行",
     waiting: "等待授权或决策",
@@ -65,7 +77,19 @@ const copy = {
     evidence: "Completion evidence",
     time: "Relative time",
     command: "CLI invocation",
+    workflow: "Action and on-demand resources",
     protocol: "Protocol fields",
+    graphMap: "Workspace graph",
+    graphDialogLabel: "STATIC WORK CONTRACT",
+    graphDialogTitle: "Context workspace graph",
+    graphDialogCopy: "This map represents the workspace.yaml contract shipped with Context. Nodes stay static; runtime Facts select the current Route, Actions change external state, and Resources reach the Agent only when selected.",
+    workflowSource: "Browse the workflow directory",
+    graphSource: "Open workspace.yaml source",
+    actionFile: "Action",
+    resourceFiles: "Resources",
+    terminalNode: "Terminal (no Action)",
+    gateContract: "Gate (authority or decision supplied by the host)",
+    close: "Close",
     steps: "steps",
     actionable: "Actionable",
     waiting: "Waiting for authority or a decision",
@@ -179,6 +203,126 @@ const commands = {
   "build-next": "context build --format json",
   complete: "context status --managed --format json"
 };
+
+const workflowRoot = "https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow";
+const workflowBlob = "https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow";
+const workflowArtifacts = {
+  "choose-source-boundary": {
+    action: "actions/register-source-batch.yaml",
+    resources: ["resources/procedures/source-boundary.md", "resources/dialogue/human-gates.md", "resources/dialogue/source-boundary.md", "resources/views/source-current.yaml"]
+  },
+  "configure-document-capture": {
+    action: "actions/configure-document-capture.yaml",
+    resources: ["resources/procedures/project-configuration.md", "resources/manuals/reference/project-api.md", "resources/procedures/document-capture.md", "resources/views/source-current.yaml"]
+  },
+  "authorize-document-capture": {
+    resources: ["resources/procedures/document-capture.md", "resources/dialogue/human-gates.md", "resources/dialogue/document-capture.md", "resources/views/source-current.yaml"]
+  },
+  "capture-next": {
+    action: "actions/capture-next.yaml",
+    resources: ["resources/procedures/document-capture.md", "resources/views/source-boundary.yaml", "resources/procedures/source-capture-detailed.md", "resources/manuals/guides/lark-resources.md"]
+  },
+  "configure-code-extraction": {
+    action: "actions/configure-code-extraction.yaml",
+    resources: ["resources/procedures/project-configuration.md", "resources/procedures/code-extraction.md", "resources/views/source-current.yaml"]
+  },
+  "extract-next": {
+    action: "actions/extract-next.yaml",
+    resources: ["resources/procedures/code-extraction.md", "resources/views/source-current.yaml"]
+  },
+  "apply-managed-review": {
+    action: "actions/apply-managed-review.yaml",
+    resources: ["resources/procedures/knowledge-review.md", "resources/views/review-current.yaml"]
+  },
+  "close-approved-knowledge": {
+    action: "actions/close-approved-knowledge.yaml",
+    resources: ["resources/procedures/close-and-build.md", "resources/views/workspace-current.yaml"]
+  },
+  "configure-prose-lifecycle": {
+    action: "actions/configure-prose-lifecycle.yaml",
+    resources: ["resources/procedures/project-configuration.md", "resources/procedures/document-classification.md", "resources/manuals/reference/project-api.md"]
+  },
+  "align-next": {
+    action: "actions/align-next.yaml",
+    resources: ["resources/procedures/prose-align.md", "resources/views/structure-current.yaml", "resources/semantic/align/structure-planning.md", "resources/semantic/align/gates.md"]
+  },
+  "compile-next": {
+    action: "actions/compile-next.yaml",
+    resources: ["resources/procedures/prose-compile.md", "resources/views/structure-current.yaml", "resources/semantic/compile/index.md"]
+  },
+  "apply-resumed-review": {
+    action: "actions/apply-managed-review.yaml",
+    resources: ["resources/procedures/knowledge-review.md", "resources/views/review-current.yaml"]
+  },
+  "configure-package-output": {
+    action: "actions/configure-package-output.yaml",
+    resources: ["resources/procedures/package-output.md", "resources/manuals/guides/package-outputs.md", "resources/manuals/reference/project-api.md"]
+  },
+  "review-package-template": {
+    action: "actions/accept-package-templates.yaml",
+    resources: ["resources/procedures/package-output.md", "resources/dialogue/human-gates.md", "resources/dialogue/package-output.md", "resources/manuals/reference/package-templates.md"]
+  },
+  "build-next": {
+    action: "actions/build-next.yaml",
+    resources: ["resources/procedures/close-and-build.md", "resources/views/package-current.yaml"]
+  },
+  complete: { resources: [] }
+};
+
+const workspaceGroups = [
+  {
+    en: "Recovery and evidence", zh: "恢复与证据", nodes: [
+      ["Repair project entry", "修复项目入口", "action"],
+      ["Repair workspace facts", "修复工作区事实", "action"],
+      ["Repair verification", "修复验证结果", "action"],
+      ["Choose evidence maintenance", "选择证据维护方式", "gate"],
+      ["Maintain evidence", "维护来源证据", "action"]
+    ]
+  },
+  {
+    en: "Resume interrupted work", zh: "恢复未完成工作", nodes: [
+      ["Resume prose configuration", "恢复文档流程配置", "action"],
+      ["Confirm structure", "确认知识结构", "gate"],
+      ["Refresh structure", "刷新知识结构", "action"],
+      ["Apply structure confirmation", "应用结构确认", "action"],
+      ["Compile pending views", "编译待处理页面", "action"],
+      ["Resolve review identities", "协调审核身份", "action"],
+      ["Review resumed batch", "审核恢复批次", "gate"],
+      ["Apply resumed review", "应用恢复审核", "action"]
+    ]
+  },
+  {
+    en: "Sources and code", zh: "来源与代码", nodes: [
+      ["Choose source boundary", "选择来源边界", "gate"],
+      ["Restore repositories", "恢复代码仓库", "gate"],
+      ["Configure capture", "配置文档采集", "action"],
+      ["Authorize source reads", "授权读取来源", "gate"],
+      ["Capture next source", "采集下一来源", "action"],
+      ["Choose extraction scope", "选择提取范围", "gate"],
+      ["Configure extraction", "配置代码提取", "action"],
+      ["Extract next module", "提取下一模块", "action"]
+    ]
+  },
+  {
+    en: "Documents and review", zh: "文档与审核", nodes: [
+      ["Classify document", "确定文档类型", "gate"],
+      ["Configure prose lifecycle", "配置文档知识流程", "action"],
+      ["Align next structure", "设计下一结构", "action"],
+      ["Review current batch", "审核当前批次", "gate"],
+      ["Apply managed review", "应用托管审核", "action"],
+      ["Close approved knowledge", "固化批准知识", "action"]
+    ]
+  },
+  {
+    en: "Package outcome", zh: "知识包结果", nodes: [
+      ["Choose package output", "选择知识包输出", "gate"],
+      ["Configure package", "配置知识包", "action"],
+      ["Review templates", "审核消费模板", "gate"],
+      ["Build package", "构建知识包", "action"],
+      ["Scope complete", "当前目标完成", "terminal"]
+    ]
+  }
+];
 
 const positions = [
   [58, 72], [270, 52], [490, 92], [714, 54], [886, 160],
@@ -358,6 +502,65 @@ function renderGraph() {
   fieldLabels.forEach(({ label, index }) => { label.textContent = copy[language].fields[index]; });
 }
 
+function artifactLink(path, role) {
+  const link = document.createElement("a");
+  link.href = `${workflowBlob}/${path}`;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  link.innerHTML = `<span>${role}</span><code>${path}</code>`;
+  return link;
+}
+
+function renderWorkflowLinks(nodeId) {
+  const container = byId("workflow-links");
+  container.replaceChildren();
+  const artifacts = workflowArtifacts[nodeId] ?? { resources: [] };
+  if (artifacts.action) {
+    container.append(artifactLink(artifacts.action, copy[language].actionFile));
+  } else {
+    const note = document.createElement("p");
+    note.textContent = nodeId === "complete" ? copy[language].terminalNode : copy[language].gateContract;
+    container.append(note);
+  }
+  for (const resource of artifacts.resources) {
+    container.append(artifactLink(resource, copy[language].resourceFiles));
+  }
+}
+
+function renderContractMap() {
+  const map = byId("contract-map");
+  map.replaceChildren();
+  const fragment = document.createDocumentFragment();
+  workspaceGroups.forEach((group, groupIndex) => {
+    const lane = document.createElement("section");
+    lane.className = "contract-lane";
+    const heading = document.createElement("h3");
+    heading.textContent = language === "zh" ? group.zh : group.en;
+    lane.append(heading);
+    const nodesList = document.createElement("div");
+    nodesList.className = "contract-nodes";
+    group.nodes.forEach(([en, zh, kind]) => {
+      const node = document.createElement("div");
+      node.className = `contract-node ${kind}`;
+      const label = document.createElement("strong");
+      label.textContent = language === "zh" ? zh : en;
+      const badge = document.createElement("span");
+      badge.textContent = kind;
+      node.append(label, badge);
+      nodesList.append(node);
+    });
+    lane.append(nodesList);
+    fragment.append(lane);
+    if (groupIndex < workspaceGroups.length - 1) {
+      const connector = document.createElement("div");
+      connector.className = "contract-connector";
+      connector.textContent = "→";
+      fragment.append(connector);
+    }
+  });
+  map.append(fragment);
+}
+
 function renderInspector() {
   const step = steps[state.index];
   const text = localized(step.node);
@@ -367,6 +570,7 @@ function renderInspector() {
   byId("evidence-value").textContent = text[3];
   byId("sequence-value").textContent = elapsed(step.elapsed);
   byId("command-value").textContent = commands[step.node];
+  renderWorkflowLinks(step.node);
   byId("technical-value").textContent = `statusCode: ${step.status}\nreasonCode: ${step.reasonCode}\nnode: ${step.node}`;
 }
 
@@ -411,9 +615,19 @@ function applyLanguage() {
   byId("evidence-label").textContent = c.evidence;
   byId("time-label").textContent = c.time;
   byId("command-summary").textContent = c.command;
+  byId("workflow-summary").textContent = c.workflow;
   byId("technical-summary").textContent = c.protocol;
+  byId("graph-map").textContent = c.graphMap;
+  byId("graph-dialog-label").textContent = c.graphDialogLabel;
+  byId("graph-dialog-title").textContent = c.graphDialogTitle;
+  byId("graph-dialog-copy").textContent = c.graphDialogCopy;
+  byId("workflow-source").textContent = c.workflowSource;
+  byId("workflow-source").href = workflowRoot;
+  byId("graph-source").textContent = c.graphSource;
+  byId("graph-close").setAttribute("aria-label", c.close);
   byId("provenance").textContent = c.provenance;
   svg.setAttribute("aria-label", language === "zh" ? "Context 工作图" : "Context work graph");
+  renderContractMap();
   renderList();
   render();
 }
@@ -447,6 +661,11 @@ byId("next").addEventListener("click", () => { pause(); state.index = Math.min(s
 byId("scrubber").addEventListener("input", (event) => { pause(); state.index = Number(event.target.value); render(); });
 byId("speed").addEventListener("change", () => { if (state.playing) { clearTimeout(state.timer); state.timer = setTimeout(tick, Number(byId("speed").value)); } });
 byId("theme").addEventListener("click", () => { document.documentElement.dataset.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; });
+byId("graph-map").addEventListener("click", () => byId("graph-dialog").showModal());
+byId("graph-close").addEventListener("click", () => byId("graph-dialog").close());
+byId("graph-dialog").addEventListener("click", (event) => {
+  if (event.target === byId("graph-dialog")) byId("graph-dialog").close();
+});
 byId("language").addEventListener("click", () => {
   language = language === "zh" ? "en" : "zh";
   const url = new URL(window.location.href);

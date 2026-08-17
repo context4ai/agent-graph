@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Context 使用 Agent Graph 编排真实知识工作流的双语回放。A bilingual replay of Context routing a real knowledge workflow with Agent Graph.">
   <title>Context · Agent Graph case study</title>
-  <link rel="stylesheet" href="./styles.css?v=4">
+  <link rel="stylesheet" href="./styles.css?v=5">
 </head>
 <body>
   <div class="app">
@@ -15,6 +15,7 @@
         <span><b>Graph Engineering</b><strong id="page-title">Context Work Graph Replay</strong></span>
       </a>
       <div class="top-actions">
+        <button id="graph-map" type="button">Workspace graph</button>
         <a id="case-link" href="https://github.com/context4ai/agent-graph/blob/main/docs/en/case-studies/context.md">Case study</a>
         <button id="language" type="button">中文</button>
         <button id="theme" type="button" aria-label="Toggle theme">◐</button>
@@ -57,12 +58,30 @@
             <div><dt id="time-label">Relative time</dt><dd id="sequence-value"></dd></div>
           </dl>
           <details open><summary id="command-summary">CLI invocation</summary><pre id="command-value"></pre></details>
+          <details open><summary id="workflow-summary">Action and resources</summary><div id="workflow-links" class="workflow-links"></div></details>
           <details open><summary id="technical-summary">Protocol fields</summary><pre id="technical-value"></pre></details>
           <p class="provenance" id="provenance"></p>
         </div>
       </aside>
     </main>
   </div>
-  <script src="./replay.js?v=4" type="module"></script>
+  <dialog id="graph-dialog" class="graph-dialog">
+    <div class="dialog-shell">
+      <header class="dialog-head">
+        <div>
+          <span id="graph-dialog-label">STATIC WORK CONTRACT</span>
+          <h2 id="graph-dialog-title">Context workspace graph</h2>
+        </div>
+        <button id="graph-close" type="button" aria-label="Close">×</button>
+      </header>
+      <p id="graph-dialog-copy" class="dialog-copy"></p>
+      <div id="contract-map" class="contract-map"></div>
+      <footer class="dialog-foot">
+        <a id="workflow-source" href="https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow" target="_blank" rel="noreferrer">Open workflow directory</a>
+        <a id="graph-source" href="https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow/graphs/workspace.yaml" target="_blank" rel="noreferrer">Open workspace.yaml</a>
+      </footer>
+    </div>
+  </dialog>
+  <script src="./replay.js?v=5" type="module"></script>
 </body>
 </html>

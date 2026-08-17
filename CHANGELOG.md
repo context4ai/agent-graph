@@ -4,6 +4,13 @@ All notable changes to Agent Graph are documented here. The project follows [Sem
 
 ## Unreleased
 
+## 0.2.4 - 2026-08-17
+
+- Expanded the Context case study with direct links to its Provider, workspace Graph, Actions, Resources, reason-code catalog, and route tests.
+- Added per-step Action and on-demand Resource inspection to the interactive replay.
+- Added a bilingual visual map of the complete Context `workspace.yaml` work contract.
+- Clarified how two thin Skills can consume 25 Action contracts and 57 independently addressable resources through verifiable progressive disclosure.
+
 ## 0.2.3 - 2026-08-09
 
 - Added current-conversation resource read receipts for progressive context reuse.

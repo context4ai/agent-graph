@@ -65,13 +65,31 @@ describe("Context case study replay", () => {
     const script = await readFile(resolve(caseStudyRoot, "replay.js"), "utf8");
 
     expect(html).toContain('<details open><summary id="command-summary">CLI invocation</summary>');
+    expect(html).toContain('<details open><summary id="workflow-summary">Action and resources</summary>');
     expect(html).toContain('<details open><summary id="technical-summary">Protocol fields</summary>');
-    expect(html).toContain('href="./styles.css?v=4"');
-    expect(html).toContain('src="./replay.js?v=4"');
+    expect(html).toContain('href="./styles.css?v=5"');
+    expect(html).toContain('src="./replay.js?v=5"');
     expect(script).toContain('const commands = {');
+    expect(script).toContain('const workflowArtifacts = {');
     expect(script).toContain('"capture-next": "context --workflow-managed');
     expect(script).toContain('byId("command-value").textContent = commands[step.node];');
+    expect(script).toContain('renderWorkflowLinks(step.node);');
     expect(script).toContain('command: "CLI 调用"');
+  });
+
+  test("links the replay to the published Context work contract", async () => {
+    const html = await readFile(resolve(caseStudyRoot, "index.html"), "utf8");
+    const script = await readFile(resolve(caseStudyRoot, "replay.js"), "utf8");
+    const english = await readFile(resolve(process.cwd(), "docs/en/case-studies/context.md"), "utf8");
+    const chinese = await readFile(resolve(process.cwd(), "docs/zh-CN/case-studies/context.md"), "utf8");
+
+    expect(html).toContain('id="graph-dialog"');
+    expect(html).toContain('context-workflow/graphs/workspace.yaml');
+    expect(script).toContain('const workspaceGroups = [');
+    expect(script).toContain('resources/procedures/prose-compile.md');
+    expect(script).toContain('actions/compile-next.yaml');
+    expect(english).toContain("[`context-workflow/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow)");
+    expect(chinese).toContain("[`context-workflow/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow)");
   });
 
   test("defaults to English and keeps documentation replay links language-specific", async () => {
