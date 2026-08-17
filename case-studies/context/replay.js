@@ -42,6 +42,7 @@ const copy = {
     graphDialogCopy: "这张图对应 Context 发布包中的 workspace.yaml。节点保持静态；运行时 Facts 决定当前 Route，Action 改变外部状态，Resources 只在被选中时交付给 Agent。",
     workflowSource: "浏览完整工作流目录",
     graphSource: "查看 workspace.yaml 源文件",
+    github: "在 GitHub 查看 Agent Graph",
     actionFile: "Action",
     resourceFiles: "Resources",
     terminalNode: "Terminal（无需 Action）",
@@ -85,6 +86,7 @@ const copy = {
     graphDialogCopy: "This map represents the workspace.yaml contract shipped with Context. Nodes stay static; runtime Facts select the current Route, Actions change external state, and Resources reach the Agent only when selected.",
     workflowSource: "Browse the workflow directory",
     graphSource: "Open workspace.yaml source",
+    github: "View Agent Graph on GitHub",
     actionFile: "Action",
     resourceFiles: "Resources",
     terminalNode: "Terminal (no Action)",
@@ -436,7 +438,7 @@ instances.forEach((instance, index) => {
 
 const requestedLanguage = new URLSearchParams(window.location.search).get("lang");
 let language = requestedLanguage === "zh" ? "zh" : "en";
-const state = { index: 0, playing: false, timer: undefined };
+const state = { index: 0, playing: false, timer: undefined, hoveredIndex: undefined };
 const localized = (node) => nodes[node][language === "zh" ? "zh" : "en"];
 const elapsed = (seconds) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 const statusText = (status) => status === "complete" ? copy[language].complete : status === "waiting-user" ? copy[language].waiting : copy[language].actionable;
@@ -471,6 +473,10 @@ function renderList() {
     body.append(title);
     button.append(number, body);
     button.addEventListener("click", () => { pause(); state.index = index; render(); });
+    button.addEventListener("mouseenter", () => { state.hoveredIndex = index; renderGraph(); });
+    button.addEventListener("mouseleave", () => { state.hoveredIndex = undefined; renderGraph(); });
+    button.addEventListener("focus", () => { state.hoveredIndex = index; renderGraph(); });
+    button.addEventListener("blur", () => { state.hoveredIndex = undefined; renderGraph(); });
     fragment.append(button);
   });
   list.append(fragment);
@@ -479,6 +485,10 @@ function renderList() {
 
 function renderGraph() {
   const currentStep = steps[state.index];
+  const hoveredStep = state.hoveredIndex === undefined ? undefined : steps[state.hoveredIndex];
+  const hoveredInstance = hoveredStep
+    ? instances.findIndex((instance) => instance.steps.includes(hoveredStep))
+    : -1;
   let currentInstance = 0;
   instances.forEach((instance, index) => {
     if (instance.steps.some((step) => steps.indexOf(step) <= state.index)) currentInstance = index;
@@ -487,7 +497,12 @@ function renderGraph() {
     phase.textContent = nodes[instance.node].phase;
     name.textContent = localized(instance.node)[0];
     count.textContent = countText(instance, state.index);
-    group.setAttribute("class", `node ${index > currentInstance ? "future" : "visited"}${index === currentInstance ? " current" : ""}${instance.node === "complete" && currentStep.node === "complete" ? " complete" : ""}`);
+    const hoverClass = index !== hoveredInstance
+      ? ""
+      : state.hoveredIndex <= state.index
+        ? " hover-executed"
+        : " hover-future";
+    group.setAttribute("class", `node ${index > currentInstance ? "future" : "visited"}${index === currentInstance ? " current" : ""}${instance.node === "complete" && currentStep.node === "complete" ? " complete" : ""}${hoverClass}`);
   });
   edges.forEach((edge, index) => {
     const className = index === currentInstance - 1 ? "edge current" : index < currentInstance - 1 ? "edge visited" : "edge";
@@ -624,6 +639,8 @@ function applyLanguage() {
   byId("workflow-source").textContent = c.workflowSource;
   byId("workflow-source").href = workflowRoot;
   byId("graph-source").textContent = c.graphSource;
+  byId("github-link").setAttribute("aria-label", c.github);
+  byId("github-link").setAttribute("title", c.github);
   byId("graph-close").setAttribute("aria-label", c.close);
   byId("provenance").textContent = c.provenance;
   svg.setAttribute("aria-label", language === "zh" ? "Context 工作图" : "Context work graph");

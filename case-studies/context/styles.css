@@ -55,6 +55,8 @@ select { padding: 0 8px; font-size: 10px; }
 .brand strong { font-size: 15px; font-weight: 500; }
 .top-actions { display: flex; align-items: center; gap: 5px; }
 .top-actions a { min-width: 64px; }
+.top-actions .github-link { width: 30px; min-width: 30px; padding: 0; }
+.github-link svg { width: 14px; height: 14px; fill: currentColor; }
 #language, #theme { min-width: 42px; }
 
 .workspace { min-height: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr) 300px; }
@@ -102,6 +104,10 @@ select { padding: 0 8px; font-size: 10px; }
 .node.future { opacity: .28; }
 .node.current { opacity: 1; }
 .node.current rect { stroke: var(--accent); stroke-width: 2; filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 30%, transparent)); }
+.node.hover-executed { opacity: 1; }
+.node.hover-executed rect { stroke: var(--accent); stroke-width: 2; filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 36%, transparent)); }
+.node.hover-future { opacity: .42; }
+.node.hover-future rect { stroke: var(--faint); stroke-width: 2; filter: drop-shadow(0 0 11px color-mix(in srgb, var(--faint) 38%, transparent)); }
 .node.complete rect { stroke: var(--green); }
 .node.complete .dot { fill: var(--green); }
 

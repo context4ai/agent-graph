@@ -67,14 +67,28 @@ describe("Context case study replay", () => {
     expect(html).toContain('<details open><summary id="command-summary">CLI invocation</summary>');
     expect(html).toContain('<details open><summary id="workflow-summary">Action and resources</summary>');
     expect(html).toContain('<details open><summary id="technical-summary">Protocol fields</summary>');
-    expect(html).toContain('href="./styles.css?v=5"');
-    expect(html).toContain('src="./replay.js?v=5"');
+    expect(html).toContain('href="./styles.css?v=6"');
+    expect(html).toContain('src="./replay.js?v=6"');
     expect(script).toContain('const commands = {');
     expect(script).toContain('const workflowArtifacts = {');
     expect(script).toContain('"capture-next": "context --workflow-managed');
     expect(script).toContain('byId("command-value").textContent = commands[step.node];');
     expect(script).toContain('renderWorkflowLinks(step.node);');
     expect(script).toContain('command: "CLI 调用"');
+  });
+
+  test("links to Agent Graph and previews graph nodes from the journey rail", async () => {
+    const html = await readFile(resolve(caseStudyRoot, "index.html"), "utf8");
+    const script = await readFile(resolve(caseStudyRoot, "replay.js"), "utf8");
+    const styles = await readFile(resolve(caseStudyRoot, "styles.css"), "utf8");
+
+    expect(html).toContain('id="github-link" href="https://github.com/context4ai/agent-graph"');
+    expect(script).toContain('button.addEventListener("mouseenter"');
+    expect(script).toContain('button.addEventListener("focus"');
+    expect(script).toContain('" hover-executed"');
+    expect(script).toContain('" hover-future"');
+    expect(styles).toContain(".node.hover-executed rect");
+    expect(styles).toContain(".node.hover-future rect");
   });
 
   test("links the replay to the published Context work contract", async () => {
