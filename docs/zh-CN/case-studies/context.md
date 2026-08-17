@@ -10,14 +10,16 @@ Context 使用 Agent Graph 承载工作契约。Agent Graph 不提取代码、�
 
 ## 两个 Skill 驱动一套完整工作流
 
-Context 插件对外只有两个 Skill：
+Context 插件对外只有两个 Skill 入口文件：
 
-- `init`：创建知识工作区，并进入第一条 Route；
-- `continue`：检查已有工作区，根据当前事实继续目标。
+- [`init.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/init.md)：创建知识工作区，并进入第一条 Route；
+- [`continue.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/continue.md)：检查已有工作区，根据当前事实继续目标。
+
+按发布文件直接统计，`init.md` 只有 225 个英文单词，`continue.md` 只有 619 个；包含 frontmatter 在内，两个入口合计 844 个单词、121 行。它们承接的完整工作流，则把详细说明拆进了 50 份 Markdown 资源、7 份机器可读资源描述和 25 份 Action 契约。
 
 它们有意保持很薄，只负责定位 Provider、Graph 和 Entry，并告诉 Agent 如何消费 Route。各阶段的操作说明、Schema、来源视图、审核契约和知识包说明仍是独立资源；只有被当前 Route 选中的那部分才会暴露。
 
-因此，每次调用不必把完整知识生命周期塞进 Prompt。Skill 外壳稳定、容易被发现，CLI 仍可以独立演进详细流程和资源，而不把 Skill 变成长篇手册。
+因此，每次调用不必把完整知识生命周期塞进 Prompt。50 份 Markdown 文档并没有消失；两个入口取代的是“把所有文档都塞进 Skill”的做法。Skill 外壳稳定、容易被发现，CLI 仍可以独立演进详细流程和资源，而不把 Skill 变成长篇手册。
 
 ## 直接检查这套接入
 

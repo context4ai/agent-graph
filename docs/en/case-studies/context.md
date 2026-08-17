@@ -10,14 +10,16 @@ Context uses Agent Graph as its work-contract layer. Agent Graph does not extrac
 
 ## Two Skills, one workflow
 
-The public Context plugin exposes two Skills:
+The public Context plugin exposes two Skill entry files:
 
-- `init` creates a knowledge workspace and enters its first Route;
-- `continue` inspects an existing workspace and continues from current facts.
+- [`init.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/init.md) creates a knowledge workspace and enters its first Route;
+- [`continue.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/continue.md) inspects an existing workspace and continues from current facts.
+
+Measured directly from the published files, `init.md` is 225 English words and `continue.md` is 619: 844 words and 121 lines in total, including frontmatter. Those two small entry contracts front a workflow whose detailed guidance is distributed across 50 Markdown resources, alongside 7 machine-readable resource descriptors and 25 Action contracts.
 
 They are intentionally thin. They identify the Provider, Graph, and Entry and teach the Agent how to consume a Route. Phase-specific instructions, schemas, source views, review contracts, and package guidance stay in addressable resources. The selected Route exposes only the subset needed now.
 
-This prevents every invocation from loading the entire knowledge lifecycle into the prompt. A stable Skill shell remains easy to discover, while the CLI can evolve detailed workflow resources without making the Skill itself a large manual.
+This prevents every invocation from loading the entire knowledge lifecycle into the prompt. The 50 Markdown documents have not disappeared; the two entries replace the need to embed all of them in Skills. A stable Skill shell remains easy to discover, while the CLI can evolve detailed workflow resources without making the Skill itself a large manual.
 
 ## Inspect the integration itself
 

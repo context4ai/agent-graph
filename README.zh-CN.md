@@ -71,7 +71,7 @@ Agent Graph 不会在后台擅自重写自己的计划。运行时路由随证�
 
 ## 真实实践：Context
 
-[Context](https://github.com/context4ai/context) 在两个薄 Skill 之下使用 Agent Graph，协调来源采集、代码提取、文档结构、审核 Gate、验证与知识包输出。它把 25 份 Action 契约和 57 份说明、视图、Schema、诊断资源从 Skill 文件本身彻底分离；Agent 仍会收到当前 Route 精确选中的文件，并以读取回执证明已经消费。它的调试记录可以回放每一条 Route、循环、门禁和最终结果。
+[Context](https://github.com/context4ai/context) 在两个薄 Skill 入口之下使用 Agent Graph：[`init.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/init.md) 只有 225 个英文单词，[`continue.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/continue.md) 只有 619 个。合计 844 个单词的入口，取代了把 50 份 Markdown 工作流文档塞进 Skill 的做法：25 份 Action 契约和 57 份引用资源保持分离，Agent 仍会收到当前 Route 精确选中的文件，并以读取回执证明已经消费。它的调试记录可以回放每一条 Route、循环、门禁和最终结果。
 
 [观看交互式回放](https://context4ai.github.io/agent-graph/case-studies/context/?lang=zh) · [阅读完整案例](./docs/zh-CN/case-studies/context.md)
 
