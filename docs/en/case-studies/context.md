@@ -36,6 +36,12 @@ The complete integration is public under [`context-workflow/`](https://github.co
 
 This is how two small Skills can safely front a much larger body of instructions. The detailed material has not been removed or summarized away; it is separated, selected by the Graph, and made verifiable instead of being loaded on every turn.
 
+## Idempotent continuation
+
+Invoking a Skill again does not mean replaying every instruction or repeating every write. With the same Provider bundle, observed Facts, and recorded Outcomes, Agent Graph deterministically selects the same Route; unchanged resource receipts also preserve the same read state. Context then binds mutating commands to the selected workflow revision and verifies their external evidence. Work already satisfied by workspace facts is skipped or advances to the next Route, while a stale command is rejected instead of being applied to newer state.
+
+This makes interruption, retry, and a new Agent turn converge from observable state rather than conversation memory. The idempotency boundary is explicit: Agent Graph makes evaluation repeatable and exposes completion contracts; the Context host makes each filesystem effect atomic, guarded, or a proven no-op. Agent Graph does not make an arbitrary script idempotent by itself.
+
 ## Responsibility boundary
 
 | Layer | Responsibility in Context |
