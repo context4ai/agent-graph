@@ -13,6 +13,14 @@ agent-graph evaluate build \
 
 Artifact digest、Source revision、测试 Receipt 或已部署版本等事实可以跨进程重启存在，并能使旧结果失效。Agent 会话中的文字陈述不是观测事实。
 
+当一个值是否可信取决于观测者时，应在同一 Fact 中提供稳定的观测者身份与健康状态。宿主在 Evaluation 前计算新鲜度和可用性；Agent Graph 不依赖墙上时钟。由于完整 Facts 输入受 Revision 约束，观测者替换或新鲜度变化会让已解析 Route 失效，而不需要改变 Graph 拓扑。示例见 [`examples/facts-recovery`](../../examples/facts-recovery)。
+
+## 宿主执行作用域
+
+Agent Graph 负责选择合法 Route，不拥有执行该 Route 时使用的操作系统资源。宿主若在一个进程中连续执行多个确定性 Action，应为每个 Action 建立明确的执行作用域，用来管理子进程、定时器、临时文件、输出拦截、锁和 watcher。作用域按注册顺序的逆序关闭；只有清理完成后，宿主才能发布 Action Receipt 或继续求值下一条 Route。
+
+执行作用域不是持久化工作的事务。Artifact、知识、决策、部署以及其他持久变更仍需各自的 Revision 校验、原子提交、验证与恢复契约。这些结果应成为可观测 Facts；清理句柄和进程内状态不应进入 Graph 拓扑。
+
 仅当需要执行历史、长任务检查点、无法从外部观测的显式 Outcome 或重复迭代时使用 Run。Run Start、Checkpoint 与 Resume 都拒绝覆盖已有目标路径；应选择新路径，或显式删除已废弃文件。
 
 ## Run 生命周期

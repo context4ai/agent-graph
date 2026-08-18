@@ -1,6 +1,6 @@
 {
   "name": "@c4a/agent-graph",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Graph Engineering for Agent Skills: model-free work contracts for fact-grounded routing, progressive context, and recoverable execution.",
   "type": "module",
   "packageManager": "bun@1.3.9",

@@ -70,11 +70,30 @@ If a Run says an Action completed but its `satisfiedBy` facts are absent, the ev
 
 Numeric path segments address array items. For example, `artifacts.0.digest` reads the first observed artifact's digest.
 
+### Evidence with a lifecycle
+
+A fact may carry the identity and health of the observation that produced it. Keep that information in ordinary nested Facts rather than creating dynamic Graph nodes:
+
+```json
+{
+  "artifact": {
+    "digest": "sha256:...",
+    "sourceRevision": "provider-instance-2",
+    "available": true,
+    "fresh": true
+  }
+}
+```
+
+Check only the fields that make the evidence trustworthy for the current action. The complete Facts object participates in the Evaluation revision, so changing `sourceRevision` invalidates a previously resolved Route even when the artifact digest is unchanged.
+
+The host owns observation time and availability. It should publish stable semantic state such as `fresh: false` after applying its clock, lease, or health policy. Do not put a constantly changing poll timestamp into Facts merely to prove that polling occurred: that creates a new revision without a meaningful state change. `missing`, `unavailable`, `stale`, and an explicitly false observation are different host states and should not be collapsed when the workflow needs different recovery routes.
+
 ## Independent verification pattern
 
 Use a separate read-effect Action when a producer must not verify its own result. Give that Action a host handler, require an observed artifact reference or digest, and use a verification receipt in `satisfiedBy`. A claimed verification without the receipt becomes `unverified` and can repeat or enter recovery.
 
-This is an authoring pattern, not a special node kind: the Provider can declare the boundary, while the host must bind the handler to an independently authorized, read-only verifier. `effect: read` documents intent and supports policy checks; it does not enforce process identity or filesystem isolation. See [`examples/independent-verification`](../../examples/independent-verification).
+This is an authoring pattern, not a special node kind: the Provider can declare the boundary, while the host must bind the handler to an independently authorized, read-only verifier. `effect: read` documents intent and supports policy checks; it does not enforce process identity or filesystem isolation. See [`examples/independent-verification`](../../examples/independent-verification) and the lifecycle-aware evidence in [`examples/facts-recovery`](../../examples/facts-recovery).
 
 ## Gates and managed sessions
 

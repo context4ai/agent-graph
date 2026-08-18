@@ -1,0 +1,16 @@
+schema: agent-graph.test.v1
+name: stale evidence makes recorded completion unverified
+graph: build
+entry: default
+state:
+  facts:
+    artifact:
+      digest: sha256:observed
+      sourceRevision: revision-1
+      available: true
+      fresh: false
+  outcomes:
+    build/package: completed
+expect:
+  statusCode: actionable
+  primaryNode: verify-artifact

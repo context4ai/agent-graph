@@ -70,11 +70,30 @@ satisfiedBy:
 
 数字路径段用于读取数组项，例如 `artifacts.0.digest` 读取第一个已观测 Artifact 的 Digest。
 
+### 具有生命周期的证据
+
+Fact 可以携带产生该观测的来源身份与健康状态。这些信息应作为普通嵌套 Facts 提供，不需要据此动态创建 Graph Node：
+
+```json
+{
+  "artifact": {
+    "digest": "sha256:...",
+    "sourceRevision": "provider-instance-2",
+    "available": true,
+    "fresh": true
+  }
+}
+```
+
+只检查当前 Action 判断证据可信度所需的字段。完整 Facts 对象参与 Evaluation Revision，因此即使 Artifact Digest 未变，`sourceRevision` 变化也会让此前解析的 Route 失效。
+
+观测时间与可用性由宿主负责。宿主应用自己的时钟、租约或健康策略后，应发布 `fresh: false` 这类稳定语义状态。不要仅为证明“执行过轮询”而把不断变化的时间戳放进 Facts；这会在没有实质状态变化时制造新 Revision。当工作流需要不同恢复路线时，`missing`、`unavailable`、`stale` 与显式 false 观测不应被合并为同一种状态。
+
 ## 独立验证模式
 
 当产出者不应自证结果时，使用独立的 read-effect Action。为其声明 Host Handler，要求已观测的 Artifact 引用或 Digest，并把验证 Receipt 配置到 `satisfiedBy`。只有验证声明却没有 Receipt 时，节点会变成 `unverified`，可以重复验证或进入恢复。
 
-这是一种编写模式，不是新的 Node Kind：Provider 能声明边界，但宿主必须把 Handler 绑定到具有独立权限的只读 Verifier。`effect: read` 用于表达意图和执行策略检查，不负责隔离进程身份或文件系统。示例见 [`examples/independent-verification`](../../examples/independent-verification)。
+这是一种编写模式，不是新的 Node Kind：Provider 能声明边界，但宿主必须把 Handler 绑定到具有独立权限的只读 Verifier。`effect: read` 用于表达意图和执行策略检查，不负责隔离进程身份或文件系统。示例见 [`examples/independent-verification`](../../examples/independent-verification) 和 [`examples/facts-recovery`](../../examples/facts-recovery) 中具有生命周期的证据。
 
 ## Gate 与全托管会话
 

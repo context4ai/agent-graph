@@ -4,6 +4,12 @@ All notable changes to Agent Graph are documented here. The project follows [Sem
 
 ## Unreleased
 
+## 0.2.5 - 2026-08-18
+
+- Documented lifecycle-aware evidence as ordinary revision-bound Facts, including observer replacement, availability, and freshness without adding time-dependent evaluator state.
+- Expanded the facts recovery example and regression coverage for stale evidence and same-value observer replacement.
+- Defined host execution scopes as action-local resource ownership while keeping durable mutations under their own revision, commit, and recovery contracts.
+
 ## 0.2.4 - 2026-08-17
 
 - Expanded the Context case study with direct links to its Provider, workspace Graph, Actions, Resources, reason-code catalog, and route tests.

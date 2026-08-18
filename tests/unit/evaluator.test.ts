@@ -18,9 +18,55 @@ describe("graph evaluation", () => {
 
   test("observed facts can satisfy a node without replaying an action", async () => {
     const provider = await loadProvider(example("facts-recovery"));
-    const result = evaluateGraph(provider, "build", "default", { facts: { artifact: { digest: "sha256:test" } } }).evaluation;
+    const result = evaluateGraph(provider, "build", "default", {
+      facts: {
+        artifact: {
+          digest: "sha256:test",
+          sourceRevision: "revision-1",
+          available: true,
+          fresh: true,
+        },
+      },
+    }).evaluation;
     expect(result.statusCode).toBe("complete");
     expect(result.outcome).toBe("completed");
+  });
+
+  test("invalidates a route when the evidence provider revision changes without changing the observed value", async () => {
+    const provider = await loadProvider(example("facts-recovery"));
+    const firstInput = {
+      facts: {
+        artifact: {
+          digest: "sha256:same-artifact",
+          sourceRevision: "provider-instance-1",
+          available: true,
+          fresh: false,
+        },
+      },
+      outcomes: { "build/package": "completed" as const },
+    };
+    const first = evaluateGraph(provider, "build", "default", firstInput).evaluation;
+    const replacementInput = {
+      ...firstInput,
+      facts: {
+        artifact: {
+          ...firstInput.facts.artifact,
+          sourceRevision: "provider-instance-2",
+        },
+      },
+    };
+    const replacement = evaluateGraph(provider, "build", "default", replacementInput).evaluation;
+
+    expect(replacement.primaryRoute?.node).toBe(first.primaryRoute?.node);
+    expect(replacement.revision).not.toBe(first.revision);
+    await expect(resolveRoute(
+      provider,
+      "build",
+      "default",
+      first.primaryRoute!.routeId,
+      replacementInput,
+      first.revision,
+    )).rejects.toMatchObject({ code: "route-revision-stale" });
   });
 
   test("session authority is explicit and scoped to an evaluation", async () => {

@@ -6,6 +6,9 @@ state:
   facts:
     artifact:
       digest: sha256:observed
+      sourceRevision: revision-2
+      available: true
+      fresh: true
 expect:
   statusCode: complete
   outcome: completed

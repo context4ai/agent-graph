@@ -13,6 +13,14 @@ agent-graph evaluate build \
 
 Facts such as an artifact digest, source revision, test receipt, or deployed version survive process restarts and can invalidate stale work. A statement in Agent conversation is not an observed fact.
 
+When the trustworthiness of a value depends on its observer, include stable observer identity and health fields in the same Fact. The host computes freshness and availability before evaluation; Agent Graph remains independent of wall-clock time. Because the complete Facts input is revision-bound, an observer replacement or freshness transition invalidates an already resolved Route without changing Graph topology. See [`examples/facts-recovery`](../../examples/facts-recovery).
+
+## Host execution scope
+
+Agent Graph selects a legal Route; it does not own the operating-system resources used to execute that Route. A host that performs several deterministic Actions in one process should give each Action an explicit execution scope for child processes, timers, temporary files, output interception, locks, and watchers. The scope closes in reverse registration order and must finish before the host publishes the Action receipt or evaluates the next Route.
+
+The scope is not a transaction for durable work. Artifacts, knowledge, decisions, deployments, and other lasting mutations still require their own revision checks, atomic commit, verification, and recovery contracts. Keep those results in observed Facts; do not turn cleanup handles or process-local state into Graph topology.
+
 Use a Run only when you need execution history, a long task checkpoint, explicit non-observable outcomes, or repeated iterations. Run start, checkpoint, and resume refuse to replace an existing target path; choose a new path or remove an obsolete file explicitly.
 
 ## Run lifecycle

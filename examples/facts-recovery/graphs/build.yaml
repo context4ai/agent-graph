@@ -10,6 +10,12 @@ nodes:
     satisfiedBy:
       - path: artifact.digest
         exists: true
+      - path: artifact.sourceRevision
+        exists: true
+      - path: artifact.available
+        equals: true
+      - path: artifact.fresh
+        equals: true
   - id: verify-artifact
     kind: action
     reasonCode: route.build.verify-artifact
