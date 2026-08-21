@@ -145,8 +145,13 @@ export async function locateCode(provider: LoadedProvider, code: string): Promis
 }
 
 async function resourcesForCandidate(provider: LoadedProvider, candidate: RouteCandidate, revision: string) {
-  const requiredReferences = [...(candidate.node.resources?.required ?? [])];
-  const recommendedReferences = [...(candidate.node.resources?.recommended ?? [])];
+  const selectedResources = candidate.node.kind === "gate" &&
+      candidate.gateResolution === "session-authority" &&
+      candidate.node.delegated?.resources !== undefined
+    ? candidate.node.delegated.resources
+    : candidate.node.resources;
+  const requiredReferences = [...(selectedResources?.required ?? [])];
+  const recommendedReferences = [...(selectedResources?.recommended ?? [])];
   const action = candidate.node.kind === "action"
     ? referencedAction(provider, candidate.node.action)
     : undefined;
@@ -233,11 +238,20 @@ export async function resolveRoute(
   const action = candidate.node.kind === "action"
     ? referencedAction(provider, candidate.node.action)
     : undefined;
-  const inspectionAction = candidate.node.kind === "gate"
+  const inspectionAction = candidate.node.kind === "gate" && !(
+      candidate.gateResolution === "session-authority" &&
+      candidate.node.delegated?.inspection === "skip"
+    )
     ? referencedAction(provider, candidate.node.inspectionAction)
     : undefined;
   const resolutionAction = candidate.node.kind === "gate"
-    ? referencedAction(provider, candidate.node.resolutionAction)
+    ? referencedAction(
+        provider,
+        candidate.gateResolution === "session-authority" &&
+            candidate.node.delegated?.resolutionAction !== undefined
+          ? candidate.node.delegated.resolutionAction
+          : candidate.node.resolutionAction,
+      )
     : undefined;
   const workspace = input.workspace ?? process.cwd();
   return {

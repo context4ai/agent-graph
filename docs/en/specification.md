@@ -116,6 +116,10 @@ gate:
   delegatable: true
 inspectionAction: actions/inspect-release.yaml
 resolutionAction: actions/apply-approval.yaml
+delegated:
+  inspection: skip
+  resolutionAction: actions/accept-release.yaml
+  resources: { required: [], recommended: [] }
 ```
 
 Without matching authority, the route is `waiting-user`. Its ordinary `commandPlan` stays empty. If and only if `delegatable` is true and the current evaluation supplies the named authority, the gate becomes actionable with `resolution: session-authority`.
@@ -126,7 +130,9 @@ Without matching authority, the route is `waiting-user`. Its ordinary `commandPl
 
 A resolution Action must have `effect: write` or `external`, because a read-only action cannot resolve the Gate's observable state. A Gate without `resolutionAction` remains valid when the host records its Outcome directly. The Action itself does not grant authority and cannot make a non-delegatable Gate automatic.
 
-Authorities belong to the current input or Run. A Provider definition never permanently enables managed or unattended operation. Authority does not satisfy facts or bypass validation.
+The optional `delegated` policy applies only when the Route resolution is `session-authority`. `inspection: skip` suppresses the nested inspection plan for that Route while preserving the authored inspection Action for ordinary user resolution. `resolutionAction` replaces the ordinary resolution Action only on the delegated Route and must also use `effect: write` or `external`. `resources`, when present, replaces the Gate node's ordinary required and recommended Resources for the delegated Route. A Gate declaring this policy must have a delegatable authority; skipping inspection also requires an authored inspection Action. Defaults continue to expose the ordinary inspection, resolution, and Resources.
+
+Authorities belong to the current input or Run. A Provider definition never permanently enables delegated or unattended execution. Authority does not satisfy facts or bypass validation.
 
 ### 2.4 Edges
 

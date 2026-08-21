@@ -159,6 +159,96 @@ description: Apply the confirmed review.
     );
   });
 
+  test("uses delegated Gate inspection and resource policy only with session authority", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-delegated-gate-"));
+    directories.push(directory);
+    await initProvider(directory, "delegated-gate");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: review }
+nodes:
+  - id: review
+    kind: gate
+    reasonCode: route.main.work
+    gate:
+      id: review
+      prompt: Review the result.
+      authority: review
+      delegatable: true
+    inspectionAction: actions/inspect.yaml
+    resolutionAction: actions/apply.yaml
+    resources:
+      required: [resources/user.md]
+    delegated:
+      inspection: skip
+      resolutionAction: actions/accept.yaml
+      resources:
+        required: [resources/delegated.md]
+  - { id: done, kind: terminal, terminalOutcome: completed }
+edges: [{ from: review, to: done, outcomes: [completed] }]
+`);
+    await writeTextAtomic(resolve(directory, "actions/inspect.yaml"), `schema: agent-graph.action.v1
+id: inspect
+runner: host
+effect: read
+handler: review.inspect
+`);
+    await writeTextAtomic(resolve(directory, "actions/apply.yaml"), `schema: agent-graph.action.v1
+id: apply
+runner: host
+effect: write
+handler: review.apply
+`);
+    await writeTextAtomic(resolve(directory, "actions/accept.yaml"), `schema: agent-graph.action.v1
+id: accept
+runner: host
+effect: write
+handler: review.accept
+`);
+    await writeTextAtomic(resolve(directory, "resources/user.md"), `---
+id: dialogue.user-review
+kind: procedure
+mediaType: text/markdown
+---
+Ask the user to review.
+`);
+    await writeTextAtomic(resolve(directory, "resources/delegated.md"), `---
+id: procedure.delegated-review
+kind: procedure
+mediaType: text/markdown
+---
+Apply the delegated decision.
+`);
+    const provider = await loadProvider(resolve(directory, "provider.yaml"));
+    const userEvaluation = evaluateGraph(provider, "main").evaluation;
+    const userRoute = await resolveRoute(
+      provider,
+      "main",
+      "default",
+      userEvaluation.primaryRoute!.routeId,
+    );
+    expect(userRoute.gate?.inspectionAction?.commandPlan[0]?.handler).toBe("review.inspect");
+    expect(userRoute.resources.required.map((resource) => resource.id)).toEqual([
+      "dialogue.user-review",
+    ]);
+
+    const delegatedInput = { authorities: ["review"] };
+    const delegatedEvaluation = evaluateGraph(provider, "main", "default", delegatedInput).evaluation;
+    const delegatedRoute = await resolveRoute(
+      provider,
+      "main",
+      "default",
+      delegatedEvaluation.primaryRoute!.routeId,
+      delegatedInput,
+    );
+    expect(delegatedRoute.gate?.resolution).toBe("session-authority");
+    expect(delegatedRoute.gate?.inspectionAction).toBeUndefined();
+    expect(delegatedRoute.gate?.resolutionAction?.commandPlan[0]?.handler).toBe("review.accept");
+    expect(delegatedRoute.resources.required.map((resource) => resource.id)).toEqual([
+      "procedure.delegated-review",
+    ]);
+  });
+
   test("exposes a child graph action through a parent route", async () => {
     const provider = await loadProvider(example("subgraphs"));
     const result = evaluateGraph(provider, "main").evaluation;

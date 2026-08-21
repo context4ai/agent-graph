@@ -95,7 +95,7 @@ Use a separate read-effect Action when a producer must not verify its own result
 
 This is an authoring pattern, not a special node kind: the Provider can declare the boundary, while the host must bind the handler to an independently authorized, read-only verifier. `effect: read` documents intent and supports policy checks; it does not enforce process identity or filesystem isolation. See [`examples/independent-verification`](../../examples/independent-verification) and the lifecycle-aware evidence in [`examples/facts-recovery`](../../examples/facts-recovery).
 
-## Gates and managed sessions
+## Gates and delegated session execution
 
 ```yaml
 kind: gate
@@ -107,6 +107,10 @@ gate:
   delegatable: true
 inspectionAction: actions/inspect-review.yaml
 resolutionAction: actions/apply-review.yaml
+delegated:
+  inspection: skip
+  resolutionAction: actions/accept-review.yaml
+  resources: { required: [], recommended: [] }
 ```
 
 Without `review` authority, the route requires the user. With that authority in the current evaluation or Run, the route is immediate and identifies `session-authority` as its resolution. Authority belongs to the host-selected session state; it is not written into the Provider and does not prove downstream facts.
@@ -114,6 +118,8 @@ Without `review` authority, the route requires the user. With that authority in 
 Use an optional read-only `inspectionAction` when the host must prepare a report, open a review UI, or fetch decision evidence before asking the user. It is exposed separately from the Gate's ordinary empty `commandPlan` and remains safe to run before confirmation.
 
 Use an optional `resolutionAction` when confirmation alone is not enough and the host must persist a decision or apply structured user input. Keep the Gate prompt short; put the input contract on the Action with `inputSchema`. The waiting Route exposes this Action separately, but it remains conditional until the user confirms. See [`examples/review-gate`](../../examples/review-gate).
+
+Use `delegated.inspection: skip` only when current-session authority makes the ordinary inspection surface redundant. The inspection Action remains part of the Provider and is still exposed in user-resolved routes. `delegated.resolutionAction` may select a different write or external Action when delegated execution needs a deterministic authority-owned decision instead of user input. `delegated.resources` optionally replaces the Gate's ordinary resources for the delegated route, so user-dialogue material can stay available in ordinary mode without slowing delegated execution. These policies never delete the ordinary Actions, satisfy downstream Facts, or bypass validation.
 
 ## Resources
 

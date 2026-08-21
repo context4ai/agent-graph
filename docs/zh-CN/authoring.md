@@ -95,7 +95,7 @@ Fact 可以携带产生该观测的来源身份与健康状态。这些信息应
 
 这是一种编写模式，不是新的 Node Kind：Provider 能声明边界，但宿主必须把 Handler 绑定到具有独立权限的只读 Verifier。`effect: read` 用于表达意图和执行策略检查，不负责隔离进程身份或文件系统。示例见 [`examples/independent-verification`](../../examples/independent-verification) 和 [`examples/facts-recovery`](../../examples/facts-recovery) 中具有生命周期的证据。
 
-## Gate 与全托管会话
+## Gate 与会话委托执行
 
 ```yaml
 kind: gate
@@ -107,6 +107,10 @@ gate:
   delegatable: true
 inspectionAction: actions/inspect-review.yaml
 resolutionAction: actions/apply-review.yaml
+delegated:
+  inspection: skip
+  resolutionAction: actions/accept-review.yaml
+  resources: { required: [], recommended: [] }
 ```
 
 没有 `review` Authority 时，Route 要求用户参与；当前 Evaluation 或 Run 携带该 Authority 时，Route 立即可执行，并标记由 `session-authority` 解析。Authority 属于宿主选择的会话状态，不会写回 Provider，也不能证明下游事实。
@@ -114,6 +118,8 @@ resolutionAction: actions/apply-review.yaml
 如果宿主需要在提问前准备报告、打开审核页面或读取决策证据，可声明只读 `inspectionAction`。它与 Gate 默认的空 `commandPlan` 分开暴露，用户确认前即可安全执行。
 
 如果仅确认还不够，宿主还需要保存决定或应用结构化用户输入，可声明 `resolutionAction`。Gate Prompt 保持简短，输入契约通过 Action 的 `inputSchema` 提供。等待中的 Route 会单独暴露这份 Action，但用户确认前它仍是条件计划。示例见 [`examples/review-gate`](../../examples/review-gate)。
+
+只有当前会话授权确实使普通检查界面变得冗余时，才使用 `delegated.inspection: skip`。Inspection Action 仍保留在 Provider 中，并继续出现在由用户解析的 Route 里。当委托执行需要确定性的授权决策而不是用户输入时，`delegated.resolutionAction` 可以选择另一份 write 或 external Action。`delegated.resources` 可以替换委托 Route 的普通 Gate Resource，使用户对话材料留在普通模式中，同时不拖慢委托执行。这些策略不会删除普通模式 Action、满足下游 Fact 或绕过验证。
 
 ## Resource
 

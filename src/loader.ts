@@ -370,6 +370,33 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
           );
         }
       }
+      if (node.kind === "gate" && node.delegated !== undefined) {
+        if (node.gate.delegatable !== true || node.gate.authority === undefined) {
+          throw new AgentGraphError(
+            "gate-delegated-policy-invalid",
+            `Gate ${graphId}/${node.id} declares delegated execution without a delegatable authority`,
+          );
+        }
+        if (node.delegated.inspection === "skip" && node.inspectionAction === undefined) {
+          throw new AgentGraphError(
+            "gate-delegated-inspection-missing",
+            `Gate ${graphId}/${node.id} skips delegated inspection but has no inspection Action`,
+          );
+        }
+        if (node.delegated.resolutionAction !== undefined) {
+          const delegatedResolution = await includeAction(
+            node.delegated.resolutionAction,
+            directFiles,
+            "delegated gate resolution action referenced file",
+          );
+          if (delegatedResolution.definition.effect === "read") {
+            throw new AgentGraphError(
+              "gate-resolution-effect-invalid",
+              `Gate ${graphId}/${node.id} delegated resolution Action ${delegatedResolution.definition.id} must use effect: write or external`,
+            );
+          }
+        }
+      }
       if (node.kind === "gate" && node.resolutionAction) {
         const resolution = await includeAction(
           node.resolutionAction,
@@ -384,9 +411,12 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
         }
       }
       const nodeResources = node.kind === "action" || node.kind === "gate" ? node.resources : undefined;
+      const delegatedResources = node.kind === "gate" ? node.delegated?.resources : undefined;
       for (const resourceReference of [
         ...(nodeResources?.required ?? []),
         ...(nodeResources?.recommended ?? []),
+        ...(delegatedResources?.required ?? []),
+        ...(delegatedResources?.recommended ?? []),
       ]) {
         const resourcePath = resolveContainedPath(root, resourceReference, "resource reference");
         if (!resources.has(resourcePath)) {

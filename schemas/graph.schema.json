@@ -97,6 +97,15 @@
         },
         "inspectionAction": { "$ref": "#/$defs/relativePath" },
         "resolutionAction": { "$ref": "#/$defs/relativePath" },
+        "delegated": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "inspection": { "enum": ["required", "skip"], "default": "required" },
+            "resolutionAction": { "$ref": "#/$defs/relativePath" },
+            "resources": { "$ref": "#/$defs/resources" }
+          }
+        },
         "terminalOutcome": { "$ref": "#/$defs/outcome" },
         "requiresFacts": { "type": "array", "items": { "$ref": "#/$defs/factCheck" } },
         "satisfiedBy": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/factCheck" } },
@@ -106,7 +115,7 @@
         {
           "properties": { "kind": { "const": "action" } },
           "required": ["action", "reasonCode"],
-          "not": { "anyOf": [{ "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["inspectionAction"] }, { "required": ["resolutionAction"] }, { "required": ["terminalOutcome"] }] }
+          "not": { "anyOf": [{ "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["inspectionAction"] }, { "required": ["resolutionAction"] }, { "required": ["delegated"] }, { "required": ["terminalOutcome"] }] }
         },
         {
           "properties": { "kind": { "const": "gate" } },
@@ -116,12 +125,12 @@
         {
           "properties": { "kind": { "const": "subgraph" } },
           "required": ["graph", "entry"],
-          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["gate"] }, { "required": ["inspectionAction"] }, { "required": ["resolutionAction"] }, { "required": ["reasonCode"] }, { "required": ["terminalOutcome"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
+          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["gate"] }, { "required": ["inspectionAction"] }, { "required": ["resolutionAction"] }, { "required": ["delegated"] }, { "required": ["reasonCode"] }, { "required": ["terminalOutcome"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
         },
         {
           "properties": { "kind": { "const": "terminal" } },
           "required": ["terminalOutcome"],
-          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["inspectionAction"] }, { "required": ["resolutionAction"] }, { "required": ["reasonCode"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
+          "not": { "anyOf": [{ "required": ["action"] }, { "required": ["graph"] }, { "required": ["entry"] }, { "required": ["gate"] }, { "required": ["inspectionAction"] }, { "required": ["resolutionAction"] }, { "required": ["delegated"] }, { "required": ["reasonCode"] }, { "required": ["satisfiedBy"] }, { "required": ["resources"] }] }
         }
       ]
     },

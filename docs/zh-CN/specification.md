@@ -116,6 +116,10 @@ gate:
   delegatable: true
 inspectionAction: actions/inspect-release.yaml
 resolutionAction: actions/apply-approval.yaml
+delegated:
+  inspection: skip
+  resolutionAction: actions/accept-release.yaml
+  resources: { required: [], recommended: [] }
 ```
 
 没有匹配授权时，Route 状态为 `waiting-user`，其普通 `commandPlan` 保持为空。只有 `delegatable` 为 true 且当前 Evaluation 显式提供对应 authority 时，门禁才变为 actionable，并标记 `resolution: session-authority`。
@@ -126,7 +130,9 @@ resolutionAction: actions/apply-approval.yaml
 
 Resolution Action 必须使用 `effect: write` 或 `external`，因为只读 Action 无法改变 Gate 的可观察状态。没有 `resolutionAction` 的 Gate 仍然合法，此时由宿主直接记录其 Outcome。这个 Action 本身不会授予 Authority，也不能把不可委托 Gate 变成自动门禁。
 
-Authority 属于当前输入或 Run。Provider 定义不能永久开启全托管或无人值守；授权也不能满足事实或绕过校验。
+可选的 `delegated` 策略只在 Route 的解析方式为 `session-authority` 时生效。`inspection: skip` 会在该 Route 中省略嵌套 Inspection 计划，但普通用户解析仍保留原本声明的 Inspection Action。`resolutionAction` 只在委托 Route 上替换普通 Resolution Action，并且同样必须使用 `effect: write` 或 `external`。若提供 `resources`，它会替换委托 Route 上 Gate Node 的普通 Required 与 Recommended Resource。声明该策略的 Gate 必须具有可委托 Authority；跳过 Inspection 还要求已声明 Inspection Action。默认行为仍是暴露普通 Inspection、Resolution 与 Resource。
+
+Authority 属于当前输入或 Run。Provider 定义不能永久开启委托执行或无人值守执行；授权也不能满足事实或绕过校验。
 
 ### 2.4 边
 

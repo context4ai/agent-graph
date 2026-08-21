@@ -11,5 +11,4 @@ expect:
   primaryNode: approve
   availability: immediate
   gateResolution: session-authority
-  inspectionHandler: review.inspect-result
-  resolutionHandler: review.apply-decision
+  resolutionHandler: review.accept-prepared

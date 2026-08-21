@@ -17,6 +17,12 @@ nodes:
       delegatable: true
     inspectionAction: actions/inspect-review.yaml
     resolutionAction: actions/apply-review.yaml
+    delegated:
+      inspection: skip
+      resolutionAction: actions/accept-review.yaml
+      resources:
+        required: []
+        recommended: []
   - id: done
     kind: terminal
     terminalOutcome: completed

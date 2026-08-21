@@ -150,6 +150,59 @@ command: mutate
     });
   });
 
+  test("requires delegated Gate policy to have a delegatable authority", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-gate-delegated-policy-"));
+    directories.push(directory);
+    await initProvider(directory, "gate-delegated-policy");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: approval }
+nodes:
+  - id: approval
+    kind: gate
+    reasonCode: route.approval
+    gate: { id: approval, prompt: Approve? }
+    inspectionAction: actions/work.yaml
+    delegated: { inspection: skip }
+  - { id: done, kind: terminal, terminalOutcome: completed }
+edges: [{ from: approval, to: done, outcomes: [completed] }]
+`);
+    await writeTextAtomic(resolve(directory, "actions/work.yaml"), `schema: agent-graph.action.v1
+id: work
+runner: command
+effect: read
+command: inspect
+`);
+    await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({
+      code: "gate-delegated-policy-invalid",
+    });
+  });
+
+  test("requires skipped delegated inspection to preserve an inspection Action", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-gate-delegated-inspection-"));
+    directories.push(directory);
+    await initProvider(directory, "gate-delegated-inspection");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: approval }
+nodes:
+  - id: approval
+    kind: gate
+    reasonCode: route.approval
+    gate:
+      id: approval
+      prompt: Approve?
+      authority: approval
+      delegatable: true
+    delegated: { inspection: skip }
+  - { id: done, kind: terminal, terminalOutcome: completed }
+edges: [{ from: approval, to: done, outcomes: [completed] }]
+`);
+    await expect(loadProvider(resolve(directory, "provider.yaml"))).rejects.toMatchObject({
+      code: "gate-delegated-inspection-missing",
+    });
+  });
+
   test("scopes routing revisions to the selected graph dependency closure", async () => {
     const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-revision-scope-"));
     directories.push(directory);

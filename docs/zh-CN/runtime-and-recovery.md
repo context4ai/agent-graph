@@ -119,7 +119,7 @@ agent-graph route release \
 agent-graph run authority --state .runtime/release.json --set release.approve
 ```
 
-当用户明确的全托管会话结束时，宿主负责清除 Authority；`run resume` 会自动清除。Authority 只能解析 `delegatable` Gate，不能绕过 Fact Check、Schema、验证或不可委托 Gate。
+当用户明确授予的会话委托权限结束时，宿主负责清除 Authority；`run resume` 会自动清除。Authority 只能解析 `delegatable` Gate，不能绕过 Fact Check、Schema、验证或不可委托 Gate。
 
 ## 动态资源护栏
 

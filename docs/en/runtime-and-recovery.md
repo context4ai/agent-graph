@@ -119,7 +119,7 @@ Or a host may set it on a Run for the duration of the host-defined session:
 agent-graph run authority --state .runtime/release.json --set release.approve
 ```
 
-The host is responsible for clearing it when the user's explicit managed-session instruction ends. `run resume` clears it automatically. Authority only resolves a `delegatable` gate and never bypasses fact checks, schema validation, verification, or non-delegatable gates.
+The host is responsible for clearing it when the user's explicit delegated-session authorization ends. `run resume` clears it automatically. Authority only resolves a `delegatable` gate and never bypasses fact checks, schema validation, verification, or non-delegatable gates.
 
 ## Dynamic resource guardrails
 

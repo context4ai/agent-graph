@@ -4,6 +4,10 @@ All notable changes to Agent Graph are documented here. The project follows [Sem
 
 ## Unreleased
 
+## 0.2.6 - 2026-08-21
+
+- Added Gate-owned delegated execution policies that can skip redundant inspection, select an authority-specific resolution Action, and replace user-dialogue resources only for current-session routes while preserving ordinary review capabilities.
+
 ## 0.2.5 - 2026-08-18
 
 - Documented lifecycle-aware evidence as ordinary revision-bound Facts, including observer replacement, availability, and freshness without adding time-dependent evaluator state.

@@ -1,0 +1,6 @@
+schema: agent-graph.action.v1
+id: accept-review
+description: Accept the prepared result under current-session authority.
+runner: host
+effect: write
+handler: review.accept-prepared

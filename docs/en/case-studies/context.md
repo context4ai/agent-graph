@@ -68,9 +68,9 @@ Code and prose share a workspace but do not pretend to be the same workflow:
 
 Repeated sources do not require repeated graph definitions. The graph contains stable states such as “a capture target remains” or “a confirmed structure remains uncompiled.” Runtime Facts identify which source or module is current. This keeps the work graph static while allowing batches to vary by project and run.
 
-## Managed execution still respects Gates
+## Context managed mode maps to delegated Gates
 
-In managed mode, Context can continuously execute deterministic Routes. It stops only when the selected Route needs semantic judgment, unresolved authority, a human decision, or a repair that cannot be proven safe. Session authority may resolve eligible Gates, but it does not become permanent project configuration.
+Context calls its host-level experience “managed mode.” The host maps that choice to session-scoped Agent Graph authorities and Gate `delegated` policies; managed mode is not an Agent Graph protocol field. Context can then continuously execute deterministic Routes. It stops when the selected Route needs semantic judgment, unresolved authority, a human decision, or a repair that cannot be proven safe. Session authority may resolve eligible Gates, but it does not become permanent project configuration.
 
 The result is a useful division of labor: loops and mechanical transitions do not consume repeated Agent turns, while decisions that change meaning or authority remain visible.
 

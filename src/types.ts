@@ -49,6 +49,12 @@ export interface GateDefinition {
   delegatable?: boolean;
 }
 
+export interface DelegatedGateExecution {
+  inspection?: "required" | "skip";
+  resolutionAction?: string;
+  resources?: NodeResources;
+}
+
 interface GraphNodeBase {
   id: string;
   description?: string;
@@ -71,6 +77,7 @@ export interface GateGraphNode extends GraphNodeBase {
   gate: GateDefinition;
   inspectionAction?: string;
   resolutionAction?: string;
+  delegated?: DelegatedGateExecution;
   satisfiedBy?: FactCheck[];
   resources?: NodeResources;
 }
