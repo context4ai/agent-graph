@@ -8,18 +8,17 @@ Context uses Agent Graph as its work-contract layer. Agent Graph does not extrac
 
 ![Context on Agent Graph](../assets/context-agent-graph.svg)
 
-## Two Skills, one workflow
+## One public entry, one workflow
 
-The public Context plugin exposes two Skill entry files:
+The public Context plugin exposes one Agent entry:
 
-- [`init.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/init.md) creates a knowledge workspace and enters its first Route;
-- [`continue.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/continue.md) inspects an existing workspace and continues from current facts.
+- [`/c4a:context`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/context.md), generated from `context.md`, starts a requested knowledge workspace or continues an existing one. Its first `context entry` call resolves initialization, workspace relocation, or current workflow evaluation before handing control to `workflow.current`.
 
-Measured directly from the published files, `init.md` is 225 English words and `continue.md` is 619: 844 words and 121 lines in total, including frontmatter. Those two small entry contracts front a workflow whose detailed guidance is distributed across 50 Markdown resources, alongside 7 machine-readable resource descriptors and 25 Action contracts.
+The entry is intentionally thin. It describes the CLI bootstrap and Route-consumption contract instead of duplicating the product lifecycle. Detailed guidance stays distributed across independently addressable workflow resources and Action contracts.
 
-They are intentionally thin. They identify the Provider, Graph, and Entry and teach the Agent how to consume a Route. Phase-specific instructions, schemas, source views, review contracts, and package guidance stay in addressable resources. The selected Route exposes only the subset needed now.
+Phase-specific instructions, schemas, source views, review contracts, and package guidance stay in those resources. The selected Route exposes only the subset needed now, and the same public entry handles both initialization and continuation without maintaining two overlapping prompts.
 
-This prevents every invocation from loading the entire knowledge lifecycle into the prompt. The 50 Markdown documents have not disappeared; the two entries replace the need to embed all of them in Skills. A stable Skill shell remains easy to discover, while the CLI can evolve detailed workflow resources without making the Skill itself a large manual.
+This prevents every invocation from loading the entire knowledge lifecycle into the prompt. The detailed documents have not disappeared; the single entry replaces the need to embed all of them in a Skill. A stable shell remains easy to discover, while the CLI can evolve detailed workflow resources without making the entry itself a large manual.
 
 ## Inspect the integration itself
 
@@ -34,7 +33,7 @@ The complete integration is public under [`context-workflow/`](https://github.co
 
 `context status` is the host-facing observation boundary. It inspects the workspace, supplies Facts to Agent Graph, and returns `workflow.current`: the selected Route, reason code, command plan, Gate, and only the Resources needed now. Static files can be acknowledged by digest; dynamic views are tied to the workflow revision that selected them. A receipt proves delivery of a resource—it does not claim that the outside task is complete.
 
-This is how two small Skills can safely front a much larger body of instructions. The detailed material has not been removed or summarized away; it is separated, selected by the Graph, and made verifiable instead of being loaded on every turn.
+This is how one small public entry can safely front a much larger body of instructions. The detailed material has not been removed or summarized away; it is separated, selected by the Graph, and made verifiable instead of being loaded on every turn.
 
 ## Idempotent continuation
 
@@ -92,4 +91,4 @@ The recording is more than a presentation layer. Route traces expose inefficient
 
 Context is not evidence that every Skill needs a graph. It is evidence that a graph becomes useful when a Skill fronts a long, stateful product workflow with external facts, multiple Gates, repeated batches, and a real recovery requirement.
 
-The two Skills remain small because the graph, resources, and host share the rest of the responsibility. The Agent sees what matters now; the host proves what happened; the graph keeps the next move legal and testable.
+The single entry remains small because the graph, resources, and host share the rest of the responsibility. The Agent sees what matters now; the host proves what happened; the graph keeps the next move legal and testable.

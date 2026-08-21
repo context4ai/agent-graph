@@ -106,6 +106,29 @@ describe("Context case study replay", () => {
     expect(chinese).toContain("[`context-workflow/`](https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow)");
   });
 
+  test("documents the single current Context entry without retired links", async () => {
+    const files = [
+      "README.md",
+      "README.zh-CN.md",
+      "docs/en/README.md",
+      "docs/zh-CN/README.md",
+      "docs/en/case-studies/context.md",
+      "docs/zh-CN/case-studies/context.md",
+      "docs/en/assets/context-agent-graph.svg",
+      "docs/zh-CN/assets/context-agent-graph.svg",
+    ];
+    const bodies = await Promise.all(
+      files.map((file) => readFile(resolve(process.cwd(), file), "utf8")),
+    );
+    const combined = bodies.join("\n");
+
+    expect(combined).toContain("packages/context-cli/plugin/commands/context.md");
+    expect(combined).toContain("/c4a:context");
+    expect(combined).not.toContain("packages/context-cli/plugin/commands/init.md");
+    expect(combined).not.toContain("packages/context-cli/plugin/commands/continue.md");
+    expect(combined).not.toMatch(/Two (?:thin )?Skills|两个(?:薄)? Skill|init · continue/iu);
+  });
+
   test("defaults to English and keeps documentation replay links language-specific", async () => {
     const script = await readFile(resolve(caseStudyRoot, "replay.js"), "utf8");
     const english = await readFile(resolve(process.cwd(), "docs/en/case-studies/context.md"), "utf8");

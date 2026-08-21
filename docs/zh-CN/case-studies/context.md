@@ -8,18 +8,17 @@ Context 使用 Agent Graph 承载工作契约。Agent Graph 不提取代码、�
 
 ![运行在 Agent Graph 上的 Context](../assets/context-agent-graph.svg)
 
-## 两个 Skill 驱动一套完整工作流
+## 一个公开入口驱动一套完整工作流
 
-Context 插件对外只有两个 Skill 入口文件：
+Context 插件对外只有一个 Agent 入口：
 
-- [`init.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/init.md)：创建知识工作区，并进入第一条 Route；
-- [`continue.md`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/continue.md)：检查已有工作区，根据当前事实继续目标。
+- [`/c4a:context`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/context.md) 由 `context.md` 生成，既能创建用户请求的知识工作区，也能继续已有工作区。首次调用 `context entry` 时，它会先判断应该初始化、定位工作区还是求值当前工作流，再把控制权交给 `workflow.current`。
 
-按发布文件直接统计，`init.md` 只有 225 个英文单词，`continue.md` 只有 619 个；包含 frontmatter 在内，两个入口合计 844 个单词、121 行。它们承接的完整工作流，则把详细说明拆进了 50 份 Markdown 资源、7 份机器可读资源描述和 25 份 Action 契约。
+这个入口有意保持很薄：它只描述 CLI 启动方式和 Route 消费契约，不在入口中复制产品生命周期。详细说明继续分布在可以独立寻址的工作流资源和 Action 契约中。
 
-它们有意保持很薄，只负责定位 Provider、Graph 和 Entry，并告诉 Agent 如何消费 Route。各阶段的操作说明、Schema、来源视图、审核契约和知识包说明仍是独立资源；只有被当前 Route 选中的那部分才会暴露。
+各阶段的操作说明、Schema、来源视图、审核契约和知识包说明仍是独立资源；只有被当前 Route 选中的那部分才会暴露。同一个公开入口同时处理初始化和继续，不再维护两份职责重叠的 Prompt。
 
-因此，每次调用不必把完整知识生命周期塞进 Prompt。50 份 Markdown 文档并没有消失；两个入口取代的是“把所有文档都塞进 Skill”的做法。Skill 外壳稳定、容易被发现，CLI 仍可以独立演进详细流程和资源，而不把 Skill 变成长篇手册。
+因此，每次调用不必把完整知识生命周期塞进 Prompt。详细文档并没有消失；单一入口取代的是“把所有文档都塞进 Skill”的做法。入口外壳稳定、容易被发现，CLI 仍可以独立演进详细流程和资源，而不把入口变成长篇手册。
 
 ## 直接检查这套接入
 
@@ -34,7 +33,7 @@ Context 插件对外只有两个 Skill 入口文件：
 
 `context status` 是宿主侧的事实观察边界：它检查工作区、把 Facts 交给 Agent Graph，再返回 `workflow.current`——包括选中的 Route、原因码、命令计划、Gate，以及此刻真正需要的 Resources。静态文件可以按 digest 复用读取回执；动态 View 则绑定选中它的工作流 revision。回执只证明资源已经交付，不会把外部任务冒充成已完成。
 
-因此，两个小 Skill 可以安全承载远大于自身的操作知识。详细内容没有被删除，也没有被摘要替代，而是被分离、由 Graph 按需选择，并以可验证方式交付，不再每轮全部加载。
+因此，一个小的公开入口可以安全承载远大于自身的操作知识。详细内容没有被删除，也没有被摘要替代，而是被分离、由 Graph 按需选择，并以可验证方式交付，不再每轮全部加载。
 
 ## 幂等地继续，而不是从头重放
 
@@ -92,4 +91,4 @@ Context 开启 debug 后，宿主会记录 CLI 调用边界和 Agent Graph 求�
 
 Context 并不证明每个 Skill 都需要 Graph。它证明的是：当一个 Skill 背后连接了长期、有状态、依赖外部事实、包含多种门禁和批次循环、又必须支持恢复的产品流程时，工作图开始真正产生价值。
 
-两个 Skill 之所以可以保持很小，是因为 Graph、资源和宿主共同承担了其余职责：Agent 只看到此刻重要的内容，宿主证明实际结果，Graph 保证下一步合法并且可以测试。
+单一入口之所以可以保持很小，是因为 Graph、资源和宿主共同承担了其余职责：Agent 只看到此刻重要的内容，宿主证明实际结果，Graph 保证下一步合法并且可以测试。
