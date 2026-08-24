@@ -16,7 +16,7 @@ This guide is for Provider authors, Skill authors, Agent-host integrators, and A
 - Test and publish a bundle: [Testing and publishing](./testing-and-publishing.md)
 - Convert an existing Skill or script workflow: [Migration](./migration.md)
 - Understand the design philosophy: [Graph Engineering](./graph-engineering.md)
-- See a production integration from one thin public Agent entry through replayable Routes: [Context case study](./case-studies/context.md)
+- See a production integration from one thin public Agent entry through replayable Routes: [Context case study](https://github.com/context4ai/context/blob/main/docs/en/case-studies/agent-graph-workflow.md)
 
 ## The consumption contract
 

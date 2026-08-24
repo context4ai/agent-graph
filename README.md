@@ -73,9 +73,9 @@ Agent Graph does not silently rewrite its own plan. Runtime routing follows the 
 
 [Context](https://github.com/context4ai/context) uses Agent Graph behind one thin public Agent entry: [`/c4a:context`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/context.md). The same entry starts a requested workspace or resumes an existing one: `context entry` resolves initialization, workspace relocation, or current workflow evaluation, then the Agent follows `workflow.current`. Phase-specific procedures, Actions, and Resources remain separate, while the Agent receives, reads, and proves consumption of exactly what the selected Route requires. Re-entering the entry with unchanged Facts selects the same Route; completed evidence advances or no-ops, and revision-bound host commands reject stale writes. This gives Agent work an explicit idempotency boundary across retries and new turns. Its debug recording makes every selected Route, loop, Gate, and outcome replayable.
 
-[Watch the interactive replay](https://context4ai.github.io/agent-graph/case-studies/context/?lang=en) · [Read the case study](./docs/en/case-studies/context.md)
+[Watch the interactive replay](https://context4ai.github.io/context/case-studies/workflow/?lang=en) · [Read the case study](https://github.com/context4ai/context/blob/main/docs/en/case-studies/agent-graph-workflow.md)
 
-![Context on Agent Graph](./docs/en/assets/context-agent-graph.svg)
+![Context on Agent Graph](https://raw.githubusercontent.com/context4ai/context/main/docs/en/assets/context-agent-graph.svg)
 
 ## What the project provides
 
@@ -159,7 +159,7 @@ A host may attach current-conversation resource read receipts when resolving a R
 - [Migrating existing workflows](./docs/en/migration.md)
 - [Adoption paths in depth](./docs/en/adoption-paths.md)
 - [Graph Engineering: concept and implementation](./docs/en/graph-engineering.md)
-- [Case study: Context knowledge workflows](./docs/en/case-studies/context.md)
+- [Case study: Context knowledge workflows](https://github.com/context4ai/context/blob/main/docs/en/case-studies/agent-graph-workflow.md)
 
 To inspect the repository directly:
 

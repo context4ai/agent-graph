@@ -32,5 +32,8 @@ bun run verify
 
 - `README.md` / `README.zh-CN.md`: product entry and quick start.
 - `docs/en/` / `docs/zh-CN/`: user manuals and specification guides.
+- `case-studies/`: Agent Graph-owned examples or compatibility redirects.
+  Product-specific case content and replay data belong to the integrating
+  product repository and are linked from here rather than duplicated.
 - `DEVELOPMENT.md`: contributor workflow and release checks.
 - Schema files in `schemas/`: machine-readable contracts; prose must not contradict them.

@@ -1,90 +1,22 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Context 使用 Agent Graph 编排真实知识工作流的双语回放。A bilingual replay of Context routing a real knowledge workflow with Agent Graph.">
-  <title>Context · Agent Graph case study</title>
-  <link rel="stylesheet" href="./styles.css?v=6">
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://context4ai.github.io/context/case-studies/workflow/">
+  <title>Context workflow replay moved</title>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <a class="brand" id="brand-link" href="../" aria-label="Agent Graph case studies">
-        <img src="./assets/logo.svg" alt="C4A">
-        <span><b>Graph Engineering</b><strong id="page-title">Context Work Graph Replay</strong></span>
-      </a>
-      <div class="top-actions">
-        <button id="graph-map" type="button">Workspace graph</button>
-        <a id="case-link" href="https://github.com/context4ai/agent-graph/blob/main/docs/en/case-studies/context.md">Case study</a>
-        <a class="github-link" id="github-link" href="https://github.com/context4ai/agent-graph" target="_blank" rel="noreferrer" aria-label="Agent Graph on GitHub" title="Agent Graph on GitHub">
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.6 7.6 0 0 1 8 3.84a7.6 7.6 0 0 1 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-        </a>
-        <button id="language" type="button">中文</button>
-        <button id="theme" type="button" aria-label="Toggle theme">◐</button>
-      </div>
-    </header>
-
-    <main class="workspace">
-      <aside class="rail">
-        <div class="rail-head"><strong id="rail-title">Decision journey</strong><span id="rail-count"></span></div>
-        <div id="event-list" class="event-list"></div>
-      </aside>
-
-      <section class="stage">
-        <div class="controls left">
-          <button id="previous" type="button" aria-label="Previous step">←</button>
-          <button id="play" type="button">▶ Play</button>
-          <button id="next" type="button" aria-label="Next step">→</button>
-        </div>
-        <div class="controls right">
-          <select id="speed" aria-label="Playback speed">
-            <option value="1500">0.5×</option>
-            <option value="850" selected>1×</option>
-            <option value="420">2×</option>
-            <option value="220">4×</option>
-          </select>
-        </div>
-        <div class="canvas-time"><span id="step-count"></span><span id="event-time"></span></div>
-        <svg id="graph" viewBox="0 0 1100 650" role="img" aria-label="Context work graph"></svg>
-        <div class="progress"><span id="progress-fill"></span><input id="scrubber" type="range" min="0" value="0" aria-label="Replay step"></div>
-      </section>
-
-      <aside class="inspector">
-        <div class="inspector-head"><span id="explainer-label">ROUTE EXPLAINER</span><strong id="inspector-title">What happened at this step</strong></div>
-        <div class="inspector-body">
-          <dl>
-            <div><dt id="state-label">Current state</dt><dd id="state-value"></dd></div>
-            <div><dt id="why-label">Why this route</dt><dd id="why-value"></dd></div>
-            <div><dt id="action-label">Next action</dt><dd id="action-value"></dd></div>
-            <div><dt id="evidence-label">Completion evidence</dt><dd id="evidence-value"></dd></div>
-            <div><dt id="time-label">Relative time</dt><dd id="sequence-value"></dd></div>
-          </dl>
-          <details open><summary id="command-summary">CLI invocation</summary><pre id="command-value"></pre></details>
-          <details open><summary id="workflow-summary">Action and resources</summary><div id="workflow-links" class="workflow-links"></div></details>
-          <details open><summary id="technical-summary">Protocol fields</summary><pre id="technical-value"></pre></details>
-          <p class="provenance" id="provenance"></p>
-        </div>
-      </aside>
-    </main>
-  </div>
-  <dialog id="graph-dialog" class="graph-dialog">
-    <div class="dialog-shell">
-      <header class="dialog-head">
-        <div>
-          <span id="graph-dialog-label">STATIC WORK CONTRACT</span>
-          <h2 id="graph-dialog-title">Context workspace graph</h2>
-        </div>
-        <button id="graph-close" type="button" aria-label="Close">×</button>
-      </header>
-      <p id="graph-dialog-copy" class="dialog-copy"></p>
-      <div id="contract-map" class="contract-map"></div>
-      <footer class="dialog-foot">
-        <a id="workflow-source" href="https://github.com/context4ai/context/tree/main/packages/context-cli/context-workflow" target="_blank" rel="noreferrer">Open workflow directory</a>
-        <a id="graph-source" href="https://github.com/context4ai/context/blob/main/packages/context-cli/context-workflow/graphs/workspace.yaml" target="_blank" rel="noreferrer">Open workspace.yaml</a>
-      </footer>
-    </div>
-  </dialog>
-  <script src="./replay.js?v=6" type="module"></script>
+  <p>The Context workflow replay has moved. <a id="destination" href="https://context4ai.github.io/context/case-studies/workflow/">Open the current replay · 打开最新回放</a></p>
+  <script>
+    const requestedLanguage = new URLSearchParams(window.location.search).get("lang");
+    const destination = new URL("https://context4ai.github.io/context/case-studies/workflow/");
+    if (requestedLanguage === "en" || requestedLanguage === "zh") {
+      destination.searchParams.set("lang", requestedLanguage);
+    }
+    document.getElementById("destination").href = destination.href;
+    window.location.replace(destination.href);
+  </script>
 </body>
 </html>

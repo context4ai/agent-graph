@@ -73,9 +73,9 @@ Agent Graph 不会在后台擅自重写自己的计划。运行时路由随证�
 
 [Context](https://github.com/context4ai/context) 通过一个薄的公开 Agent 入口使用 Agent Graph：[`/c4a:context`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/context.md)。同一个入口既能创建用户请求的工作区，也能继续已有工作区：`context entry` 负责判断初始化、工作区定位或当前工作流求值，Agent 随后跟随 `workflow.current`。各阶段的 Procedure、Action 和 Resource 保持分离，Agent 只接收当前 Route 精确要求的内容，并以读取回执证明已经消费。Facts 不变时，重新进入仍会选中同一条 Route；已有完成证据会推进或 no-op，绑定 revision 的宿主命令则拒绝过期写入。这样，Agent 在重试和新回合之间拥有明确的幂等边界。它的调试记录可以回放每一条 Route、循环、门禁和最终结果。
 
-[观看交互式回放](https://context4ai.github.io/agent-graph/case-studies/context/?lang=zh) · [阅读完整案例](./docs/zh-CN/case-studies/context.md)
+[观看交互式回放](https://context4ai.github.io/context/case-studies/workflow/?lang=zh) · [阅读完整案例](https://github.com/context4ai/context/blob/main/docs/zh-CN/case-studies/agent-graph-workflow.md)
 
-![运行在 Agent Graph 上的 Context](./docs/zh-CN/assets/context-agent-graph.svg)
+![运行在 Agent Graph 上的 Context](https://raw.githubusercontent.com/context4ai/context/main/docs/zh-CN/assets/context-agent-graph.svg)
 
 ## 项目提供什么
 
@@ -159,7 +159,7 @@ Skill 正文只保留这段启动与消费规则。各阶段的操作说明、Sc
 - [迁移已有工作流](./docs/zh-CN/migration.md)
 - [接入场景详解](./docs/zh-CN/adoption-paths.md)
 - [Graph Engineering：概念与实现](./docs/zh-CN/graph-engineering.md)
-- [实践案例：Context 知识工作流](./docs/zh-CN/case-studies/context.md)
+- [实践案例：Context 知识工作流](https://github.com/context4ai/context/blob/main/docs/zh-CN/case-studies/agent-graph-workflow.md)
 
 想直接查看仓库内容：
 
