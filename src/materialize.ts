@@ -4,7 +4,14 @@ import { resolve } from "node:path";
 import { AgentGraphError } from "./errors.js";
 import { digestText, resolveContainedPath, writeJsonAtomic, writeTextAtomic } from "./io.js";
 import { locateResource } from "./router.js";
-import type { ActionDefinition, DynamicResourceDefinition, JsonValue, LoadedProvider, ResourceLocation } from "./types.js";
+import type {
+  ActionDefinition,
+  DynamicHostResourceDefinition,
+  DynamicResourceDefinition,
+  JsonValue,
+  LoadedProvider,
+  ResourceLocation,
+} from "./types.js";
 
 export const DEFAULT_MATERIALIZER_TIMEOUT_MS = 30_000;
 export const DEFAULT_MATERIALIZER_MAX_OUTPUT_BYTES = 10 * 1024 * 1024;
@@ -181,7 +188,14 @@ export async function materializeResource(
   );
   if (!resource) throw new AgentGraphError("resource-missing", `Provider ${provider.manifest.id} has no resource ${referenceOrId}`);
   if (!resource.dynamic) throw new AgentGraphError("resource-static", `Resource ${resource.metadata.id} is static and does not need materialization`);
-  const definition = resource.metadata as DynamicResourceDefinition;
+  const dynamic = resource.metadata as DynamicResourceDefinition | DynamicHostResourceDefinition;
+  if (dynamic.schema === "agent-graph.resource.v2") {
+    throw new AgentGraphError(
+      "materializer-host-required",
+      `Resource ${dynamic.id} requires the host action described by its resource-location.v2 envelope`,
+    );
+  }
+  const definition = dynamic;
   const actionPath = resolveContainedPath(provider.root, definition.materializer, "materializer action reference");
   const action = provider.actions.get(actionPath)?.definition;
   if (!action) throw new AgentGraphError("materializer-missing", `Resource ${definition.id} references missing materializer`);

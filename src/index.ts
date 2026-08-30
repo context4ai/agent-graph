@@ -1,6 +1,7 @@
 export * from "./builder.js";
 export * from "./errors.js";
 export * from "./evaluator.js";
+export * from "./hostAction.js";
 export * from "./inspect.js";
 export * from "./io.js";
 export * from "./loader.js";

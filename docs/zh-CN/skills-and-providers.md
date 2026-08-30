@@ -151,7 +151,7 @@ if (evaluation.primaryRoute) {
 |---|---|
 | Provider 发现 | `readSkillBinding`、`resolveSkillBinding`、`readProviderRegistry`、`loadProvider` |
 | 路由 | `evaluateGraph`、`computeRevision`、`resolveRoute`、`nodeStateKey` |
-| Resource 与 Code | `locateResource`、`materializeResource`、`locateCode` |
+| Resource 与 Code | `locateResource`、`materializeResource`、`locateCode`、`hostActionInputDigest`、`validateHostActionResult`、`hostActionOutputDigest`、`hostActionResourceReadReceipt` |
 | 可选 Run 文件 | `createRun`、`loadRun`、`recordOutcome`、`updateRunFacts`、`updateRunAuthorities`、`checkpointRun`、`resumeRun` |
 | 开发 | `initProvider`、`importSkill`、`importScripts`、`importWorkflow` |
 | 质量与发布 | `validateSchema`、`runGraphTests`、`buildProviderBundle`、`inspectProvider` |
@@ -159,3 +159,5 @@ if (evaluation.primaryRoute) {
 SDK 返回的文件系统路径都是当前安装中的解析路径；Provider 内定义仍保持相对引用。Evaluation 和 Route 解析无副作用；只有显式命名的开发、Run 修改、Build 与 Materialization API 会写文件。
 
 `materializeResource` 接受 `timeoutMs`、`maxOutputBytes` 与 `maxErrorBytes` 护栏。Materializer 默认继承最小环境；可信宿主可通过 `env` 显式传入其他变量，Agent Graph 自身变量会覆盖同名注入值。
+
+`materializeResource` 只执行 Resource v1 的 command/script Materializer。Resource v2 会返回 `materializer-host-required`；集成 Host 调用 Location Handler，回显计算出的 Input Digest，并严格返回 Inline 或 Managed-resource Output 之一。消费方先校验通用 Envelope，再用声明的 Provider Schema 校验实际 Output Content，持久化以支持恢复，之后才能暴露给 Agent 或下一 Action。

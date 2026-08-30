@@ -80,6 +80,68 @@ describe("graph evaluation", () => {
     expect(delegated.statusCode).toBe("actionable");
   });
 
+  test("does not replay an Action after its waiting-user outcome reaches a delegated Gate", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-action-gate-"));
+    directories.push(directory);
+    await initProvider(directory, "action-gate");
+    await writeTextAtomic(resolve(directory, "graphs/main.yaml"), `schema: agent-graph.graph.v1
+id: main
+entrypoints: { default: inspect }
+nodes:
+  - id: inspect
+    kind: action
+    reasonCode: route.main.inspect
+    action: actions/inspect.yaml
+  - id: approve
+    kind: gate
+    reasonCode: route.main.approve
+    resolutionAction: actions/approve.yaml
+    gate:
+      id: approve
+      prompt: Approve the inspected work.
+      authority: review.approve
+      delegatable: true
+  - { id: done, kind: terminal, terminalOutcome: completed }
+edges:
+  - { from: inspect, to: approve, outcomes: [waiting-user] }
+  - { from: approve, to: done, outcomes: [completed] }
+`);
+    await writeTextAtomic(resolve(directory, "actions/inspect.yaml"), `schema: agent-graph.action.v1
+id: inspect
+runner: host
+effect: read
+handler: review.inspect
+`);
+    await writeTextAtomic(resolve(directory, "actions/approve.yaml"), `schema: agent-graph.action.v1
+id: approve
+runner: host
+effect: write
+handler: review.approve
+`);
+    await writeTextAtomic(resolve(directory, "codes.yaml"), `schema: agent-graph.code-catalog.v1
+codes:
+  - { code: route.main.inspect, kind: route-reason, summary: Inspect current work. }
+  - { code: route.main.approve, kind: route-reason, summary: Approve inspected work. }
+`);
+    const provider = await loadProvider(resolve(directory, "provider.yaml"));
+    const input = {
+      outcomes: { "main/inspect": "waiting-user" as const },
+      authorities: ["review.approve"],
+    };
+    const evaluation = evaluateGraph(provider, "main", "default", input).evaluation;
+    expect(evaluation.statusCode).toBe("actionable");
+    expect(evaluation.primaryRoute?.node).toBe("approve");
+    expect(evaluation.alternativeRoutes.map((route) => route.node)).not.toContain("inspect");
+    const route = await resolveRoute(
+      provider,
+      "main",
+      "default",
+      evaluation.primaryRoute!.routeId,
+      input,
+    );
+    expect(route.gate?.resolution).toBe("session-authority");
+  });
+
   test("resolves only the resources selected by the current route", async () => {
     const provider = await loadProvider(example("simple-skill"));
     const evaluation = evaluateGraph(provider, "main").evaluation;

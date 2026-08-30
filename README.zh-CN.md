@@ -85,6 +85,7 @@ Agent Graph 是一套 Skills 原生的文件规范，并附带参考 SDK 与 CLI
 - 兼容 Node.js、用于加载和求值这些文件的 SDK；
 - 用于创建、检查、测试、构建和恢复工作流的 CLI；
 - 命名空间 Skill 绑定与 Provider Code Catalog，用于稳定表达路由原因；
+- 版本化 Host Materialization ABI，用于结构化 Resource Input、Inline/Managed Output、过期关联与恢复；
 - 模板与导入器，用于起新项目，或把已有 Skill、脚本和依赖工作流转成草案。
 
 它不会主动调用模型。CLI 只暴露当前合法路线、所需文件、命令计划、Gate、可选的确认后 Resolution Action 和结果记录契约，由 Agent 或宿主决定如何完成。
@@ -146,6 +147,8 @@ metadata:
 Skill 正文只保留这段启动与消费规则。各阶段的操作说明、Schema 和上下文继续作为 Route 资源按需加载，不复制进 Skill。绑定只选择稳定工作流；当前模块、批次或日期属于运行时 Facts。完整规则参见 [Skill 与 Provider](./docs/zh-CN/skills-and-providers.md)。
 
 宿主解析 Route 时可以附带当前会话的资源读取收据。内容摘要未变的静态资源可在后续步骤保持 `current`，绑定 Revision 的动态视图则会在工作流 Revision 变化后重新变成 `read-required`。收据只减少重复读取，不能证明 Action 已完成。
+
+对于 Host 物化的 Resource v2，Route 携带稳定 Handler 与版本化 Input/Output 契约。Agent Graph 计算 Input 关联 Digest 并校验返回的 Inline/Resource Envelope；实际执行、Output Schema 校验、信任策略与持久恢复存储仍由集成宿主负责。
 
 ## 文档与参考
 

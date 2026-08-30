@@ -151,7 +151,7 @@ See [`examples/shared-provider`](../../examples/shared-provider) and [`examples/
 |---|---|
 | Provider discovery | `readSkillBinding`, `resolveSkillBinding`, `readProviderRegistry`, `loadProvider` |
 | Routing | `evaluateGraph`, `computeRevision`, `resolveRoute`, `nodeStateKey` |
-| Resources and codes | `locateResource`, `materializeResource`, `locateCode` |
+| Resources and codes | `locateResource`, `materializeResource`, `locateCode`, `hostActionInputDigest`, `validateHostActionResult`, `hostActionOutputDigest`, `hostActionResourceReadReceipt` |
 | Optional Run files | `createRun`, `loadRun`, `recordOutcome`, `updateRunFacts`, `updateRunAuthorities`, `checkpointRun`, `resumeRun` |
 | Authoring | `initProvider`, `importSkill`, `importScripts`, `importWorkflow` |
 | Quality and release | `validateSchema`, `runGraphTests`, `buildProviderBundle`, `inspectProvider` |
@@ -159,3 +159,5 @@ See [`examples/shared-provider`](../../examples/shared-provider) and [`examples/
 All filesystem paths returned by the SDK are resolved paths for the current installation. Definitions inside a Provider remain relative. Evaluation and route resolution are side-effect free; only explicitly named authoring, Run mutation, build, and materialization APIs write files.
 
 `materializeResource` accepts `timeoutMs`, `maxOutputBytes`, and `maxErrorBytes` guardrails. Materializers inherit a minimal environment; a trusted host may explicitly pass additional variables with `env`. Agent Graph variables override names supplied through that option.
+
+`materializeResource` executes only Resource v1 command/script materializers. A Resource v2 returns `materializer-host-required`; the integrating Host invokes the Location Handler, echoes the computed input digest, and returns exactly one inline or managed-resource output. The consumer validates the generic envelope first, validates actual output content against its declared Provider schema, persists it for recovery, and only then exposes it to the Agent or next Action.

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/schemas/host-action-result.schema.json",
+  "title": "Agent Graph Host Action Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "handler", "input_digest", "output", "receipt"],
+  "properties": {
+    "schema": { "const": "agent-graph.host-action-result.v1" },
+    "handler": { "type": "string", "minLength": 1 },
+    "input_digest": { "$ref": "#/$defs/digest" },
+    "output": {
+      "oneOf": [
+        { "$ref": "#/$defs/inlineOutput" },
+        { "$ref": "#/$defs/resourceOutput" }
+      ]
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter", "adapter_version"],
+      "properties": {
+        "adapter": { "type": "string", "minLength": 1 },
+        "adapter_version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "inlineOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "inline"],
+      "properties": {
+        "schema": { "type": "string", "minLength": 1 },
+        "inline": {}
+      }
+    },
+    "resourceOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "resource"],
+      "properties": {
+        "schema": { "type": "string", "minLength": 1 },
+        "resource": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ref", "digest"],
+          "properties": {
+            "ref": { "type": "string", "minLength": 1 },
+            "digest": { "$ref": "#/$defs/digest" }
+          }
+        }
+      }
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

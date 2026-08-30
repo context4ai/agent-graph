@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: recover-resolved-instructions
+runner: host
+effect: read
+handler: example.recover-resolved-instructions/v1

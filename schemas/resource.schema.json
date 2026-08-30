@@ -2,31 +2,56 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://agent-graph.dev/schemas/resource.schema.json",
   "title": "Agent Graph Resource Descriptor",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["schema", "id", "kind", "mediaType"],
-  "properties": {
-    "schema": { "const": "agent-graph.resource.v1" },
-    "id": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$", "maxLength": 160 },
-    "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"] },
-    "mediaType": { "type": "string", "minLength": 1 },
-    "path": { "$ref": "#/$defs/relativePath" },
-    "materializer": { "$ref": "#/$defs/relativePath" },
-    "description": { "type": "string", "maxLength": 1000 }
-  },
   "oneOf": [
-    {
-      "properties": { "kind": { "const": "context-view" } },
-      "required": ["materializer"],
-      "not": { "required": ["path"] }
-    },
-    {
-      "properties": { "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "skill"] } },
-      "required": ["path"],
-      "not": { "required": ["materializer"] }
-    }
+    { "$ref": "#/$defs/v1" },
+    { "$ref": "#/$defs/v2" }
   ],
   "$defs": {
+    "v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "id", "kind", "mediaType"],
+      "properties": {
+        "schema": { "const": "agent-graph.resource.v1" },
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"] },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "path": { "$ref": "#/$defs/relativePath" },
+        "materializer": { "$ref": "#/$defs/relativePath" },
+        "description": { "type": "string", "maxLength": 1000 }
+      },
+      "oneOf": [
+        {
+          "properties": { "kind": { "const": "context-view" } },
+          "required": ["materializer"],
+          "not": { "required": ["path"] }
+        },
+        {
+          "properties": { "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "skill"] } },
+          "required": ["path"],
+          "not": { "required": ["materializer"] }
+        }
+      ]
+    },
+    "v2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "id", "kind", "mediaType", "materializer", "input"],
+      "properties": {
+        "schema": { "const": "agent-graph.resource.v2" },
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"] },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "materializer": { "$ref": "#/$defs/relativePath" },
+        "input": {},
+        "description": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$",
+      "maxLength": 160
+    },
     "relativePath": {
       "type": "string",
       "minLength": 1,

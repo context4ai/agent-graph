@@ -1,0 +1,7 @@
+schema: agent-graph.action.v1
+id: materialize-resolved-instructions
+runner: host
+effect: read
+handler: example.materialize-resolved-instructions/v1
+inputSchema: schemas/materialize-request.schema.json
+outputSchema: schemas/materialized-resource.schema.json

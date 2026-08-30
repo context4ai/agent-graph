@@ -1,0 +1,14 @@
+schema: agent-graph.test.v1
+name: completion without host output routes to recovery
+graph: main
+entry: default
+state:
+  facts:
+    host_result:
+      recoverable: true
+  outcomes:
+    main/consume: completed
+expect:
+  statusCode: actionable
+  primaryNode: recover
+  handler: example.recover-resolved-instructions/v1

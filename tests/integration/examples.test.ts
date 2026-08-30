@@ -9,6 +9,7 @@ const examples = [
   "fact-driven-batch",
   "facts-recovery",
   "getting-started",
+  "host-materialized-resource",
   "independent-verification",
   "monitoring-loop",
   "recovery",

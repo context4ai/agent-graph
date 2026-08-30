@@ -2,11 +2,18 @@ import { resolve } from "node:path";
 
 import { AgentGraphError } from "./errors.js";
 import { evaluateGraph, type RouteCandidate } from "./evaluator.js";
-import { digestFile, parseFrontmatter, readText, resolveContainedPath } from "./io.js";
-import { validateSchema } from "./schema.js";
+import {
+  digestFile,
+  parseFrontmatter,
+  readStructuredFile,
+  readText,
+  resolveContainedPath,
+} from "./io.js";
+import { schemaProtocolIdentity, validateSchema } from "./schema.js";
 import type {
   ActionDefinition,
   CodeLocation,
+  DynamicHostResourceDefinition,
   DynamicResourceDefinition,
   EvaluationInput,
   LoadedProvider,
@@ -54,10 +61,53 @@ function dynamicLocation(metadata: DynamicResourceDefinition, revision?: string)
   };
 }
 
-async function locateLoadedResource(resource: LoadedResource, revision?: string): Promise<ResourceLocation> {
-  return resource.dynamic
-    ? dynamicLocation(resource.metadata as DynamicResourceDefinition, revision)
-    : staticLocation(resource.contentPath, resource.metadata as StaticResourceMetadata);
+async function hostDynamicLocation(
+  provider: LoadedProvider,
+  metadata: DynamicHostResourceDefinition,
+  revision?: string,
+): Promise<ResourceLocation> {
+  const actionPath = resolveContainedPath(provider.root, metadata.materializer, "host materializer action reference");
+  const action = provider.actions.get(actionPath)?.definition;
+  if (!action || action.runner !== "host" || !action.handler
+      || !action.inputSchema || !action.outputSchema) {
+    throw new AgentGraphError(
+      "host-materializer-abi-mismatch",
+      `Resource ${metadata.id} does not resolve to a complete host materializer contract`,
+    );
+  }
+  const inputSchemaPath = resolveContainedPath(provider.root, action.inputSchema, "host materializer input schema");
+  const outputSchemaPath = resolveContainedPath(provider.root, action.outputSchema, "host materializer output schema");
+  const inputSchema = await readStructuredFile<object>(inputSchemaPath);
+  const outputSchema = await readStructuredFile<object>(outputSchemaPath);
+  return {
+    schema: "agent-graph.resource-location.v2",
+    id: metadata.id,
+    kind: metadata.kind,
+    mediaType: metadata.mediaType,
+    ...(revision ? { revision } : {}),
+    materialize: {
+      handler: action.handler,
+      input: {
+        schema: schemaProtocolIdentity(inputSchema, inputSchemaPath),
+        value: metadata.input,
+      },
+      output_schema: schemaProtocolIdentity(outputSchema, outputSchemaPath),
+    },
+  };
+}
+
+async function locateLoadedResource(
+  provider: LoadedProvider,
+  resource: LoadedResource,
+  revision?: string,
+): Promise<ResourceLocation> {
+  if (!resource.dynamic) {
+    return staticLocation(resource.contentPath, resource.metadata as StaticResourceMetadata);
+  }
+  const metadata = resource.metadata as DynamicResourceDefinition | DynamicHostResourceDefinition;
+  return metadata.schema === "agent-graph.resource.v2"
+    ? hostDynamicLocation(provider, metadata, revision)
+    : dynamicLocation(metadata, revision);
 }
 
 async function locateSkill(provider: LoadedProvider, reference: string): Promise<ResourceLocation> {
@@ -104,6 +154,7 @@ async function routeAction(
     id: action.id,
     runner: action.runner,
     effect: action.effect,
+    ...(action.handler ? { handler: action.handler } : {}),
     ...(skill ? { skill: annotateReadState([skill], receiptSet)[0]! } : {}),
     ...(inputSchema ? { inputSchema: annotateReadState([inputSchema], receiptSet)[0]! } : {}),
     ...(outputSchema ? { outputSchema: annotateReadState([outputSchema], receiptSet)[0]! } : {}),
@@ -121,10 +172,10 @@ function referencedAction(
 
 export async function locateResource(provider: LoadedProvider, referenceOrId: string, revision?: string): Promise<ResourceLocation> {
   const byId = [...provider.resources.values()].find((resource) => resource.metadata.id === referenceOrId);
-  if (byId) return locateLoadedResource(byId, revision);
+  if (byId) return locateLoadedResource(provider, byId, revision);
   const directPath = resolveContainedPath(provider.root, referenceOrId, "resource reference");
   const byPath = provider.resources.get(directPath);
-  if (byPath) return locateLoadedResource(byPath, revision);
+  if (byPath) return locateLoadedResource(provider, byPath, revision);
   throw new AgentGraphError("resource-missing", `Provider ${provider.manifest.id} has no resource ${referenceOrId}`);
 }
 
@@ -132,7 +183,7 @@ export async function locateCode(provider: LoadedProvider, code: string): Promis
   const entry = provider.codeCatalog?.entries.get(code);
   if (!entry) throw new AgentGraphError("code-missing", `Provider ${provider.manifest.id} has no catalog entry for ${code}`);
   const resource = provider.codeCatalog?.documents.get(code);
-  const document = resource ? await locateLoadedResource(resource) : undefined;
+  const document = resource ? await locateLoadedResource(provider, resource) : undefined;
   return {
     schema: "agent-graph.code-location.v1",
     provider: provider.manifest.id,
@@ -197,7 +248,12 @@ function planForAction(provider: LoadedProvider, action: ActionDefinition, works
     return [{ command, effect: action.effect, cwd, workingDirectory }];
   }
   if (action.runner === "host") {
-    return [{ handler: action.handler!, effect: action.effect, cwd, workingDirectory }];
+    return [{
+      handler: action.handler!,
+      effect: action.effect,
+      cwd,
+      workingDirectory,
+    }];
   }
   return [];
 }

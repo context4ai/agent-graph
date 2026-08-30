@@ -151,6 +151,8 @@ Route 返回原生目标文件，同时 Provider 仍拥有类型化的 Resource 
 
 动态 Context View 使用 YAML/JSON 描述，其 Materializer 必须指向只读 Command 或 Script Action。只有显式运行 Materialize 命令才会执行，并写入宿主指定 Cache。参考 Runtime 提供可配置的时间和输出上限，且默认不继承任意宿主环境变量；Read Effect 仍不是沙箱。
 
+当 Resource 必须由集成 Host 而不是 Provider 代码物化时，使用 `agent-graph.resource.v2`。它可以保留任意 Resource Kind，包括 `procedure`。只读 Host Action 声明稳定 Handler 和 Input/Output Schema，Resource Descriptor 提供结构化 `input` Value。解析后的 Location 携带 Handler、Schema 身份与 Value，但不携带可执行路径、Runner 标志、预判 Transport 或作者手填 Digest。结果严格选择 Inline Value 或 Managed Resource Ref 之一。完整示例见 [`examples/host-materialized-resource`](../../examples/host-materialized-resource)。
+
 ## Subgraph
 
 Subgraph 用于一个 Provider 内的控制组合。父 Graph 声明子 Graph 和 Entry，子 Route 带调用路径返回，Terminal Outcome 再流回父图。静态和运行时递归检查会阻止子图调用祖先。v1 有意不支持跨 Provider Subgraph。

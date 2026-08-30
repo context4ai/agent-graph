@@ -28,10 +28,12 @@ An Agent consuming an already integrated Agent Graph capability needs only this 
 4. Run `route` for that exact route ID and Evaluation revision.
 5. Read every required resource whose `readState` is `read-required`; read recommended resources only when useful.
 6. Do not execute a user Gate's separately returned resolution Action until the user confirms it.
-7. Execute only the returned command or Host Action.
+7. Execute only the returned command or Host Action. For Resource v2, correlate and validate its structured Host result before exposing the output.
 8. Record its explicit outcome and update observable facts where appropriate.
 9. Evaluate again. Never continue from memory alone.
 
 The host may pass resource read receipts from the current conversation to `route`. It must issue a receipt only after the exact content was actually read and remains available to the Agent. Receipts suppress redundant resource reads; they do not replace Facts, Outcomes, or Gates.
+
+A validated Host result can be persisted as a Run Fact for interruption recovery. Reuse it only while its computed input digest still matches the current Resource Location.
 
 The Provider does not need a directory named `agent-graph`. The Skill locator points directly to its manifest, and the host chooses any mutable Run or cache locations.

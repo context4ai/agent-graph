@@ -1,0 +1,9 @@
+schema: agent-graph.resource.v2
+id: resolved.instructions
+kind: procedure
+mediaType: text/markdown
+materializer: actions/materialize.yaml
+input:
+  resource_ref: instructions:current
+  expected_digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+description: Instructions resolved by a host adapter without exposing its transport path.

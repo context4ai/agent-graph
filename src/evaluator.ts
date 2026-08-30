@@ -269,12 +269,13 @@ function evaluateFrame(
       }
       continue;
     }
-    if (outcome !== "pending" && outcome !== "waiting-user") continue;
     if (node.kind === "action") {
+      if (outcome !== "pending") continue;
       candidates.push(routeCandidate(ctx, graph, node, callPath, "actionable", "immediate"));
       continue;
     }
     if (node.kind === "gate") {
+      if (outcome !== "pending" && outcome !== "waiting-user") continue;
       const gate = node.gate!;
       const delegated = gate.delegatable === true && gate.authority !== undefined && ctx.input.authorities.includes(gate.authority);
       candidates.push(routeCandidate(

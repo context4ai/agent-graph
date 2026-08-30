@@ -1,6 +1,6 @@
 # Agent Graph specification v1
 
-This document defines the `agent-graph.*.v1` objects implemented by `@c4a/agent-graph@0.2.3`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
+This document defines the `agent-graph.*.v1` objects and the distinct host-materialization Resource v2 objects implemented by `@c4a/agent-graph@0.2.7`. The JSON Schemas in [`schemas/`](../../schemas) are normative for file shape; this document defines behavior and invariants.
 
 ## 1. Provider
 
@@ -249,7 +249,33 @@ Materializer processes receive `AGENT_GRAPH_PROVIDER_ROOT`, `AGENT_GRAPH_WORKSPA
 
 The reference implementation applies a 30-second timeout, a 10 MiB stdout limit, and a 1 MiB stderr limit by default. SDK options and CLI flags can lower or raise those limits. Exceeding one terminates the process and produces a structured error without writing a cache receipt. `effect: read` is a declared contract for inspection and host policy, not an operating-system sandbox; hosts remain responsible for trusting or isolating materializer code.
 
-### 4.3 Current-conversation read receipts
+### 4.3 Host-materialized resources
+
+Resource v2 is a separate schema, not an extension of Resource v1:
+
+```yaml
+schema: agent-graph.resource.v2
+id: resolved.instructions
+kind: procedure
+mediaType: text/markdown
+materializer: actions/materialize-instructions.yaml
+input:
+  resource_ref: instructions:current
+```
+
+Its materializer must be a `read` Host Action with `handler`, `inputSchema`, and `outputSchema`. The loader compiles both referenced schemas, requires each to declare a protocol identity through `properties.schema.const` or `$id` ending in `/vN` or `.vN`, and validates the authored input against the input schema before a Route can be returned. Missing contract fields, an unversioned schema identity, a non-Host runner, or an invalid input fail before dispatch.
+
+The Route exposes a distinct `agent-graph.resource-location.v2` envelope. It preserves the Resource kind and media type and carries the stable Handler, `input.schema`, complete canonical JSON `input.value`, and `output_schema`. Resource v2 already implies Host materialization, so it does not repeat a runner or predicted transport. It never carries a Provider-local execution path or asks Agent Graph to run the Handler. Resource-location v1 remains unchanged for static files and command/script context views.
+
+Agent Graph computes `input_digest` canonically from `{ handler, input.schema, input.value }`; Provider authors and Hosts do not supply a second digest in the location. The Host returns `agent-graph.host-action-result.v1` with the same Handler and computed input digest, an output, and exact adapter identity/version. The output echoes the declared schema and contains exactly one of `inline` or `resource`. A resource output requires a readable `ref` and content `digest`; an inline digest is computed from its canonical value.
+
+`validateHostActionResult` rejects a different Handler, stale input digest, mismatched output schema, invalid adapter version, or non-exclusive output. The integrating consumer must also validate inline content, or content read from the resource reference, against the Provider output schema before passing it to the next Action. Provider trust, authority, and execution receipts belong in the consumer's versioned output contract rather than the generic Agent Graph receipt.
+
+A Host may persist the validated envelope as an ordinary Run Fact or in its own recovery store. Recovery recomputes the current input digest: a match permits reuse without another Host call; a changed input or Provider revision makes the result and dynamic read receipt stale.
+
+See [`examples/host-materialized-resource`](../../examples/host-materialized-resource).
+
+### 4.4 Current-conversation read receipts
 
 Route resolution accepts an optional `agent-graph.resource-read-receipts.v1` input:
 
@@ -278,11 +304,11 @@ Every Resource Location returned by Route resolution, including Action Skills an
 - `current`: an exact current-conversation receipt matches;
 - `read-required`: no receipt matches, so the Agent must read a required resource before acting.
 
-For a static Resource, a receipt matches the Resource ID and exact content digest. For a dynamic Context View, it matches the Resource ID and selecting Route revision; the receipt digest identifies the materialized content that the host previously exposed. If the workflow revision changes, the dynamic receipt no longer matches. Missing receipts, absent `readState` on a location produced outside Route resolution, or a well-formed but stale receipt all mean `read-required`.
+For a static Resource, a receipt matches the Resource ID and exact content digest. For a dynamic Context View or Host-materialized Resource, it matches the Resource ID and selecting Route revision; the receipt digest identifies the validated materialized content that the host previously exposed. If the workflow revision changes, the dynamic receipt no longer matches. Missing receipts, absent `readState` on a location produced outside Route resolution, or a well-formed but stale receipt all mean `read-required`.
 
 The host is responsible for carrying receipts only within the conversation that still contains the resource. Checkpoint and Run files do not persist them. This avoids repeatedly loading unchanged procedures while preserving refresh boundaries for generated context.
 
-### 4.4 Code Catalog
+### 4.5 Code Catalog
 
 A Provider may declare one `agent-graph.code-catalog.v1` file:
 
@@ -334,11 +360,11 @@ Evaluation is read-only. Same definitions and routing inputs produce the same re
 - action identity and effect;
 - command plan or host handler;
 - resolved working directory plus its `workspace` or `provider` semantic origin;
-- required and recommended resource locations;
+- required and recommended resource locations, preserving the complete v1 or v2 materialization envelope;
 - `readState` on each Route Resource, distinguishing current-conversation content from content that must be loaded;
 - `afterAction.recordNode` and the requirement to evaluate again.
 
-A route ID is only accepted if it is still available under the supplied state. A caller can bind resolution to the Evaluation revision; a mismatch is rejected before returning a command plan. Long document bodies are never embedded. Dynamic resources return a revision-bound materialization reference rather than running automatically.
+A route ID is only accepted if it is still available under the supplied state. A caller can bind resolution to the Evaluation revision; a mismatch is rejected before returning a command plan. Long document bodies are never embedded. Dynamic resources return a revision-bound materialization envelope rather than running automatically. A changed Resource v2 request changes the Provider graph digest and Evaluation revision, so an old Route and its read receipt become stale.
 
 ## 7. Run
 

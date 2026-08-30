@@ -82,6 +82,7 @@
         "id": { "type": "string", "minLength": 1 },
         "runner": { "enum": ["command", "script", "agent", "host"] },
         "effect": { "enum": ["read", "write", "external"] },
+        "handler": { "type": "string", "minLength": 1 },
         "skill": { "$ref": "#/$defs/resource" },
         "inputSchema": { "$ref": "#/$defs/resource" },
         "outputSchema": { "$ref": "#/$defs/resource" }
@@ -103,31 +104,7 @@
         { "required": ["handler"], "not": { "required": ["command"] } }
       ]
     },
-    "resource": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["schema", "id", "kind", "mediaType"],
-      "properties": {
-        "schema": { "const": "agent-graph.resource-location.v1" },
-        "id": { "type": "string", "minLength": 1 },
-        "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"] },
-        "mediaType": { "type": "string", "minLength": 1 },
-        "revision": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
-        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
-        "readState": { "enum": ["read-required", "current"] },
-        "filePath": { "type": "string", "minLength": 1 },
-        "materialize": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["resourceId"],
-          "properties": { "resourceId": { "type": "string", "minLength": 1 } }
-        }
-      },
-      "oneOf": [
-        { "required": ["filePath", "digest"], "not": { "required": ["materialize"] } },
-        { "required": ["materialize"], "not": { "required": ["filePath"] } }
-      ]
-    },
+    "resource": { "$ref": "resource-location.schema.json" },
     "diagnostic": {
       "type": "object",
       "additionalProperties": false,

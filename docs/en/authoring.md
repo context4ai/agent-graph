@@ -151,6 +151,8 @@ The Route returns the native target file, while the Provider still has a typed R
 
 Dynamic context views are YAML/JSON resource descriptors. Their materializer must reference a read-only command or script Action. Materialization happens only through an explicit command and writes to a host-selected cache. The reference runtime enforces configurable time and output limits and does not inherit arbitrary host environment variables by default; the read effect still is not a sandbox.
 
+Use `agent-graph.resource.v2` when a Resource must be materialized by an integrating Host rather than Provider code. It may retain any Resource kind, including `procedure`. Its read-only Host Action declares a stable Handler and input/output Schemas; the Resource descriptor supplies the structured `input` value. The resolved Location carries the Handler, schema identity, and value but no executable path, runner flag, transport prediction, or author-supplied digest. The result chooses exactly one inline value or managed resource reference. See [`examples/host-materialized-resource`](../../examples/host-materialized-resource).
+
 ## Subgraphs
 
 Subgraphs provide control composition within one Provider. A parent declares the child Graph and entrypoint. The child route is returned with a call path, and its terminal outcome flows back to the parent. Static and runtime recursion checks prevent a child from calling an ancestor. Cross-Provider subgraphs are intentionally not supported in v1.

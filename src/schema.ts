@@ -9,6 +9,7 @@ import codeLocationSchema from "../schemas/code-location.schema.json" with { typ
 import errorSchema from "../schemas/error.schema.json" with { type: "json" };
 import evaluationSchema from "../schemas/evaluation.schema.json" with { type: "json" };
 import graphSchema from "../schemas/graph.schema.json" with { type: "json" };
+import hostActionResultSchema from "../schemas/host-action-result.schema.json" with { type: "json" };
 import providerSchema from "../schemas/provider.schema.json" with { type: "json" };
 import resourceSchema from "../schemas/resource.schema.json" with { type: "json" };
 import resourceLocationSchema from "../schemas/resource-location.schema.json" with { type: "json" };
@@ -23,6 +24,7 @@ import type { Diagnostic } from "./types.js";
 export type SchemaName =
   | "provider"
   | "graph"
+  | "host-action-result"
   | "action"
   | "resource"
   | "run"
@@ -49,6 +51,7 @@ const schemas: Record<SchemaName, object> = {
   error: errorSchema,
   evaluation: evaluationSchema,
   graph: graphSchema,
+  "host-action-result": hostActionResultSchema,
   provider: providerSchema,
   resource: resourceSchema,
   "resource-location": resourceLocationSchema,
@@ -95,6 +98,57 @@ export async function validateSchema(name: string, value: unknown, path: string)
   if (validator(value)) return;
   const diagnostics = diagnosticsFor(validator.errors, path);
   throw new AgentGraphError("schema-invalid", `${path} does not match ${name}.schema.json`, diagnostics);
+}
+
+function compileSchemaDocument(schema: object, path: string): ValidateFunction {
+  try {
+    const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true });
+    addFormats(ajv);
+    return ajv.compile(schema);
+  } catch (error) {
+    throw new AgentGraphError(
+      "schema-compile-failed",
+      `Cannot compile referenced schema ${path}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
+export function schemaProtocolIdentity(schema: object, path: string): string {
+  const document = schema as {
+    $id?: unknown;
+    properties?: { schema?: { const?: unknown } };
+  };
+  const protocol = document.properties?.schema?.const;
+  const identity = typeof protocol === "string" && protocol.length > 0
+    ? protocol
+    : typeof document.$id === "string" && document.$id.length > 0
+      ? document.$id
+      : undefined;
+  if (!identity) {
+    throw new AgentGraphError(
+      "schema-protocol-id-missing",
+      `Referenced schema ${path} must declare properties.schema.const or $id`,
+    );
+  }
+  if (!/(?:[./]v[1-9][0-9]*)$/.test(identity)) {
+    throw new AgentGraphError(
+      "schema-protocol-id-unversioned",
+      `Referenced schema ${path} identity must end in /vN or .vN: ${identity}`,
+    );
+  }
+  return identity;
+}
+
+export function assertSchemaDocument(schema: object, path: string): void {
+  compileSchemaDocument(schema, path);
+  schemaProtocolIdentity(schema, path);
+}
+
+export function validateSchemaDocument(schema: object, value: unknown, path: string): void {
+  const validator = compileSchemaDocument(schema, path);
+  if (validator(value)) return;
+  const diagnostics = diagnosticsFor(validator.errors, path);
+  throw new AgentGraphError("schema-invalid", `${path} does not match its referenced schema`, diagnostics);
 }
 
 export function publicSchemaRoot(): string {

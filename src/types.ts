@@ -139,6 +139,16 @@ export interface DynamicResourceDefinition {
   description?: string;
 }
 
+export interface DynamicHostResourceDefinition {
+  schema: "agent-graph.resource.v2";
+  id: string;
+  kind: ResourceKind;
+  mediaType: string;
+  materializer: string;
+  input: JsonValue;
+  description?: string;
+}
+
 export interface StaticFileResourceDefinition {
   schema: "agent-graph.resource.v1";
   id: string;
@@ -184,7 +194,11 @@ export interface LoadedAction {
 export interface LoadedResource {
   path: string;
   contentPath: string;
-  metadata: StaticResourceMetadata | StaticFileResourceDefinition | DynamicResourceDefinition;
+  metadata:
+    | StaticResourceMetadata
+    | StaticFileResourceDefinition
+    | DynamicResourceDefinition
+    | DynamicHostResourceDefinition;
   dynamic: boolean;
 }
 
@@ -293,7 +307,7 @@ export interface Evaluation {
   diagnostics: Diagnostic[];
 }
 
-export interface ResourceLocation {
+export interface ResourceLocationV1 {
   schema: "agent-graph.resource-location.v1";
   id: string;
   kind: ResourceKind;
@@ -305,6 +319,53 @@ export interface ResourceLocation {
   materialize?: {
     resourceId: string;
   };
+}
+
+export interface ResourceLocationV2 {
+  schema: "agent-graph.resource-location.v2";
+  id: string;
+  kind: ResourceKind;
+  mediaType: string;
+  revision?: string;
+  readState?: "read-required" | "current";
+  digest?: never;
+  filePath?: never;
+  materialize: {
+    handler: string;
+    input: {
+      schema: string;
+      value: JsonValue;
+    };
+    output_schema: string;
+  };
+}
+
+export type ResourceLocation = ResourceLocationV1 | ResourceLocationV2;
+
+export interface HostActionResultReceipt {
+  adapter: string;
+  adapter_version: string;
+}
+
+export interface HostActionInlineOutput {
+  schema: string;
+  inline: JsonValue;
+}
+
+export interface HostActionResourceOutput {
+  schema: string;
+  resource: {
+    ref: string;
+    digest: string;
+  };
+}
+
+export interface HostActionResult {
+  schema: "agent-graph.host-action-result.v1";
+  handler: string;
+  input_digest: string;
+  output: HostActionInlineOutput | HostActionResourceOutput;
+  receipt: HostActionResultReceipt;
 }
 
 export interface CommandPlanItem {
@@ -319,6 +380,7 @@ export interface RouteAction {
   id: string;
   runner: ActionDefinition["runner"];
   effect: ActionDefinition["effect"];
+  handler?: string;
   skill?: ResourceLocation;
   inputSchema?: ResourceLocation;
   outputSchema?: ResourceLocation;

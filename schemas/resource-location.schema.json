@@ -2,27 +2,82 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://agent-graph.dev/schemas/resource-location.schema.json",
   "title": "Agent Graph Resource Location",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["schema", "id", "kind", "mediaType"],
-  "properties": {
-    "schema": { "const": "agent-graph.resource-location.v1" },
-    "id": { "type": "string", "minLength": 1 },
-    "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"] },
-    "mediaType": { "type": "string", "minLength": 1 },
-    "revision": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
-    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
-    "readState": { "enum": ["read-required", "current"] },
-    "filePath": { "type": "string", "minLength": 1 },
-    "materialize": {
+  "oneOf": [
+    { "$ref": "#/$defs/v1" },
+    { "$ref": "#/$defs/v2" }
+  ],
+  "$defs": {
+    "v1": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["resourceId"],
-      "properties": { "resourceId": { "type": "string", "minLength": 1 } }
+      "required": ["schema", "id", "kind", "mediaType"],
+      "properties": {
+        "schema": { "const": "agent-graph.resource-location.v1" },
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "$ref": "#/$defs/kind" },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "revision": { "$ref": "#/$defs/digest" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "readState": { "$ref": "#/$defs/readState" },
+        "filePath": { "type": "string", "minLength": 1 },
+        "materialize": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["resourceId"],
+          "properties": {
+            "resourceId": { "type": "string", "minLength": 1 }
+          }
+        }
+      },
+      "oneOf": [
+        { "required": ["filePath", "digest"], "not": { "required": ["materialize"] } },
+        { "required": ["materialize"], "not": { "required": ["filePath"] } }
+      ]
+    },
+    "v2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "id", "kind", "mediaType", "materialize"],
+      "properties": {
+        "schema": { "const": "agent-graph.resource-location.v2" },
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "$ref": "#/$defs/kind" },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "revision": { "$ref": "#/$defs/digest" },
+        "readState": { "$ref": "#/$defs/readState" },
+        "materialize": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "handler",
+            "input",
+            "output_schema"
+          ],
+          "properties": {
+            "handler": { "type": "string", "minLength": 1 },
+            "input": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["schema", "value"],
+              "properties": {
+                "schema": { "type": "string", "minLength": 1 },
+                "value": {}
+              }
+            },
+            "output_schema": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "kind": {
+      "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"]
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "readState": {
+      "enum": ["read-required", "current"]
     }
-  },
-  "oneOf": [
-    { "required": ["filePath", "digest"], "not": { "required": ["materialize"] } },
-    { "required": ["materialize"], "not": { "required": ["filePath"] } }
-  ]
+  }
 }

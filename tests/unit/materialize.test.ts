@@ -16,6 +16,21 @@ async function providerWithMaterializer(script: string) {
 }
 
 describe("dynamic resources", () => {
+  test("leaves resource v2 host actions to the integrating host", async () => {
+    const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-host-resource-"));
+    directories.push(directory);
+    const provider = await loadProvider(resolve(
+      import.meta.dir,
+      "../../examples/host-materialized-resource/provider.yaml",
+    ));
+    const revision = evaluateGraph(provider, "main").evaluation.revision;
+    await expect(materializeResource(provider, "resolved.instructions", {
+      cache: resolve(directory, "cache"),
+      workspace: directory,
+      revision,
+    })).rejects.toMatchObject({ code: "materializer-host-required" });
+  });
+
   test("materializes only into a host-selected cache with a content digest", async () => {
     const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-resource-"));
     directories.push(directory);

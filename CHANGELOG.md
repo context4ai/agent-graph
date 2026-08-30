@@ -4,6 +4,12 @@ All notable changes to Agent Graph are documented here. The project follows [Sem
 
 ## Unreleased
 
+## 0.2.7 - 2026-08-30
+
+- Added a distinct `agent-graph.resource-location.v2` contract for host-materialized Resources while preserving the v1 command/script materializer ABI.
+- Added versioned input/output schema identities, canonical input correlation, a strict inline/managed-resource output union, and a minimal adapter receipt envelope.
+- Added pre-dispatch Provider validation, stale-result and managed-resource reference checks, persisted-result recovery coverage, a generic example, and equivalent English and Chinese integration documentation.
+
 ## 0.2.6 - 2026-08-21
 
 - Added Gate-owned delegated execution policies that can skip redundant inspection, select an authority-specific resolution Action, and replace user-dialogue resources only for current-session routes while preserving ordinary review capabilities.

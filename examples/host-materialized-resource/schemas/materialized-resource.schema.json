@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-graph.dev/examples/materialized-resource.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "content"],
+  "properties": {
+    "schema": { "const": "example.materialized-resource/v1" },
+    "content": { "type": "string" }
+  }
+}

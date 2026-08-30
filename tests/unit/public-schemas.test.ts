@@ -45,6 +45,7 @@ describe("public output schemas", () => {
       "error",
       "evaluation",
       "graph",
+      "host-action-result",
       "provider",
       "resource",
       "resource-location",
@@ -106,5 +107,34 @@ describe("public output schemas", () => {
     expect(dynamicResource?.revision).toBe(dynamicEvaluation.revision);
     expect(dynamicResource?.materialize).toEqual({ resourceId: "context.current" });
     expect(dynamicResource?.filePath).toBeUndefined();
+
+    const hostProvider = await loadProvider(resolve(
+      import.meta.dir,
+      "../../examples/host-materialized-resource/provider.yaml",
+    ));
+    const hostEvaluation = evaluateGraph(hostProvider, "main").evaluation;
+    const hostRoute = await resolveRoute(
+      hostProvider,
+      "main",
+      "default",
+      hostEvaluation.primaryRoute!.routeId,
+      {},
+      hostEvaluation.revision,
+    );
+    await validateSchema("route", hostRoute, "host-route");
+    const hostResource = hostRoute.resources.required.find((item) => item.id === "resolved.instructions");
+    expect(hostResource?.schema).toBe("agent-graph.resource-location.v2");
+    if (hostResource?.schema !== "agent-graph.resource-location.v2") {
+      throw new Error("Expected a resource-location.v2 resource");
+    }
+    expect(hostResource.materialize).toMatchObject({
+      handler: "example.materialize-resolved-instructions/v1",
+      input: {
+        schema: "example.materialize-request/v1",
+        value: { resource_ref: "instructions:current" },
+      },
+      output_schema: "example.materialized-resource/v1",
+    });
+    await validateSchema("resource-location", hostResource, "host-resource-location");
   });
 });

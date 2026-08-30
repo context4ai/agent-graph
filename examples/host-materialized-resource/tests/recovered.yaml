@@ -1,0 +1,11 @@
+schema: agent-graph.test.v1
+name: persisted host output satisfies the consumer after recovery
+graph: main
+entry: default
+state:
+  facts:
+    host_result:
+      available: true
+expect:
+  statusCode: complete
+  outcome: completed

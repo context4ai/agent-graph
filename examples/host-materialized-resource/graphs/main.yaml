@@ -1,0 +1,35 @@
+schema: agent-graph.graph.v1
+id: main
+entrypoints:
+  default: consume
+nodes:
+  - id: consume
+    kind: action
+    reasonCode: route.host-resource.consume
+    action: actions/consume.yaml
+    satisfiedBy:
+      - path: host_result.available
+        equals: true
+    resources:
+      required: [resources/resolved-instructions.yaml]
+  - id: recover
+    kind: action
+    reasonCode: route.host-resource.recover
+    action: actions/recover.yaml
+    requiresFacts:
+      - path: host_result.recoverable
+        equals: true
+  - id: done
+    kind: terminal
+    terminalOutcome: completed
+edges:
+  - from: consume
+    to: done
+    outcomes: [completed]
+  - from: consume
+    to: recover
+    outcomes: [failed, unverified]
+  - from: recover
+    to: consume
+    kind: repeat
+    outcomes: [completed]

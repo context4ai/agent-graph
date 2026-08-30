@@ -1,0 +1,9 @@
+schema: agent-graph.test.v1
+name: host materialized resource is exposed without execution
+graph: main
+entry: default
+expect:
+  statusCode: actionable
+  primaryNode: consume
+  handler: example.consume-resolved-instructions/v1
+  requiredResources: [resolved.instructions]

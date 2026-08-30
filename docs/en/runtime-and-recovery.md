@@ -127,6 +127,8 @@ Dynamic context materialization executes Provider code only when the host explic
 
 Materializers receive only the Agent Graph variables plus a minimal inherited environment needed to start common runtimes. SDK hosts can explicitly inject additional variables for a trusted integration. Do not assume `effect: read` is a sandbox: it is declarative metadata, and the host must isolate untrusted Provider code with its own process, container, permission, and secret policy.
 
+Resource v2 follows a different boundary: Agent Graph validates the Provider input before dispatch but never invokes the Host Handler. The Host correlates its result with `hostActionInputDigest(location)`, and the consumer calls `validateHostActionResult` before accepting either an inline value or a readable resource reference. Persist the validated envelope as a Run Fact or in another Host-owned recovery store before advancing the workflow. After interruption, recompute the digest from the current Location; reuse only an exact match. A stale digest, changed output schema, unreadable reference, content-digest mismatch, or payload-schema failure must produce an explicit failed or unverified recovery path rather than silent re-execution or completion.
+
 ## Storage ownership
 
 The CLI accepts exact paths so the host can choose:

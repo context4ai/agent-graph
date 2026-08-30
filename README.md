@@ -85,6 +85,7 @@ Agent Graph is a Skills-native file specification with a reference SDK and CLI:
 - a Node.js-compatible SDK for loading and evaluating those files;
 - a CLI for authoring, inspecting, testing, building, and resuming workflows;
 - namespaced Skill bindings and Provider code catalogs for stable routing reasons;
+- a versioned Host materialization ABI for structured Resource input, inline or managed output, stale correlation, and recovery;
 - templates and importers for starting new projects or drafting from existing Skills, scripts, and dependency workflows.
 
 It never calls a model. The CLI exposes the current legal route, required files, command plan, Gate, optional post-confirmation resolution Action, and recording contract; an Agent or host decides how to carry it out.
@@ -146,6 +147,8 @@ All three fields are required and validated together. `path:` always resolves re
 The Skill body keeps only this bootstrap and consumption contract. Phase-specific procedures, schemas, and context remain Route resources and are loaded on demand instead of being copied into the Skill. The binding selects a stable workflow; current modules, batches, and dates are runtime Facts. See [Skills and Providers](./docs/en/skills-and-providers.md) for the complete contract.
 
 A host may attach current-conversation resource read receipts when resolving a Route. Exact static digests can then remain `current` across steps, while revision-bound dynamic views become `read-required` after the workflow revision changes. Receipts reduce repeated reading; they never prove that an Action completed.
+
+For a Host-materialized Resource v2, the Route carries a stable Handler plus versioned input/output contracts. Agent Graph computes the input correlation digest, validates the returned inline/resource envelope, and leaves execution, output-schema validation, trust policy, and durable recovery storage to the integrating host.
 
 ## Documentation and reference
 

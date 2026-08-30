@@ -1,0 +1,5 @@
+schema: agent-graph.action.v1
+id: consume-resolved-instructions
+runner: host
+effect: read
+handler: example.consume-resolved-instructions/v1

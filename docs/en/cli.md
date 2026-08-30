@@ -6,8 +6,8 @@ All modes run the same bundled CLI:
 
 ```bash
 agent-graph ...                    # installed binary
-npx @c4a/agent-graph@0.2.3 ...    # npm one-shot
-bunx @c4a/agent-graph@0.2.3 ...   # Bun one-shot
+npx @c4a/agent-graph@0.2.7 ...    # npm one-shot
+bunx @c4a/agent-graph@0.2.7 ...   # Bun one-shot
 node ./agent-graph.mjs ...         # single file shipped by a Provider
 ```
 

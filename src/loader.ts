@@ -12,11 +12,16 @@ import {
   readText,
   resolveContainedPath,
 } from "./io.js";
-import { validateSchema } from "./schema.js";
+import {
+  assertSchemaDocument,
+  validateSchema,
+  validateSchemaDocument,
+} from "./schema.js";
 import type {
   ActionDefinition,
   BundleManifest,
   CodeCatalogDefinition,
+  DynamicHostResourceDefinition,
   DynamicResourceDefinition,
   GraphDefinition,
   LoadedAction,
@@ -165,10 +170,18 @@ async function loadResource(providerRoot: string, reference: string): Promise<Lo
   if (extension === ".yaml" || extension === ".yml" || extension === ".json") {
     const candidate = await readStructuredFile<unknown>(path);
     if (candidate !== null && typeof candidate === "object" && !Array.isArray(candidate)
-      && (candidate as Record<string, unknown>).schema === "agent-graph.resource.v1") {
-      const metadata = candidate as DynamicResourceDefinition | StaticFileResourceDefinition;
+      && (
+        (candidate as Record<string, unknown>).schema === "agent-graph.resource.v1"
+        || (candidate as Record<string, unknown>).schema === "agent-graph.resource.v2"
+      )) {
+      const metadata = candidate as
+        | DynamicResourceDefinition
+        | DynamicHostResourceDefinition
+        | StaticFileResourceDefinition;
       await validateSchema("resource", metadata, path);
-      if (metadata.kind === "context-view") return { path, contentPath: path, metadata, dynamic: true };
+      if (metadata.schema === "agent-graph.resource.v2" || metadata.kind === "context-view") {
+        return { path, contentPath: path, metadata, dynamic: true };
+      }
       const contentPath = resolveContainedPath(providerRoot, metadata.path, "static resource content");
       await ensureContainedFile(providerRoot, contentPath, "static resource content");
       return { path, contentPath, metadata, dynamic: false };
@@ -466,7 +479,7 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
 
   for (const resource of resources.values()) {
     if (!resource.dynamic) continue;
-    const dynamic = resource.metadata as DynamicResourceDefinition;
+    const dynamic = resource.metadata as DynamicResourceDefinition | DynamicHostResourceDefinition;
     const materializerPath = resolveContainedPath(root, dynamic.materializer, "materializer action reference");
     let action = actions.get(materializerPath);
     if (!action) {
@@ -482,7 +495,32 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
     if (action.definition.effect !== "read") {
       throw new AgentGraphError("materializer-effect-invalid", `Resource materializer ${action.definition.id} must have effect: read`);
     }
-    if (action.definition.runner !== "command" && action.definition.runner !== "script") {
+    if (dynamic.schema === "agent-graph.resource.v2") {
+      if (action.definition.runner !== "host") {
+        throw new AgentGraphError(
+          "host-materializer-runner-invalid",
+          `Resource v2 materializer ${action.definition.id} must use the host runner`,
+        );
+      }
+      const missing = [
+        !action.definition.handler ? "handler" : undefined,
+        !action.definition.inputSchema ? "inputSchema" : undefined,
+        !action.definition.outputSchema ? "outputSchema" : undefined,
+      ].filter((field): field is string => field !== undefined);
+      if (missing.length > 0) {
+        throw new AgentGraphError(
+          "host-materializer-contract-missing",
+          `Resource v2 materializer ${action.definition.id} is missing: ${missing.join(", ")}`,
+        );
+      }
+      const inputSchemaPath = resolveContainedPath(root, action.definition.inputSchema!, "host materializer input schema");
+      const outputSchemaPath = resolveContainedPath(root, action.definition.outputSchema!, "host materializer output schema");
+      const inputSchema = await readStructuredFile<object>(inputSchemaPath);
+      const outputSchema = await readStructuredFile<object>(outputSchemaPath);
+      assertSchemaDocument(inputSchema, inputSchemaPath);
+      assertSchemaDocument(outputSchema, outputSchemaPath);
+      validateSchemaDocument(inputSchema, dynamic.input, `${resource.path} input`);
+    } else if (action.definition.runner !== "command" && action.definition.runner !== "script") {
       throw new AgentGraphError(
         "materializer-runner-invalid",
         `Resource materializer ${action.definition.id} must use command or script runner`,

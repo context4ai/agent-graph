@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "example.materialize-request/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["resource_ref", "expected_digest"],
+  "properties": {
+    "resource_ref": { "type": "string", "minLength": 1 },
+    "expected_digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

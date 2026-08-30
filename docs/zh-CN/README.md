@@ -28,10 +28,12 @@ Agent 消费已经完成接入的 Agent Graph 能力时，只需遵循以下循�
 4. 使用精确 route ID 和 Evaluation revision 执行 `route`。
 5. 完整读取所有 `readState` 为 `read-required` 的 required 资源；recommended 资源按需读取。
 6. 用户确认前，不执行 Gate 单独返回的 Resolution Action。
-7. 只执行 Route 返回的命令或 Host Action。
+7. 只执行 Route 返回的命令或 Host Action；Resource v2 必须先关联并校验结构化 Host Result，之后才能暴露 Output。
 8. 记录显式 Outcome，并在适用时更新可观察事实。
 9. 再次 evaluate；不得仅凭会话记忆继续。
 
 宿主可以在调用 `route` 时传入当前会话的资源读取收据。只有当精确内容确实已读且仍可供 Agent 使用时，宿主才能签发收据。收据用于避免重复读取，不能取代 Fact、Outcome 或 Gate。
+
+已校验 Host Result 可以持久化为 Run Fact，以支持中断恢复；只有其计算出的 Input Digest 仍匹配当前 Resource Location 时才能复用。
 
 Provider 目录不要求命名为 `agent-graph`。Skill Locator 直接指向 Manifest；可变 Run 和 Cache 的位置由宿主自行选择。
