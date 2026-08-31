@@ -21,8 +21,8 @@ import type {
   ActionDefinition,
   BundleManifest,
   CodeCatalogDefinition,
-  DynamicHostResourceDefinition,
-  DynamicResourceDefinition,
+  GraphActionResourceDefinition,
+  HostActionResourceDefinition,
   GraphDefinition,
   LoadedAction,
   LoadedCodeCatalog,
@@ -32,7 +32,7 @@ import type {
   ProviderManifest,
   ResolvedSkillBinding,
   SkillBinding,
-  StaticFileResourceDefinition,
+  FileResourceDefinition,
 } from "./types.js";
 
 export type ProviderRegistry = Record<string, string>;
@@ -171,15 +171,16 @@ async function loadResource(providerRoot: string, reference: string): Promise<Lo
     const candidate = await readStructuredFile<unknown>(path);
     if (candidate !== null && typeof candidate === "object" && !Array.isArray(candidate)
       && (
-        (candidate as Record<string, unknown>).schema === "agent-graph.resource.v1"
-        || (candidate as Record<string, unknown>).schema === "agent-graph.resource.v2"
+        (candidate as Record<string, unknown>).schema === "agent-graph.resource.file.v1"
+        || (candidate as Record<string, unknown>).schema === "agent-graph.resource.graph-action.v1"
+        || (candidate as Record<string, unknown>).schema === "agent-graph.resource.host-action.v1"
       )) {
       const metadata = candidate as
-        | DynamicResourceDefinition
-        | DynamicHostResourceDefinition
-        | StaticFileResourceDefinition;
+        | FileResourceDefinition
+        | GraphActionResourceDefinition
+        | HostActionResourceDefinition;
       await validateSchema("resource", metadata, path);
-      if (metadata.schema === "agent-graph.resource.v2" || metadata.kind === "context-view") {
+      if (metadata.schema !== "agent-graph.resource.file.v1") {
         return { path, contentPath: path, metadata, dynamic: true };
       }
       const contentPath = resolveContainedPath(providerRoot, metadata.path, "static resource content");
@@ -479,7 +480,7 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
 
   for (const resource of resources.values()) {
     if (!resource.dynamic) continue;
-    const dynamic = resource.metadata as DynamicResourceDefinition | DynamicHostResourceDefinition;
+    const dynamic = resource.metadata as GraphActionResourceDefinition | HostActionResourceDefinition;
     const materializerPath = resolveContainedPath(root, dynamic.materializer, "materializer action reference");
     let action = actions.get(materializerPath);
     if (!action) {
@@ -495,11 +496,11 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
     if (action.definition.effect !== "read") {
       throw new AgentGraphError("materializer-effect-invalid", `Resource materializer ${action.definition.id} must have effect: read`);
     }
-    if (dynamic.schema === "agent-graph.resource.v2") {
+    if (dynamic.schema === "agent-graph.resource.host-action.v1") {
       if (action.definition.runner !== "host") {
         throw new AgentGraphError(
           "host-materializer-runner-invalid",
-          `Resource v2 materializer ${action.definition.id} must use the host runner`,
+          `Host-action resource materializer ${action.definition.id} must use the host runner`,
         );
       }
       const missing = [
@@ -510,7 +511,7 @@ export async function loadProvider(manifestPath: string): Promise<LoadedProvider
       if (missing.length > 0) {
         throw new AgentGraphError(
           "host-materializer-contract-missing",
-          `Resource v2 materializer ${action.definition.id} is missing: ${missing.join(", ")}`,
+          `Host-action resource materializer ${action.definition.id} is missing: ${missing.join(", ")}`,
         );
       }
       const inputSchemaPath = resolveContainedPath(root, action.definition.inputSchema!, "host materializer input schema");

@@ -127,7 +127,7 @@ agent-graph run authority --state .runtime/release.json --set release.approve
 
 Materializer 只接收 Agent Graph 变量和启动常见 Runtime 所需的最小继承环境；可信集成可由 SDK 宿主显式注入其他变量。不要把 `effect: read` 当作沙箱：它是声明元数据，宿主仍须用自己的进程、容器、权限和 Secret 策略隔离不可信 Provider 代码。
 
-Resource v2 使用另一条边界：Agent Graph 在派发前校验 Provider Input，但绝不调用 Host Handler。Host 使用 `hostActionInputDigest(location)` 关联结果，消费方在接受 Inline Value 或可读取 Resource Ref 前调用 `validateHostActionResult`。工作流推进前，应把已校验 Envelope 保存为 Run Fact 或其他 Host-owned Recovery Store。中断恢复后，从当前 Location 重新计算 Digest，只复用完全匹配的结果。Digest 过期、Output Schema 变化、Ref 不可读取、内容 Digest 不匹配或 Payload Schema 校验失败，都必须进入显式 `failed`/`unverified` 恢复路线，不能静默重跑或标记完成。
+Host-action Resource 使用另一条边界：Agent Graph 在派发前校验 Provider Input，但绝不调用 Host Handler。Host 使用 `hostActionInputDigest(location)` 关联结果，消费方在接受 Inline Value 或可读取 Resource Ref 前调用 `validateHostActionResult`。工作流推进前，应把已校验 Envelope 保存为 Run Fact 或其他 Host-owned Recovery Store。中断恢复后，从当前 Location 重新计算 Digest，只复用完全匹配的结果。Digest 过期、Output Schema 变化、Ref 不可读取、内容 Digest 不匹配或 Payload Schema 校验失败，都必须进入显式 `failed`/`unverified` 恢复路线，不能静默重跑或标记完成。
 
 ## 存储所有权
 

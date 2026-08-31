@@ -1,6 +1,6 @@
 # Agent Graph v1 协议规范
 
-本文定义 `@c4a/agent-graph@0.2.7` 实现的 `agent-graph.*.v1` 对象，以及与 v1 独立的宿主物化 Resource v2 对象。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
+本文定义 `@c4a/agent-graph@0.3.0` 实现的版本化协议。File、Graph-action 与 Host-action Resource 是三种相互独立的 v1 协议，不表示同一协议的新旧版本。[`schemas/`](../../schemas) 中的 JSON Schema 是文件形状的规范来源；本文定义其行为与不变量。
 
 ## 1. Provider
 
@@ -220,7 +220,7 @@ media-type: text/markdown
 Markdown 可以通过 Frontmatter 携带身份；其他文件格式使用一个很小的描述文件，使目标文件保持原生格式：
 
 ```yaml
-schema: agent-graph.resource.v1
+schema: agent-graph.resource.file.v1
 id: schema.draft-output
 kind: schema
 mediaType: application/schema+json
@@ -234,7 +234,7 @@ path: schemas/draft-output.schema.json
 ### 4.2 动态 Context View
 
 ```yaml
-schema: agent-graph.resource.v1
+schema: agent-graph.resource.graph-action.v1
 id: workspace.status
 kind: context-view
 mediaType: application/json
@@ -251,10 +251,10 @@ Materializer 进程可读取 `AGENT_GRAPH_PROVIDER_ROOT`、`AGENT_GRAPH_WORKSPAC
 
 ### 4.3 宿主物化 Resource
 
-Resource v2 使用独立 Schema，不是在 Resource v1 上追加字段：
+Host-action Resource 使用自己的独立协议：
 
 ```yaml
-schema: agent-graph.resource.v2
+schema: agent-graph.resource.host-action.v1
 id: resolved.instructions
 kind: procedure
 mediaType: text/markdown
@@ -265,7 +265,7 @@ input:
 
 Materializer 必须是 `read` effect 的 Host Action，并声明 `handler`、`inputSchema` 与 `outputSchema`。Loader 会编译两个引用 Schema，要求它们通过 `properties.schema.const` 或 `$id` 提供以 `/vN` 或 `.vN` 结尾的协议身份，并在 Route 返回前用 Input Schema 校验已编写的 Input。缺少契约字段、Schema 身份未版本化、使用非 Host Runner 或 Input 不合法都会在派发前失败。
 
-Route 返回独立的 `agent-graph.resource-location.v2` Envelope，保留 Resource Kind 与 Media Type，并完整携带稳定 Handler、`input.schema`、canonical JSON `input.value` 和 `output_schema`。Resource v2 已经隐含 Host Materialization，因此不重复声明 Runner，也不预判 Transport。它不携带 Provider 本地执行路径，也不会让 Agent Graph 执行 Handler。静态文件与 command/script Context View 继续使用未改变的 Resource-location v1。
+Route 返回 `agent-graph.resource-location.host-action.v1` Envelope，保留 Resource Kind 与 Media Type，并完整携带稳定 Handler、`input.schema`、canonical JSON `input.value` 和 `output_schema`。该协议已经隐含 Host Materialization，因此不重复声明 Runner，也不预判 Transport。它不携带 Provider 本地执行路径，也不会让 Agent Graph 执行 Handler。静态文件使用 `agent-graph.resource-location.file.v1`，command/script Context View 使用 `agent-graph.resource-location.graph-action.v1`。三种协议可以在同一 Route 共存，彼此不表示新旧版本。
 
 Agent Graph 对 `{ handler, input.schema, input.value }` 自动计算 canonical `input_digest`；Provider 作者和 Host 不在 Location 中重复填写 Digest。Host 返回 `agent-graph.host-action-result.v1`，其中包含相同 Handler、计算出的 Input Digest、Output 和精确 Adapter 身份/版本。Output 回显声明的 Schema，并且 `inline` 与 `resource` 严格二选一。Resource Output 必须提供可读取的 `ref` 与内容 `digest`；Inline Digest 由 canonical value 自动计算。
 
@@ -364,7 +364,7 @@ Evaluation 是只读操作。相同定义与路由输入必须得到相同 Revis
 - 每个 Route Resource 的 `readState`，用于区分当前会话已读内容与必须加载的内容；
 - `afterAction.recordNode` 和重新 evaluate 的要求。
 
-只有在当前输入下仍可用的 route ID 才能解析。调用方还可绑定 Evaluation revision；不匹配时会在返回 Command Plan 前被拒绝。长文档正文不会内联；动态资源返回绑定 Revision 的物化 Envelope，不会自动执行。Resource v2 Input 变化会改变 Provider Graph Digest 与 Evaluation Revision，因此旧 Route、Host Result 和对应读取收据都会过期。
+只有在当前输入下仍可用的 route ID 才能解析。调用方还可绑定 Evaluation revision；不匹配时会在返回 Command Plan 前被拒绝。长文档正文不会内联；动态资源返回绑定 Revision 的物化 Envelope，不会自动执行。Host-action Resource Input 变化会改变 Provider Graph Digest 与 Evaluation Revision，因此旧 Route、Host Result 和对应读取收据都会过期。
 
 ## 7. Run
 

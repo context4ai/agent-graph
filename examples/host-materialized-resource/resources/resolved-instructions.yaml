@@ -1,4 +1,4 @@
-schema: agent-graph.resource.v2
+schema: agent-graph.resource.host-action.v1
 id: resolved.instructions
 kind: procedure
 mediaType: text/markdown

@@ -13,8 +13,8 @@ import { schemaProtocolIdentity, validateSchema } from "./schema.js";
 import type {
   ActionDefinition,
   CodeLocation,
-  DynamicHostResourceDefinition,
-  DynamicResourceDefinition,
+  GraphActionResourceDefinition,
+  HostActionResourceDefinition,
   EvaluationInput,
   LoadedProvider,
   LoadedAction,
@@ -41,7 +41,7 @@ function runtimeCommand(runtime: NonNullable<ActionDefinition["runtime"]>): stri
 
 async function staticLocation(path: string, metadata: StaticResourceMetadata): Promise<ResourceLocation> {
   return {
-    schema: "agent-graph.resource-location.v1",
+    schema: "agent-graph.resource-location.file.v1",
     id: metadata.id,
     kind: metadata.kind,
     mediaType: metadata.mediaType,
@@ -50,9 +50,9 @@ async function staticLocation(path: string, metadata: StaticResourceMetadata): P
   };
 }
 
-function dynamicLocation(metadata: DynamicResourceDefinition, revision?: string): ResourceLocation {
+function graphActionLocation(metadata: GraphActionResourceDefinition, revision?: string): ResourceLocation {
   return {
-    schema: "agent-graph.resource-location.v1",
+    schema: "agent-graph.resource-location.graph-action.v1",
     id: metadata.id,
     kind: metadata.kind,
     mediaType: metadata.mediaType,
@@ -63,7 +63,7 @@ function dynamicLocation(metadata: DynamicResourceDefinition, revision?: string)
 
 async function hostDynamicLocation(
   provider: LoadedProvider,
-  metadata: DynamicHostResourceDefinition,
+  metadata: HostActionResourceDefinition,
   revision?: string,
 ): Promise<ResourceLocation> {
   const actionPath = resolveContainedPath(provider.root, metadata.materializer, "host materializer action reference");
@@ -80,7 +80,7 @@ async function hostDynamicLocation(
   const inputSchema = await readStructuredFile<object>(inputSchemaPath);
   const outputSchema = await readStructuredFile<object>(outputSchemaPath);
   return {
-    schema: "agent-graph.resource-location.v2",
+    schema: "agent-graph.resource-location.host-action.v1",
     id: metadata.id,
     kind: metadata.kind,
     mediaType: metadata.mediaType,
@@ -104,10 +104,10 @@ async function locateLoadedResource(
   if (!resource.dynamic) {
     return staticLocation(resource.contentPath, resource.metadata as StaticResourceMetadata);
   }
-  const metadata = resource.metadata as DynamicResourceDefinition | DynamicHostResourceDefinition;
-  return metadata.schema === "agent-graph.resource.v2"
+  const metadata = resource.metadata as GraphActionResourceDefinition | HostActionResourceDefinition;
+  return metadata.schema === "agent-graph.resource.host-action.v1"
     ? hostDynamicLocation(provider, metadata, revision)
-    : dynamicLocation(metadata, revision);
+    : graphActionLocation(metadata, revision);
 }
 
 async function locateSkill(provider: LoadedProvider, reference: string): Promise<ResourceLocation> {
@@ -116,7 +116,7 @@ async function locateSkill(provider: LoadedProvider, reference: string): Promise
   const { metadata } = parseFrontmatter(content, path);
   const name = typeof metadata.name === "string" ? metadata.name : "agent-skill";
   return {
-    schema: "agent-graph.resource-location.v1",
+    schema: "agent-graph.resource-location.file.v1",
     id: `skill.${name}`,
     kind: "skill",
     mediaType: "text/markdown",
@@ -218,7 +218,7 @@ function hasCurrentReceipt(location: ResourceLocation, receiptSet: ResourceReadR
   if (!receiptSet) return false;
   return receiptSet.receipts.some((receipt) => {
     if (receipt.id !== location.id) return false;
-    if (location.materialize) {
+    if ("materialize" in location && location.materialize !== undefined) {
       return location.revision !== undefined && receipt.revision === location.revision;
     }
     return location.digest !== undefined && receipt.digest === location.digest;

@@ -6,8 +6,8 @@ import { digestText, resolveContainedPath, writeJsonAtomic, writeTextAtomic } fr
 import { locateResource } from "./router.js";
 import type {
   ActionDefinition,
-  DynamicHostResourceDefinition,
-  DynamicResourceDefinition,
+  GraphActionResourceDefinition,
+  HostActionResourceDefinition,
   JsonValue,
   LoadedProvider,
   ResourceLocation,
@@ -188,11 +188,11 @@ export async function materializeResource(
   );
   if (!resource) throw new AgentGraphError("resource-missing", `Provider ${provider.manifest.id} has no resource ${referenceOrId}`);
   if (!resource.dynamic) throw new AgentGraphError("resource-static", `Resource ${resource.metadata.id} is static and does not need materialization`);
-  const dynamic = resource.metadata as DynamicResourceDefinition | DynamicHostResourceDefinition;
-  if (dynamic.schema === "agent-graph.resource.v2") {
+  const dynamic = resource.metadata as GraphActionResourceDefinition | HostActionResourceDefinition;
+  if (dynamic.schema === "agent-graph.resource.host-action.v1") {
     throw new AgentGraphError(
       "materializer-host-required",
-      `Resource ${dynamic.id} requires the host action described by its resource-location.v2 envelope`,
+      `Resource ${dynamic.id} requires the Host action described by its host-action resource location`,
     );
   }
   const definition = dynamic;
@@ -226,7 +226,7 @@ export async function materializeResource(
     file: filePath,
   });
   return {
-    schema: "agent-graph.resource-location.v1",
+    schema: "agent-graph.resource-location.graph-action.v1",
     id: definition.id,
     kind: "context-view",
     mediaType: definition.mediaType,

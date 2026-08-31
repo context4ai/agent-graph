@@ -1,6 +1,6 @@
 # Host-materialized Resource
 
-This example exposes a versioned `resource-location.v2` envelope for a
+This example exposes a versioned Host-action Resource Location envelope for a
 Context View that only an integrating host can materialize. Agent Graph
 validates the Provider-owned input and schema references, preserves the
 handler, structured input, and output schema in the Route, and never executes

@@ -87,7 +87,7 @@ nodes:
   - { id: done, kind: terminal, terminalOutcome: completed }
 edges: [{ from: work, to: done, outcomes: [completed] }]
 `);
-    await writeTextAtomic(resolve(directory, "resources/view.yaml"), `schema: agent-graph.resource.v1
+    await writeTextAtomic(resolve(directory, "resources/view.yaml"), `schema: agent-graph.resource.graph-action.v1
 id: context.view
 kind: context-view
 mediaType: text/markdown

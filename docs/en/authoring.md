@@ -140,7 +140,7 @@ Resource read receipts are host input, not Provider authoring state. Do not enco
 For JSON Schema, native templates, or other non-Markdown files, reference the content through a descriptor:
 
 ```yaml
-schema: agent-graph.resource.v1
+schema: agent-graph.resource.file.v1
 id: schema.draft-output
 kind: schema
 mediaType: application/schema+json
@@ -149,9 +149,9 @@ path: schemas/draft-output.schema.json
 
 The Route returns the native target file, while the Provider still has a typed Resource identity.
 
-Dynamic context views are YAML/JSON resource descriptors. Their materializer must reference a read-only command or script Action. Materialization happens only through an explicit command and writes to a host-selected cache. The reference runtime enforces configurable time and output limits and does not inherit arbitrary host environment variables by default; the read effect still is not a sandbox.
+Dynamic context views use `agent-graph.resource.graph-action.v1` YAML/JSON descriptors. Their materializer must reference a read-only command or script Action. Materialization happens only through an explicit command and writes to a host-selected cache. The reference runtime enforces configurable time and output limits and does not inherit arbitrary host environment variables by default; the read effect still is not a sandbox.
 
-Use `agent-graph.resource.v2` when a Resource must be materialized by an integrating Host rather than Provider code. It may retain any Resource kind, including `procedure`. Its read-only Host Action declares a stable Handler and input/output Schemas; the Resource descriptor supplies the structured `input` value. The resolved Location carries the Handler, schema identity, and value but no executable path, runner flag, transport prediction, or author-supplied digest. The result chooses exactly one inline value or managed resource reference. See [`examples/host-materialized-resource`](../../examples/host-materialized-resource).
+Use `agent-graph.resource.host-action.v1` when a Resource must be materialized by an integrating Host rather than Provider code. It may retain any Resource kind, including `procedure`. Its read-only Host Action declares a stable Handler and input/output Schemas; the Resource descriptor supplies the structured `input` value. The resolved Location carries the Handler, schema identity, and value but no executable path, runner flag, transport prediction, or author-supplied digest. The result chooses exactly one inline value or managed resource reference. File, Graph-action, and Host-action Resources are independent protocols and may coexist in one Route. See [`examples/host-materialized-resource`](../../examples/host-materialized-resource).
 
 ## Subgraphs
 

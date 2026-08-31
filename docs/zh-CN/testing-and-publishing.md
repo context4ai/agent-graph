@@ -38,7 +38,7 @@ expect:
 - Subgraph 子路线和父 Graph 继续；
 - 所有预期阻塞执行的诊断。
 
-Resource v2 Host Materialization 还必须覆盖 v1/v2 并存、派发前 Input 拒绝、Inline 与 Managed-resource Output、非互斥 Output 拒绝、Handler/Input/Output Schema 不匹配、序列化、过期 Revision/CAS、已持久化结果恢复，以及显式 `failed`/`unverified` 恢复路由。
+Resource 处理还必须覆盖 File/Graph-action/Host-action 并存、Host 派发前 Input 拒绝、Inline 与 Managed-resource Output、非互斥 Output 拒绝、Handler/Input/Output Schema 不匹配、序列化、过期 Revision/CAS、已持久化结果恢复，以及显式 `failed`/`unverified` 恢复路由。
 
 静态 Validation 另行覆盖缺失文件、重复 ID、非法路径、缺失 Subgraph Entry、非法 Repeat Target 和递归。
 
@@ -85,7 +85,7 @@ Provider 项目可以依赖 `agent-graph`，并在自己的包里发布 Provider
 自动化临时执行时应固定版本：
 
 ```bash
-npx @c4a/agent-graph@0.2.7 --manifest ./provider.yaml validate
+npx @c4a/agent-graph@0.3.0 --manifest ./provider.yaml validate
 ```
 
 ## 包审计清单
@@ -101,8 +101,8 @@ npx @c4a/agent-graph@0.2.7 --manifest ./provider.yaml validate
 7. Provider Digest 与安装文件匹配；
 8. `path:` Skill 绑定迁移位置后仍能解析；
 9. `provider:` 绑定可通过干净 Registry 解析；
-10. Resource v1 动态物化只写显式 Cache；
-11. Resource v2 不在 Agent Graph 内执行，Host Result 经序列化与恢复后仍能通过校验；
+10. Graph-action Resource 动态物化只写显式 Cache；
+11. Host-action Resource 不在 Agent Graph 内执行，Host Result 经序列化与恢复后仍能通过校验；
 12. 测试不包含凭证、业务数据或机器路径。
 
 ## Source、Link、Pack 与 Registry 一致性

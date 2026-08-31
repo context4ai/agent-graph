@@ -130,8 +130,8 @@ export interface ActionDefinition {
   outputSchema?: string;
 }
 
-export interface DynamicResourceDefinition {
-  schema: "agent-graph.resource.v1";
+export interface GraphActionResourceDefinition {
+  schema: "agent-graph.resource.graph-action.v1";
   id: string;
   kind: "context-view";
   mediaType: string;
@@ -139,8 +139,8 @@ export interface DynamicResourceDefinition {
   description?: string;
 }
 
-export interface DynamicHostResourceDefinition {
-  schema: "agent-graph.resource.v2";
+export interface HostActionResourceDefinition {
+  schema: "agent-graph.resource.host-action.v1";
   id: string;
   kind: ResourceKind;
   mediaType: string;
@@ -149,8 +149,8 @@ export interface DynamicHostResourceDefinition {
   description?: string;
 }
 
-export interface StaticFileResourceDefinition {
-  schema: "agent-graph.resource.v1";
+export interface FileResourceDefinition {
+  schema: "agent-graph.resource.file.v1";
   id: string;
   kind: Exclude<ResourceKind, "context-view">;
   mediaType: string;
@@ -196,9 +196,9 @@ export interface LoadedResource {
   contentPath: string;
   metadata:
     | StaticResourceMetadata
-    | StaticFileResourceDefinition
-    | DynamicResourceDefinition
-    | DynamicHostResourceDefinition;
+    | FileResourceDefinition
+    | GraphActionResourceDefinition
+    | HostActionResourceDefinition;
   dynamic: boolean;
 }
 
@@ -307,22 +307,46 @@ export interface Evaluation {
   diagnostics: Diagnostic[];
 }
 
-export interface ResourceLocationV1 {
-  schema: "agent-graph.resource-location.v1";
+export interface FileResourceLocation {
+  schema: "agent-graph.resource-location.file.v1";
   id: string;
   kind: ResourceKind;
   mediaType: string;
   revision?: string;
-  digest?: string;
+  digest: string;
   readState?: "read-required" | "current";
-  filePath?: string;
-  materialize?: {
-    resourceId: string;
-  };
+  filePath: string;
 }
 
-export interface ResourceLocationV2 {
-  schema: "agent-graph.resource-location.v2";
+interface GraphActionResourceLocationBase {
+  schema: "agent-graph.resource-location.graph-action.v1";
+  id: string;
+  kind: ResourceKind;
+  mediaType: string;
+  revision?: string;
+  readState?: "read-required" | "current";
+}
+
+export interface PendingGraphActionResourceLocation extends GraphActionResourceLocationBase {
+  materialize: {
+    resourceId: string;
+  };
+  digest?: never;
+  filePath?: never;
+}
+
+export interface MaterializedGraphActionResourceLocation extends GraphActionResourceLocationBase {
+  digest: string;
+  filePath: string;
+  materialize?: never;
+}
+
+export type GraphActionResourceLocation =
+  | PendingGraphActionResourceLocation
+  | MaterializedGraphActionResourceLocation;
+
+export interface HostActionResourceLocation {
+  schema: "agent-graph.resource-location.host-action.v1";
   id: string;
   kind: ResourceKind;
   mediaType: string;
@@ -340,7 +364,10 @@ export interface ResourceLocationV2 {
   };
 }
 
-export type ResourceLocation = ResourceLocationV1 | ResourceLocationV2;
+export type ResourceLocation =
+  | FileResourceLocation
+  | GraphActionResourceLocation
+  | HostActionResourceLocation;
 
 export interface HostActionResultReceipt {
   adapter: string;

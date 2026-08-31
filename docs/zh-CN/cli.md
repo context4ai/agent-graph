@@ -6,8 +6,8 @@
 
 ```bash
 agent-graph ...                    # 已安装命令
-npx @c4a/agent-graph@0.2.7 ...    # npm 临时运行
-bunx @c4a/agent-graph@0.2.7 ...   # Bun 临时运行
+npx @c4a/agent-graph@0.3.0 ...    # npm 临时运行
+bunx @c4a/agent-graph@0.3.0 ...   # Bun 临时运行
 node ./agent-graph.mjs ...         # Provider 随包携带的单文件
 ```
 

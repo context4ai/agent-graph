@@ -28,7 +28,7 @@ Agent 消费已经完成接入的 Agent Graph 能力时，只需遵循以下循�
 4. 使用精确 route ID 和 Evaluation revision 执行 `route`。
 5. 完整读取所有 `readState` 为 `read-required` 的 required 资源；recommended 资源按需读取。
 6. 用户确认前，不执行 Gate 单独返回的 Resolution Action。
-7. 只执行 Route 返回的命令或 Host Action；Resource v2 必须先关联并校验结构化 Host Result，之后才能暴露 Output。
+7. 只执行 Route 返回的命令或 Host Action；Host-action Resource 必须先关联并校验结构化 Host Result，之后才能暴露 Output。
 8. 记录显式 Outcome，并在适用时更新可观察事实。
 9. 再次 evaluate；不得仅凭会话记忆继续。
 

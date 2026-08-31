@@ -38,7 +38,7 @@ For each production Graph, cover:
 - Subgraph child route and parent continuation;
 - any diagnostic expected to block execution.
 
-For Resource v2 Host materialization, also cover v1/v2 coexistence, pre-dispatch input rejection, inline and managed-resource output, non-exclusive output rejection, Handler/input/output-schema mismatches, serialization, stale revision/CAS, persisted-result recovery, and explicit failed or unverified recovery routing.
+For Resource handling, also cover File/Graph-action/Host-action coexistence, pre-dispatch Host input rejection, inline and managed-resource output, non-exclusive output rejection, Handler/input/output-schema mismatches, serialization, stale revision/CAS, persisted-result recovery, and explicit failed or unverified recovery routing.
 
 Static validation separately tests missing files, duplicate IDs, invalid paths, missing Subgraph entries, invalid repeat targets, and recursion.
 
@@ -85,7 +85,7 @@ Provider projects may instead depend on `agent-graph` and publish their built bu
 For reproducible automation, pin the one-shot version:
 
 ```bash
-npx @c4a/agent-graph@0.2.7 --manifest ./provider.yaml validate
+npx @c4a/agent-graph@0.3.0 --manifest ./provider.yaml validate
 ```
 
 ## Package audit checklist
@@ -101,8 +101,8 @@ Before release, verify:
 7. built Provider digests match installed files;
 8. `path:` Skill bindings still resolve after relocation;
 9. `provider:` bindings resolve through a clean registry;
-10. Resource v1 dynamic materialization writes only to the explicit cache;
-11. Resource v2 never executes inside Agent Graph and its Host result survives serialization and recovery validation;
+10. Graph-action Resource materialization writes only to the explicit cache;
+11. A Host-action Resource never executes inside Agent Graph and its Host result survives serialization and recovery validation;
 12. tests contain no credentials, business data, or machine-specific paths.
 
 ## Source, link, pack, and registry parity

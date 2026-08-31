@@ -3,16 +3,16 @@ import { digestValue } from "./io.js";
 import { validateSchema } from "./schema.js";
 import type {
   HostActionResult,
+  HostActionResourceLocation,
   ResourceLocation,
-  ResourceLocationV2,
   ResourceReadReceipt,
 } from "./types.js";
 
-function hostLocation(location: ResourceLocation): ResourceLocationV2 {
-  if (location.schema !== "agent-graph.resource-location.v2") {
+function hostLocation(location: ResourceLocation): HostActionResourceLocation {
+  if (location.schema !== "agent-graph.resource-location.host-action.v1") {
     throw new AgentGraphError(
       "host-action-location-invalid",
-      `Resource ${location.id} is not a resource-location.v2 host action`,
+      `Resource ${location.id} is not a host-action resource location`,
     );
   }
   return location;

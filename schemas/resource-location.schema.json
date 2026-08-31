@@ -3,16 +3,32 @@
   "$id": "https://agent-graph.dev/schemas/resource-location.schema.json",
   "title": "Agent Graph Resource Location",
   "oneOf": [
-    { "$ref": "#/$defs/v1" },
-    { "$ref": "#/$defs/v2" }
+    { "$ref": "#/$defs/file" },
+    { "$ref": "#/$defs/graphAction" },
+    { "$ref": "#/$defs/hostAction" }
   ],
   "$defs": {
-    "v1": {
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "id", "kind", "mediaType", "filePath", "digest"],
+      "properties": {
+        "schema": { "const": "agent-graph.resource-location.file.v1" },
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "$ref": "#/$defs/kind" },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "revision": { "$ref": "#/$defs/digest" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "readState": { "$ref": "#/$defs/readState" },
+        "filePath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "graphAction": {
       "type": "object",
       "additionalProperties": false,
       "required": ["schema", "id", "kind", "mediaType"],
       "properties": {
-        "schema": { "const": "agent-graph.resource-location.v1" },
+        "schema": { "const": "agent-graph.resource-location.graph-action.v1" },
         "id": { "type": "string", "minLength": 1 },
         "kind": { "$ref": "#/$defs/kind" },
         "mediaType": { "type": "string", "minLength": 1 },
@@ -31,15 +47,15 @@
       },
       "oneOf": [
         { "required": ["filePath", "digest"], "not": { "required": ["materialize"] } },
-        { "required": ["materialize"], "not": { "required": ["filePath"] } }
+        { "required": ["materialize"], "not": { "anyOf": [{ "required": ["filePath"] }, { "required": ["digest"] }] } }
       ]
     },
-    "v2": {
+    "hostAction": {
       "type": "object",
       "additionalProperties": false,
       "required": ["schema", "id", "kind", "mediaType", "materialize"],
       "properties": {
-        "schema": { "const": "agent-graph.resource-location.v2" },
+        "schema": { "const": "agent-graph.resource-location.host-action.v1" },
         "id": { "type": "string", "minLength": 1 },
         "kind": { "$ref": "#/$defs/kind" },
         "mediaType": { "type": "string", "minLength": 1 },
@@ -48,11 +64,7 @@
         "materialize": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "handler",
-            "input",
-            "output_schema"
-          ],
+          "required": ["handler", "input", "output_schema"],
           "properties": {
             "handler": { "type": "string", "minLength": 1 },
             "input": {

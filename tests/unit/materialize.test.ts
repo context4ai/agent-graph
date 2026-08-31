@@ -16,7 +16,7 @@ async function providerWithMaterializer(script: string) {
 }
 
 describe("dynamic resources", () => {
-  test("leaves resource v2 host actions to the integrating host", async () => {
+  test("leaves Host-action resources to the integrating host", async () => {
     const directory = await mkdtemp(resolve(tmpdir(), "agent-graph-host-resource-"));
     directories.push(directory);
     const provider = await loadProvider(resolve(
@@ -50,6 +50,7 @@ describe("dynamic resources", () => {
     expect(content.workspace).toBe(directory);
     expect(content.revision).toBe(revision);
     expect(content.input.scope).toBe("unit");
+    expect(location.schema).toBe("agent-graph.resource-location.graph-action.v1");
     expect(location.digest).toStartWith("sha256:");
     expect(location.revision).toBe(revision);
     const receipt = JSON.parse(await readFile(resolve(directory, "cache", `${location.digest!.slice("sha256:".length)}.receipt.json`), "utf8"));

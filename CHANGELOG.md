@@ -4,9 +4,15 @@ All notable changes to Agent Graph are documented here. The project follows [Sem
 
 ## Unreleased
 
+## 0.3.0 - 2026-08-31
+
+- Replaced the misleading Resource v1/v2 split with three independent v1 protocols for file, Graph-action, and Host-action resources and locations.
+- Removed the former `agent-graph.resource.v1`, `agent-graph.resource.v2`, `agent-graph.resource-location.v1`, and `agent-graph.resource-location.v2` protocol identifiers.
+- Preserved the minimal Host Action input/output and recovery ABI while making each materialization authority explicit in serialized Routes and SDK types.
+
 ## 0.2.7 - 2026-08-30
 
-- Added a distinct `agent-graph.resource-location.v2` contract for host-materialized Resources while preserving the v1 command/script materializer ABI.
+- Added a distinct Host-materialized Resource contract alongside the command/script materializer ABI.
 - Added versioned input/output schema identities, canonical input correlation, a strict inline/managed-resource output union, and a minimal adapter receipt envelope.
 - Added pre-dispatch Provider validation, stale-result and managed-resource reference checks, persisted-result recovery coverage, a generic example, and equivalent English and Chinese integration documentation.
 

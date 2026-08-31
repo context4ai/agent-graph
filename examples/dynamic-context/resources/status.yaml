@@ -1,4 +1,4 @@
-schema: agent-graph.resource.v1
+schema: agent-graph.resource.graph-action.v1
 id: context.workspace-status
 kind: context-view
 mediaType: text/markdown

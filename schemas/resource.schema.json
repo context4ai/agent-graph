@@ -3,42 +3,43 @@
   "$id": "https://agent-graph.dev/schemas/resource.schema.json",
   "title": "Agent Graph Resource Descriptor",
   "oneOf": [
-    { "$ref": "#/$defs/v1" },
-    { "$ref": "#/$defs/v2" }
+    { "$ref": "#/$defs/file" },
+    { "$ref": "#/$defs/graphAction" },
+    { "$ref": "#/$defs/hostAction" }
   ],
   "$defs": {
-    "v1": {
+    "file": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schema", "id", "kind", "mediaType"],
+      "required": ["schema", "id", "kind", "mediaType", "path"],
       "properties": {
-        "schema": { "const": "agent-graph.resource.v1" },
+        "schema": { "const": "agent-graph.resource.file.v1" },
         "id": { "$ref": "#/$defs/id" },
-        "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"] },
+        "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "skill"] },
         "mediaType": { "type": "string", "minLength": 1 },
         "path": { "$ref": "#/$defs/relativePath" },
+        "description": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "graphAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "id", "kind", "mediaType", "materializer"],
+      "properties": {
+        "schema": { "const": "agent-graph.resource.graph-action.v1" },
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "const": "context-view" },
+        "mediaType": { "type": "string", "minLength": 1 },
         "materializer": { "$ref": "#/$defs/relativePath" },
         "description": { "type": "string", "maxLength": 1000 }
-      },
-      "oneOf": [
-        {
-          "properties": { "kind": { "const": "context-view" } },
-          "required": ["materializer"],
-          "not": { "required": ["path"] }
-        },
-        {
-          "properties": { "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "skill"] } },
-          "required": ["path"],
-          "not": { "required": ["materializer"] }
-        }
-      ]
+      }
     },
-    "v2": {
+    "hostAction": {
       "type": "object",
       "additionalProperties": false,
       "required": ["schema", "id", "kind", "mediaType", "materializer", "input"],
       "properties": {
-        "schema": { "const": "agent-graph.resource.v2" },
+        "schema": { "const": "agent-graph.resource.host-action.v1" },
         "id": { "$ref": "#/$defs/id" },
         "kind": { "enum": ["procedure", "diagnostic", "template", "schema", "context-view", "skill"] },
         "mediaType": { "type": "string", "minLength": 1 },

@@ -148,7 +148,7 @@ Skill 正文只保留这段启动与消费规则。各阶段的操作说明、Sc
 
 宿主解析 Route 时可以附带当前会话的资源读取收据。内容摘要未变的静态资源可在后续步骤保持 `current`，绑定 Revision 的动态视图则会在工作流 Revision 变化后重新变成 `read-required`。收据只减少重复读取，不能证明 Action 已完成。
 
-对于 Host 物化的 Resource v2，Route 携带稳定 Handler 与版本化 Input/Output 契约。Agent Graph 计算 Input 关联 Digest 并校验返回的 Inline/Resource Envelope；实际执行、Output Schema 校验、信任策略与持久恢复存储仍由集成宿主负责。
+对于 Host-action Resource，Route 携带稳定 Handler 与版本化 Input/Output 契约。Agent Graph 计算 Input 关联 Digest 并校验返回的 Inline/Resource Envelope；实际执行、Output Schema 校验、信任策略与持久恢复存储仍由集成宿主负责。
 
 ## 文档与参考
 

@@ -148,7 +148,7 @@ The Skill body keeps only this bootstrap and consumption contract. Phase-specifi
 
 A host may attach current-conversation resource read receipts when resolving a Route. Exact static digests can then remain `current` across steps, while revision-bound dynamic views become `read-required` after the workflow revision changes. Receipts reduce repeated reading; they never prove that an Action completed.
 
-For a Host-materialized Resource v2, the Route carries a stable Handler plus versioned input/output contracts. Agent Graph computes the input correlation digest, validates the returned inline/resource envelope, and leaves execution, output-schema validation, trust policy, and durable recovery storage to the integrating host.
+For a Host-action Resource, the Route carries a stable Handler plus versioned input/output contracts. Agent Graph computes the input correlation digest, validates the returned inline/resource envelope, and leaves execution, output-schema validation, trust policy, and durable recovery storage to the integrating host.
 
 ## Documentation and reference
 

@@ -28,7 +28,7 @@ An Agent consuming an already integrated Agent Graph capability needs only this 
 4. Run `route` for that exact route ID and Evaluation revision.
 5. Read every required resource whose `readState` is `read-required`; read recommended resources only when useful.
 6. Do not execute a user Gate's separately returned resolution Action until the user confirms it.
-7. Execute only the returned command or Host Action. For Resource v2, correlate and validate its structured Host result before exposing the output.
+7. Execute only the returned command or Host Action. For a Host-action Resource, correlate and validate its structured Host result before exposing the output.
 8. Record its explicit outcome and update observable facts where appropriate.
 9. Evaluate again. Never continue from memory alone.
 

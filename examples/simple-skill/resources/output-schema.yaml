@@ -1,4 +1,4 @@
-schema: agent-graph.resource.v1
+schema: agent-graph.resource.file.v1
 id: schema.draft-output
 kind: schema
 mediaType: application/schema+json

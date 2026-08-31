@@ -22,9 +22,9 @@ import {
 } from "../../src/index.js";
 import type {
   HostActionResult,
+  HostActionResourceLocation,
   JsonValue,
   LoadedProvider,
-  ResourceLocationV2,
   ResourceReadReceiptSet,
 } from "../../src/types.js";
 
@@ -44,7 +44,7 @@ async function copiedProvider(): Promise<{ directory: string; provider: LoadedPr
 }
 
 async function hostLocation(provider: LoadedProvider): Promise<{
-  location: ResourceLocationV2;
+  location: HostActionResourceLocation;
   revision: string;
   routeId: string;
 }> {
@@ -58,13 +58,13 @@ async function hostLocation(provider: LoadedProvider): Promise<{
     evaluation.revision,
   );
   const location = route.resources.required.find((resource) => resource.id === "resolved.instructions");
-  if (location?.schema !== "agent-graph.resource-location.v2") {
-    throw new Error("Expected resource-location.v2");
+  if (location?.schema !== "agent-graph.resource-location.host-action.v1") {
+    throw new Error("Expected a host-action resource location");
   }
   return { location, revision: evaluation.revision, routeId: evaluation.primaryRoute!.routeId };
 }
 
-function inlineResult(location: ResourceLocationV2): HostActionResult {
+function inlineResult(location: HostActionResourceLocation): HostActionResult {
   return {
     schema: "agent-graph.host-action-result.v1",
     handler: location.materialize.handler,
@@ -209,8 +209,8 @@ describe("host-materialized resource ABI", () => {
     );
     const changedLocation = changed.resources.required.find((resource) => resource.id === initial.location.id);
     expect(changedLocation?.readState).toBe("read-required");
-    expect(changedLocation?.schema).toBe("agent-graph.resource-location.v2");
-    if (changedLocation?.schema === "agent-graph.resource-location.v2") {
+    expect(changedLocation?.schema).toBe("agent-graph.resource-location.host-action.v1");
+    if (changedLocation?.schema === "agent-graph.resource-location.host-action.v1") {
       expect(hostActionInputDigest(changedLocation)).not.toBe(hostActionInputDigest(initial.location));
       await expect(validateHostActionResult(changedLocation, result))
         .rejects.toMatchObject({ code: "host-action-input-stale" });
