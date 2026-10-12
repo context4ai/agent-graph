@@ -2,6 +2,18 @@
 
 Import 只生成草案，不能仅根据文件顺序推断业务或安全语义。
 
+## 0.3.0 Resource 协议变化
+
+`0.3.0` 移除了 `agent-graph.resource.v1`、`agent-graph.resource.v2`、`agent-graph.resource-location.v1` 与 `agent-graph.resource-location.v2`。每个 Resource 及其序列化的 Location 都要写明物化权限归属：
+
+| Resource | Resource 协议 | Location 协议 |
+|---|---|---|
+| 从 Provider 读取的静态文件 | `agent-graph.resource.file.v1` | `agent-graph.resource-location.file.v1` |
+| 由 Graph 声明的命令或脚本物化 | `agent-graph.resource.graph-action.v1` | `agent-graph.resource-location.graph-action.v1` |
+| 由宿主物化 | `agent-graph.resource.host-action.v1` | `agent-graph.resource-location.host-action.v1` |
+
+按实际的物化权限替换旧标识，把 `compatibility.agentGraph` 提高到 `^0.3.0`，再执行 `agent-graph validate`。旧标识会以 `schema-invalid` 被拒绝。Host-action Resource 的写法见 [`examples/host-materialized-resource`](../../examples/host-materialized-resource)。
+
 ## 0.2.0 包契约变化
 
 `0.2.0` 是一次发生在 1.0 前的契约收紧：

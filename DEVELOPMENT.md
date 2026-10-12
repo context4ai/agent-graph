@@ -1,6 +1,6 @@
 # Development
 
-This document is for contributors to the `agent-graph` toolchain. Product usage belongs in the [English](./docs/en/README.md) and [Chinese](./docs/zh-CN/README.md) user guides. Repository-wide Agent rules live in [AGENTS.md](./AGENTS.md).
+This document is for contributors to the `agent-graph` toolchain. Product usage belongs in the [English](./docs/en/README.md) and [Chinese](./docs/zh-CN/README.md) user guides and on the [documentation site](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html). Repository-wide Agent rules live in [AGENTS.md](./AGENTS.md).
 
 ## Requirements
 
@@ -100,3 +100,12 @@ Then test the produced tarball in a clean temporary prefix:
 6. inspect tarball contents for LICENSE, metadata, docs, schemas, templates, and path leaks.
 
 Do not publish from a dirty or unreviewed working tree. Package releases follow semantic versioning; Provider manifests are independently versioned by their authors.
+
+## Publishing
+
+1. Move the `Unreleased` entries in [CHANGELOG.md](./CHANGELOG.md) under the new version and bump `package.json`.
+2. Merge the release pull request after CI passes.
+3. Create a GitHub Release whose tag is exactly `v<version>`. `.github/workflows/publish.yml` checks the tag against `package.json`, verifies the package and publishes it to npm through Trusted Publishing.
+4. Confirm the result with `npm view @c4a/agent-graph@<version> version`.
+
+Never run `npm publish` from a local checkout. Author-facing advice on testing and publishing Providers is in [Testing and Publishing](https://context4ai.org/context/pages/2a26bc3e8f39cad36b9354cb975ec644.html).

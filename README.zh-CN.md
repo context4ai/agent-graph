@@ -15,7 +15,7 @@ Agent 很多时候并不缺知识。更难的是判断：现在该读哪一部�
 
 > **什么时候该用：** 不是每个 Skill 都需要 Graph；单轮、短流程，靠一份 `SKILL.md` 就能完成时，保持简单。只有当宿主能提供可信的外部事实，并且任务确实需要可验证完成、跨会话恢复，或可测试的路由与人工门禁时，再引入 Agent Graph。
 
-[English](./README.md) · [用户手册](./docs/zh-CN/README.md) · [Graph Engineering](./docs/zh-CN/graph-engineering.md) · [贡献指南](./CONTRIBUTING.md) · [开发指南](./DEVELOPMENT.md)
+[文档](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [English](./README.md) · [用户手册](./docs/zh-CN/README.md) · [Graph Engineering](./docs/zh-CN/graph-engineering.md) · [贡献指南](./CONTRIBUTING.md) · [开发指南](./DEVELOPMENT.md)
 
 ## 先看一个最简单的例子
 
@@ -71,7 +71,7 @@ Agent Graph 不会在后台擅自重写自己的计划。运行时路由随证�
 
 ## 真实实践：Context
 
-[Context](https://github.com/context4ai/context) 通过一个薄的公开 Agent 入口使用 Agent Graph：[`/c4a:context`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/context.md)。同一个入口既能创建用户请求的工作区，也能继续已有工作区：`context entry` 负责判断初始化、工作区定位或当前工作流求值，Agent 随后跟随 `workflow.current`。各阶段的 Procedure、Action 和 Resource 保持分离，Agent 只接收当前 Route 精确要求的内容，并以读取回执证明已经消费。Facts 不变时，重新进入仍会选中同一条 Route；已有完成证据会推进或 no-op，绑定 revision 的宿主命令则拒绝过期写入。这样，Agent 在重试和新回合之间拥有明确的幂等边界。它的调试记录可以回放每一条 Route、循环、门禁和最终结果。
+[Context](https://github.com/context4ai/context) 的整个知识工作流都运行在 Agent Graph 上，对外只有一个薄的生产入口 [`/c4a:context`](https://github.com/context4ai/context/blob/main/plugins/context/skills/context/SKILL.md)。该入口既能创建新工作区，也能继续已有工作区；每次求值只把当前 Route 需要的规程与资源交给 Agent，并要求 Agent 证明已经读取。Facts 不变时重新进入仍选中同一条 Route，绑定 revision 的命令会拒绝过期写入，因此重试与新会话都是安全的。调试记录可以回放每一条 Route、循环、门禁与结果。集成细节见 [Context 中的 Agent Graph](https://context4ai.org/context/pages/e0028d6618a071cc8e8f14135d034285.html)。
 
 [观看交互式回放](https://context4ai.github.io/context/case-studies/workflow/?lang=zh) · [阅读完整案例](https://github.com/context4ai/context/blob/main/docs/zh-CN/case-studies/agent-graph-workflow.md)
 
@@ -146,11 +146,19 @@ metadata:
 
 Skill 正文只保留这段启动与消费规则。各阶段的操作说明、Schema 和上下文继续作为 Route 资源按需加载，不复制进 Skill。绑定只选择稳定工作流；当前模块、批次或日期属于运行时 Facts。完整规则参见 [Skill 与 Provider](./docs/zh-CN/skills-and-providers.md)。
 
-宿主解析 Route 时可以附带当前会话的资源读取收据。内容摘要未变的静态资源可在后续步骤保持 `current`，绑定 Revision 的动态视图则会在工作流 Revision 变化后重新变成 `read-required`。收据只减少重复读取，不能证明 Action 已完成。
+宿主还可以附带资源读取收据以减少重复读取，并通过自身 Handler 提供 Host-action Resource；两类契约见[协议规范](./docs/zh-CN/specification.md)。
 
-对于 Host-action Resource，Route 携带稳定 Handler 与版本化 Input/Output 契约。Agent Graph 计算 Input 关联 Digest 并校验返回的 Inline/Resource Envelope；实际执行、Output Schema 校验、信任策略与持久恢复存储仍由集成宿主负责。
+## 文档
 
-## 文档与参考
+Context 文档站的 [Agent Graph 文档](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html)讲解模型并结合真实用法逐步演示（与英文共用地址，按语言偏好显示中文）：
+
+| 分类 | 页面 |
+|---|---|
+| 原理 | [为什么是 Graph Engineering](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [核心模型](https://context4ai.org/context/pages/ad65c836debb540be355e741aabf3dcf.html) · [运行与恢复](https://context4ai.org/context/pages/708a22de19d0b807fd512451f1269434.html) · [Skills 与 Providers](https://context4ai.org/context/pages/b3558e7c73749da60cf1b9634061fdd8.html) · [Context 中的 Agent Graph](https://context4ai.org/context/pages/e0028d6618a071cc8e8f14135d034285.html) |
+| 指南 | [快速开始](https://context4ai.org/context/pages/05958f2aaec0c5605023f05e067c37bf.html) · [编写 Graph](https://context4ai.org/context/pages/b218404303adf13ace7561657d45483b.html) · [测试与发布](https://context4ai.org/context/pages/2a26bc3e8f39cad36b9354cb975ec644.html) |
+| 参考 | [规范](https://context4ai.org/context/pages/098719903f2a7dcec5c1a6edb7b8ead3.html) · [CLI 与 SDK](https://context4ai.org/context/pages/7e7db2502a06c2f284c1701cc591c32b.html) · [迁移](https://context4ai.org/context/pages/516592ea7ac3e03cb284d8283bf349fc.html) |
+
+带版本的用户手册随本仓库发布，是各版本的规范性参考：
 
 - [快速开始](./docs/zh-CN/getting-started.md)
 - [编写 Graph](./docs/zh-CN/authoring.md)
@@ -168,3 +176,26 @@ Skill 正文只保留这段启动与消费规则。各阶段的操作说明、Sc
 
 - [`examples/`](./examples)：可运行的完整场景，第一次阅读可以从 [`getting-started`](./examples/getting-started) 开始；
 - [`schemas/`](./schemas)：供工具和集成使用的机器可读协议契约。
+
+## 生态
+
+| 项目 | 角色 |
+|---|---|
+| [Context](https://github.com/context4ai/context) | 面向研发团队与 Agent 的知识工作流，也是规模最大的 Agent Graph 集成 |
+| [Source Graph](https://github.com/context4ai/sourcegraph) | 固定 Git 版本的代码搜索与阅读 |
+| [Portal](https://github.com/context4ai/portal) | [context4ai.org](https://context4ai.org)，包括文档站 |
+
+## 参与贡献
+
+```bash
+git clone https://github.com/context4ai/agent-graph.git
+cd agent-graph
+bun install
+bun run verify
+```
+
+提交 Pull Request 前请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)；源码结构、协议规则与发布审计见 [DEVELOPMENT.md](./DEVELOPMENT.md)。使用问题请到 [GitHub Discussions](https://github.com/context4ai/agent-graph/discussions)（见 [SUPPORT.md](./SUPPORT.md)），安全漏洞按 [SECURITY.md](./SECURITY.md) 报告。参与本项目须遵守[行为准则](./CODE_OF_CONDUCT.md)。版本历史见 [CHANGELOG.md](./CHANGELOG.md)。
+
+## 许可证
+
+[MIT](./LICENSE)

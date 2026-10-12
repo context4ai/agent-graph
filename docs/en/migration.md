@@ -2,6 +2,18 @@
 
 Import creates a draft; it cannot infer business or safety semantics from file order alone.
 
+## Resource protocol changes in 0.3.0
+
+`0.3.0` removes `agent-graph.resource.v1`, `agent-graph.resource.v2`, `agent-graph.resource-location.v1`, and `agent-graph.resource-location.v2`. Each Resource and serialized Location now names its materialization authority:
+
+| Resource | Resource protocol | Location protocol |
+|---|---|---|
+| Static file read from the Provider | `agent-graph.resource.file.v1` | `agent-graph.resource-location.file.v1` |
+| Materialized by a Graph-declared command or script | `agent-graph.resource.graph-action.v1` | `agent-graph.resource-location.graph-action.v1` |
+| Materialized by the host | `agent-graph.resource.host-action.v1` | `agent-graph.resource-location.host-action.v1` |
+
+Replace each old identifier with the protocol for its actual authority, raise `compatibility.agentGraph` to `^0.3.0`, and run `agent-graph validate`. Old identifiers are rejected as `schema-invalid`. [`examples/host-materialized-resource`](../../examples/host-materialized-resource) shows a Host-action Resource.
+
 ## Package contract changes in 0.2.0
 
 `0.2.0` is a pre-1.0 contract-tightening release:

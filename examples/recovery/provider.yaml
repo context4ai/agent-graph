@@ -3,5 +3,5 @@ id: example.recovery
 version: 0.1.0
 graphs: [graphs/recovery.yaml]
 compatibility:
-  agentGraph: ^0.2.0
+  agentGraph: ^0.3.0
   node: ">=20"

@@ -15,7 +15,7 @@ Agents usually have enough knowledge. The harder problem is knowing which part a
 
 > **When to use it:** Not every Skill needs a Graph; keep a short, single-session task in `SKILL.md`. Adopt Agent Graph when a host can supply trustworthy external facts and the work truly needs verifiable completion, cross-session recovery, or testable routing and human gates.
 
-[简体中文](./README.zh-CN.md) · [User manual](./docs/en/README.md) · [Graph Engineering](./docs/en/graph-engineering.md) · [Contributing](./CONTRIBUTING.md) · [Development](./DEVELOPMENT.md)
+[Documentation](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [简体中文](./README.zh-CN.md) · [User manual](./docs/en/README.md) · [Graph Engineering](./docs/en/graph-engineering.md) · [Contributing](./CONTRIBUTING.md) · [Development](./DEVELOPMENT.md)
 
 ## A simple example
 
@@ -71,7 +71,7 @@ Agent Graph does not silently rewrite its own plan. Runtime routing follows the 
 
 ## A real-world case: Context
 
-[Context](https://github.com/context4ai/context) uses Agent Graph behind one thin public Agent entry: [`/c4a:context`](https://github.com/context4ai/context/blob/main/packages/context-cli/plugin/commands/context.md). The same entry starts a requested workspace or resumes an existing one: `context entry` resolves initialization, workspace relocation, or current workflow evaluation, then the Agent follows `workflow.current`. Phase-specific procedures, Actions, and Resources remain separate, while the Agent receives, reads, and proves consumption of exactly what the selected Route requires. Re-entering the entry with unchanged Facts selects the same Route; completed evidence advances or no-ops, and revision-bound host commands reject stale writes. This gives Agent work an explicit idempotency boundary across retries and new turns. Its debug recording makes every selected Route, loop, Gate, and outcome replayable.
+[Context](https://github.com/context4ai/context) runs its whole knowledge workflow on Agent Graph behind one thin production entry, [`/c4a:context`](https://github.com/context4ai/context/blob/main/plugins/context/skills/context/SKILL.md). The entry starts a new workspace or resumes an existing one; each evaluation hands the Agent only the procedures and resources the selected Route requires, and the Agent proves it read them. Re-entering with unchanged Facts selects the same Route, and revision-bound commands reject stale writes, so retries and new sessions are safe. Debug recordings make every Route, loop, Gate and Outcome replayable. [Agent Graph in Context](https://context4ai.org/context/pages/e0028d6618a071cc8e8f14135d034285.html) walks through the integration.
 
 [Watch the interactive replay](https://context4ai.github.io/context/case-studies/workflow/?lang=en) · [Read the case study](https://github.com/context4ai/context/blob/main/docs/en/case-studies/agent-graph-workflow.md)
 
@@ -146,11 +146,19 @@ All three fields are required and validated together. `path:` always resolves re
 
 The Skill body keeps only this bootstrap and consumption contract. Phase-specific procedures, schemas, and context remain Route resources and are loaded on demand instead of being copied into the Skill. The binding selects a stable workflow; current modules, batches, and dates are runtime Facts. See [Skills and Providers](./docs/en/skills-and-providers.md) for the complete contract.
 
-A host may attach current-conversation resource read receipts when resolving a Route. Exact static digests can then remain `current` across steps, while revision-bound dynamic views become `read-required` after the workflow revision changes. Receipts reduce repeated reading; they never prove that an Action completed.
+Hosts can also attach resource read receipts to avoid repeated reading, and can serve Host-action Resources produced by their own handlers; the [specification](./docs/en/specification.md) defines both contracts.
 
-For a Host-action Resource, the Route carries a stable Handler plus versioned input/output contracts. Agent Graph computes the input correlation digest, validates the returned inline/resource envelope, and leaves execution, output-schema validation, trust policy, and durable recovery storage to the integrating host.
+## Documentation
 
-## Documentation and reference
+The [Agent Graph documentation](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) on the Context site explains the model and walks through real use:
+
+| Section | Pages |
+|---|---|
+| How It Works | [Why Graph Engineering](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [Core Model](https://context4ai.org/context/pages/ad65c836debb540be355e741aabf3dcf.html) · [Runs and Recovery](https://context4ai.org/context/pages/708a22de19d0b807fd512451f1269434.html) · [Skills and Providers](https://context4ai.org/context/pages/b3558e7c73749da60cf1b9634061fdd8.html) · [Agent Graph in Context](https://context4ai.org/context/pages/e0028d6618a071cc8e8f14135d034285.html) |
+| Guides | [Getting Started](https://context4ai.org/context/pages/05958f2aaec0c5605023f05e067c37bf.html) · [Authoring Graphs](https://context4ai.org/context/pages/b218404303adf13ace7561657d45483b.html) · [Testing and Publishing](https://context4ai.org/context/pages/2a26bc3e8f39cad36b9354cb975ec644.html) |
+| Reference | [Specification](https://context4ai.org/context/pages/098719903f2a7dcec5c1a6edb7b8ead3.html) · [CLI and SDK](https://context4ai.org/context/pages/7e7db2502a06c2f284c1701cc591c32b.html) · [Migration](https://context4ai.org/context/pages/516592ea7ac3e03cb284d8283bf349fc.html) |
+
+The versioned user manual ships with this repository and is the normative reference for each release:
 
 - [Getting started](./docs/en/getting-started.md)
 - [Authoring graphs](./docs/en/authoring.md)
@@ -168,3 +176,26 @@ To inspect the repository directly:
 
 - [`examples/`](./examples) contains complete runnable scenarios; start with [`getting-started`](./examples/getting-started);
 - [`schemas/`](./schemas) contains the machine-readable protocol contracts used by tools and integrations.
+
+## Ecosystem
+
+| Project | Role |
+|---|---|
+| [Context](https://github.com/context4ai/context) | Knowledge workflow for engineering teams and their Agents; the largest Agent Graph integration |
+| [Source Graph](https://github.com/context4ai/sourcegraph) | Code search and reading at pinned Git revisions |
+| [Portal](https://github.com/context4ai/portal) | [context4ai.org](https://context4ai.org), including the documentation site |
+
+## Contributing
+
+```bash
+git clone https://github.com/context4ai/agent-graph.git
+cd agent-graph
+bun install
+bun run verify
+```
+
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request and [DEVELOPMENT.md](./DEVELOPMENT.md) for the source layout, protocol rules and release audit. Ask questions in [GitHub Discussions](https://github.com/context4ai/agent-graph/discussions) (see [SUPPORT.md](./SUPPORT.md)), and report vulnerabilities through [SECURITY.md](./SECURITY.md). Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md). Release history is in [CHANGELOG.md](./CHANGELOG.md).
+
+## License
+
+[MIT](./LICENSE)

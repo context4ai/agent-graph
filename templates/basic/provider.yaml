@@ -6,5 +6,5 @@ graphs:
 catalogs:
   codes: codes.yaml
 compatibility:
-  agentGraph: ^0.2.0
+  agentGraph: ^0.3.0
   node: ">=20"
