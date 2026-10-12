@@ -73,7 +73,7 @@
     "ajv-formats": "^3.0.1",
     "commander": "^14.0.2",
     "eslint": "^9.39.2",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.55.0",
     "yaml": "^2.8.2"
   }
