@@ -5,5 +5,5 @@ graphs:
   - graphs/main.yaml
   - graphs/quality.yaml
 compatibility:
-  agentGraph: ^0.2.0
+  agentGraph: ^0.3.0
   node: ">=20"

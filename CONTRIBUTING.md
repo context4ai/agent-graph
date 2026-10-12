@@ -2,6 +2,8 @@
 
 Thank you for helping improve Agent Graph. Contributions can include bug reports, protocol proposals, documentation, examples, tests, and implementation changes.
 
+New to the project? Read [Why Graph Engineering](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) and [Authoring Graphs](https://context4ai.org/context/pages/b218404303adf13ace7561657d45483b.html) on the documentation site, then run the [`getting-started`](./examples/getting-started) example.
+
 ## Before opening a pull request
 
 - Use GitHub Discussions for design questions, adoption questions, and ideas that are not yet actionable.

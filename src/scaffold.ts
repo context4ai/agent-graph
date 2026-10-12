@@ -77,7 +77,7 @@ export async function initProvider(directory: string, id: string): Promise<strin
     name: id,
     graphs: ["graphs/main.yaml"],
     catalogs: { codes: "codes.yaml" },
-    compatibility: { agentGraph: "^0.2.0", node: ">=20" },
+    compatibility: { agentGraph: "^0.3.0", node: ">=20" },
   };
   const action: ActionDefinition = {
     schema: "agent-graph.action.v1",

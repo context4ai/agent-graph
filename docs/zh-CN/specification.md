@@ -13,7 +13,7 @@ graphs:
 catalogs:
   codes: codes.yaml
 compatibility:
-  agentGraph: ^0.2.0
+  agentGraph: ^0.3.0
   node: ">=20"
 ```
 
@@ -360,7 +360,7 @@ Evaluation 是只读操作。相同定义与路由输入必须得到相同 Revis
 - Action 身份和 effect；
 - Command Plan 或 Host Handler；
 - 解析后的工作目录，以及其 `workspace` 或 `provider` 语义来源；
-- required 与 recommended Resource Location，完整保留 v1 或 v2 物化 Envelope；
+- required 与 recommended Resource Location，完整保留 file、Graph-action 或 Host-action Location Envelope；
 - 每个 Route Resource 的 `readState`，用于区分当前会话已读内容与必须加载的内容；
 - `afterAction.recordNode` 和重新 evaluate 的要求。
 
@@ -403,7 +403,7 @@ Bundle 可迁移，并可直接通过 `manifest.json` 重新加载。加载时�
 
 v1 对象会拒绝未知字段，避免拼错安全字段却被静默忽略。
 
-在 npm 包到达 `1.0.0` 前，`agent-graph.*.v1` 协议族仍处于公开草案定稿期。按照语义化版本规则，`0.x` 版本可以收紧必填字段或不变量，但必须记录破坏性变化，并同步全部随包模板、示例与测试。`0.2.0` 将 Action 和 Gate 的 `reasonCode` 设为必填，并用显式 Graph 和 Entry 字段补全 Skill Binding。
+在 npm 包到达 `1.0.0` 前，`agent-graph.*.v1` 协议族仍处于公开草案定稿期。按照语义化版本规则，`0.x` 版本可以收紧必填字段或不变量，但必须记录破坏性变化，并同步全部随包模板、示例与测试。`0.2.0` 将 Action 和 Gate 的 `reasonCode` 设为必填，并用显式 Graph 和 Entry 字段补全 Skill Binding。`0.3.0` 用相互独立的 file、Graph-action 与 Host-action 协议取代按编号区分的 Resource 与 Resource Location 协议。
 
 到达 `1.0.0` 稳定边界后，不兼容的新语义必须使用新的 Schema 版本；兼容扩展必须使用明确声明的扩展点。Agent Host 应按 Schema、状态码、reason code 和 diagnostic code 分支，不能按人类描述文本分支。
 

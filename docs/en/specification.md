@@ -13,7 +13,7 @@ graphs:
 catalogs:
   codes: codes.yaml
 compatibility:
-  agentGraph: ^0.2.0
+  agentGraph: ^0.3.0
   node: ">=20"
 ```
 
@@ -360,7 +360,7 @@ Evaluation is read-only. Same definitions and routing inputs produce the same re
 - action identity and effect;
 - command plan or host handler;
 - resolved working directory plus its `workspace` or `provider` semantic origin;
-- required and recommended resource locations, preserving the complete v1 or v2 materialization envelope;
+- required and recommended resource locations, preserving the complete file, Graph-action, or Host-action location envelope;
 - `readState` on each Route Resource, distinguishing current-conversation content from content that must be loaded;
 - `afterAction.recordNode` and the requirement to evaluate again.
 
@@ -403,7 +403,7 @@ The bundle is relocatable and can itself be loaded through `manifest.json`. Load
 
 Unknown fields are rejected in v1 objects. This prevents misspelled safety fields from being ignored.
 
-Until the npm package reaches `1.0.0`, the `agent-graph.*.v1` family is still in its public draft finalization period. A `0.x` release may tighten a required field or invariant under semantic-versioning rules, but must document the break and update every shipped template, example, and test. `0.2.0` makes Action and Gate `reasonCode` mandatory and completes the Skill binding with explicit Graph and Entry fields.
+Until the npm package reaches `1.0.0`, the `agent-graph.*.v1` family is still in its public draft finalization period. A `0.x` release may tighten a required field or invariant under semantic-versioning rules, but must document the break and update every shipped template, example, and test. `0.2.0` makes Action and Gate `reasonCode` mandatory and completes the Skill binding with explicit Graph and Entry fields. `0.3.0` replaces the numbered Resource and Resource Location protocols with separate file, Graph-action, and Host-action protocols.
 
 After the `1.0.0` stability boundary, incompatible new semantics require a new schema version; compatible additions require an explicitly defined extension point. Agent hosts should branch on schema, status codes, reason codes, and diagnostic codes, never on human descriptions.
 

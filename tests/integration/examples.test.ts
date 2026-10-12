@@ -24,7 +24,7 @@ describe("published examples", () => {
     test(`${name} validates and its graph cases pass`, async () => {
       const root = resolve(import.meta.dir, "../../examples", name);
       const provider = await loadProvider(resolve(root, "provider.yaml"));
-      expect(provider.manifest.compatibility?.agentGraph).toBe("^0.2.0");
+      expect(provider.manifest.compatibility?.agentGraph).toBe("^0.3.0");
       const results = await runGraphTests(provider, resolve(root, "tests"));
       expect(results.length).toBeGreaterThan(0);
       expect(results.filter((result) => !result.passed)).toEqual([]);
@@ -41,6 +41,6 @@ describe("published examples", () => {
     expect(first.graph).toBe("main");
     expect(first.entry).toBe("default");
     const provider = await loadProvider(first.manifestPath);
-    expect(provider.manifest.compatibility?.agentGraph).toBe("^0.2.0");
+    expect(provider.manifest.compatibility?.agentGraph).toBe("^0.3.0");
   });
 });

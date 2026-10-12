@@ -4,6 +4,11 @@ All notable changes to Agent Graph are documented here. The project follows [Sem
 
 ## Unreleased
 
+## 0.3.1 - 2026-10-13
+
+- Raised the scaffold, template and example `compatibility.agentGraph` range to `^0.3.0`, and documented the 0.3.0 Resource protocol migration.
+- The README, contributing, support and development guides link to the Agent Graph documentation on context4ai.org and describe the publishing steps.
+
 ## 0.3.0 - 2026-08-31
 
 - Replaced the misleading Resource v1/v2 split with three independent v1 protocols for file, Graph-action, and Host-action resources and locations.
