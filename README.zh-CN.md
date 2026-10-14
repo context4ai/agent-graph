@@ -15,7 +15,7 @@ Agent 很多时候并不缺知识。更难的是判断：现在该读哪一部�
 
 > **什么时候该用：** 不是每个 Skill 都需要 Graph；单轮、短流程，靠一份 `SKILL.md` 就能完成时，保持简单。只有当宿主能提供可信的外部事实，并且任务确实需要可验证完成、跨会话恢复，或可测试的路由与人工门禁时，再引入 Agent Graph。
 
-[文档](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [English](./README.md) · [用户手册](./docs/zh-CN/README.md) · [Graph Engineering](./docs/zh-CN/graph-engineering.md) · [贡献指南](./CONTRIBUTING.md) · [开发指南](./DEVELOPMENT.md)
+[文档](https://context4ai.org/context/pages/9fb722d61652eb09bd4609cb38748ba5.html) · [English](./README.md) · [用户手册](./docs/zh-CN/README.md) · [Graph Engineering](./docs/zh-CN/graph-engineering.md) · [贡献指南](./CONTRIBUTING.md) · [开发指南](./DEVELOPMENT.md)
 
 ## 先看一个最简单的例子
 
@@ -150,12 +150,12 @@ Skill 正文只保留这段启动与消费规则。各阶段的操作说明、Sc
 
 ## 文档
 
-Context 文档站的 [Agent Graph 文档](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html)讲解模型并结合真实用法逐步演示（与英文共用地址，按语言偏好显示中文）：
+Context 文档站的 [Agent Graph 文档](https://context4ai.org/context/pages/9fb722d61652eb09bd4609cb38748ba5.html)先说明 Agent Graph 的用途，再讲解模型并结合真实用法逐步演示（与英文共用地址，按语言偏好显示中文）：
 
 | 分类 | 页面 |
 |---|---|
-| 原理 | [为什么是 Graph Engineering](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [核心模型](https://context4ai.org/context/pages/ad65c836debb540be355e741aabf3dcf.html) · [运行与恢复](https://context4ai.org/context/pages/708a22de19d0b807fd512451f1269434.html) · [Skills 与 Providers](https://context4ai.org/context/pages/b3558e7c73749da60cf1b9634061fdd8.html) · [Context 中的 Agent Graph](https://context4ai.org/context/pages/e0028d6618a071cc8e8f14135d034285.html) |
-| 指南 | [快速开始](https://context4ai.org/context/pages/05958f2aaec0c5605023f05e067c37bf.html) · [编写 Graph](https://context4ai.org/context/pages/b218404303adf13ace7561657d45483b.html) · [测试与发布](https://context4ai.org/context/pages/2a26bc3e8f39cad36b9354cb975ec644.html) |
+| 原理 | [Graph Engineering 设计原则](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [核心模型](https://context4ai.org/context/pages/ad65c836debb540be355e741aabf3dcf.html) · [运行与恢复](https://context4ai.org/context/pages/708a22de19d0b807fd512451f1269434.html) · [Skills 与 Providers](https://context4ai.org/context/pages/b3558e7c73749da60cf1b9634061fdd8.html) · [Context 中的 Agent Graph](https://context4ai.org/context/pages/e0028d6618a071cc8e8f14135d034285.html) |
+| 指南 | [Agent Graph 是什么](https://context4ai.org/context/pages/9fb722d61652eb09bd4609cb38748ba5.html) · [快速上手](https://context4ai.org/context/pages/05958f2aaec0c5605023f05e067c37bf.html) · [编写 Graph](https://context4ai.org/context/pages/b218404303adf13ace7561657d45483b.html) · [测试与发布](https://context4ai.org/context/pages/2a26bc3e8f39cad36b9354cb975ec644.html) |
 | 参考 | [规范](https://context4ai.org/context/pages/098719903f2a7dcec5c1a6edb7b8ead3.html) · [CLI 与 SDK](https://context4ai.org/context/pages/7e7db2502a06c2f284c1701cc591c32b.html) · [迁移](https://context4ai.org/context/pages/516592ea7ac3e03cb284d8283bf349fc.html) |
 
 带版本的用户手册随本仓库发布，是各版本的规范性参考：

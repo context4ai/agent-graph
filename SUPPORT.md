@@ -2,7 +2,7 @@
 
 Choose the channel that matches the request:
 
-- Read the [documentation site](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html), the [user manual](./docs/en/README.md) or the [中文手册](./docs/zh-CN/README.md) for product behavior and examples.
+- Read the [documentation site](https://context4ai.org/context/pages/9fb722d61652eb09bd4609cb38748ba5.html), the [user manual](./docs/en/README.md) or the [中文手册](./docs/zh-CN/README.md) for product behavior and examples.
 - Use [GitHub Discussions](https://github.com/context4ai/agent-graph/discussions) for usage questions, integration design, and ideas.
 - Open a [bug report](https://github.com/context4ai/agent-graph/issues/new/choose) for reproducible defects.
 - Follow [SECURITY.md](./SECURITY.md) for vulnerabilities.
