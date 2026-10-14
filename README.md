@@ -15,7 +15,7 @@ Agents usually have enough knowledge. The harder problem is knowing which part a
 
 > **When to use it:** Not every Skill needs a Graph; keep a short, single-session task in `SKILL.md`. Adopt Agent Graph when a host can supply trustworthy external facts and the work truly needs verifiable completion, cross-session recovery, or testable routing and human gates.
 
-[Documentation](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [简体中文](./README.zh-CN.md) · [User manual](./docs/en/README.md) · [Graph Engineering](./docs/en/graph-engineering.md) · [Contributing](./CONTRIBUTING.md) · [Development](./DEVELOPMENT.md)
+[Documentation](https://context4ai.org/context/pages/9fb722d61652eb09bd4609cb38748ba5.html) · [简体中文](./README.zh-CN.md) · [User manual](./docs/en/README.md) · [Graph Engineering](./docs/en/graph-engineering.md) · [Contributing](./CONTRIBUTING.md) · [Development](./DEVELOPMENT.md)
 
 ## A simple example
 
@@ -150,12 +150,12 @@ Hosts can also attach resource read receipts to avoid repeated reading, and can 
 
 ## Documentation
 
-The [Agent Graph documentation](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) on the Context site explains the model and walks through real use:
+The [Agent Graph documentation](https://context4ai.org/context/pages/9fb722d61652eb09bd4609cb38748ba5.html) on the Context site starts with what Agent Graph is for, then explains the model and walks through real use:
 
 | Section | Pages |
 |---|---|
-| How It Works | [Why Graph Engineering](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [Core Model](https://context4ai.org/context/pages/ad65c836debb540be355e741aabf3dcf.html) · [Runs and Recovery](https://context4ai.org/context/pages/708a22de19d0b807fd512451f1269434.html) · [Skills and Providers](https://context4ai.org/context/pages/b3558e7c73749da60cf1b9634061fdd8.html) · [Agent Graph in Context](https://context4ai.org/context/pages/e0028d6618a071cc8e8f14135d034285.html) |
-| Guides | [Getting Started](https://context4ai.org/context/pages/05958f2aaec0c5605023f05e067c37bf.html) · [Authoring Graphs](https://context4ai.org/context/pages/b218404303adf13ace7561657d45483b.html) · [Testing and Publishing](https://context4ai.org/context/pages/2a26bc3e8f39cad36b9354cb975ec644.html) |
+| How It Works | [Graph Engineering Principles](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html) · [Core Model](https://context4ai.org/context/pages/ad65c836debb540be355e741aabf3dcf.html) · [Runs and Recovery](https://context4ai.org/context/pages/708a22de19d0b807fd512451f1269434.html) · [Skills and Providers](https://context4ai.org/context/pages/b3558e7c73749da60cf1b9634061fdd8.html) · [Agent Graph in Context](https://context4ai.org/context/pages/e0028d6618a071cc8e8f14135d034285.html) |
+| Guides | [What Is Agent Graph](https://context4ai.org/context/pages/9fb722d61652eb09bd4609cb38748ba5.html) · [Quick Start](https://context4ai.org/context/pages/05958f2aaec0c5605023f05e067c37bf.html) · [Authoring Graphs](https://context4ai.org/context/pages/b218404303adf13ace7561657d45483b.html) · [Testing and Publishing](https://context4ai.org/context/pages/2a26bc3e8f39cad36b9354cb975ec644.html) |
 | Reference | [Specification](https://context4ai.org/context/pages/098719903f2a7dcec5c1a6edb7b8ead3.html) · [CLI and SDK](https://context4ai.org/context/pages/7e7db2502a06c2f284c1701cc591c32b.html) · [Migration](https://context4ai.org/context/pages/516592ea7ac3e03cb284d8283bf349fc.html) |
 
 The versioned user manual ships with this repository and is the normative reference for each release:

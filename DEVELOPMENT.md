@@ -1,6 +1,6 @@
 # Development
 
-This document is for contributors to the `agent-graph` toolchain. Product usage belongs in the [English](./docs/en/README.md) and [Chinese](./docs/zh-CN/README.md) user guides and on the [documentation site](https://context4ai.org/context/pages/91e2679fb8eb437a1a32a70050351382.html). Repository-wide Agent rules live in [AGENTS.md](./AGENTS.md).
+This document is for contributors to the `agent-graph` toolchain. Product usage belongs in the [English](./docs/en/README.md) and [Chinese](./docs/zh-CN/README.md) user guides and on the [documentation site](https://context4ai.org/context/pages/9fb722d61652eb09bd4609cb38748ba5.html). Repository-wide Agent rules live in [AGENTS.md](./AGENTS.md).
 
 ## Requirements
 
